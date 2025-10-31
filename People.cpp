@@ -1,11 +1,11 @@
-#include "People.h"
+#include "People.hpp"
 #include <iostream>
 
 void People::PrintInfo() const {
-	std::cout << "[People] ФИО: " << Surname << " " << Name << " " << Fat_name
-		<< "\nПаспорт: " << Psprt_ser << " " << Psprt_num
+	std::cout << "[People] ФИО: " << Surname << " " << Name << " " << FatName
+		<< "\nПаспорт: " << PsprtSer << " " << PsprtNum
 		<< "\nEmail: " << Email << "\n";
 }
 std::string People::GetFullName() const {
-		return Surname + " " + Name + " " + Fat_name;
+		return Surname + " " + Name + " " + FatName;
 }

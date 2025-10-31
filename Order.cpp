@@ -1,23 +1,23 @@
-#include "Order.h"
-#include "Search.h"
+#include "Order.hpp"
+#include "Search.hpp"
 
 void Order::PrintOrderInfo() const {
     std::cout << "=== Информация о заказе ===\n";
-    std::cout << "Статус оплаты: " << Pay_status << "\n";
-    std::cout << "Общая стоимость: " << Total_price << " руб.\n";
+    std::cout << "Статус оплаты: " << PayStatus << "\n";
+    std::cout << "Общая стоимость: " << TotalPrice << " руб.\n";
     std::cout << "Количество билетов: " << TicketList.size() << "\n\n";
 
     for (const auto& ticket : TicketList) {
-        ticket.Print_ticket_info();
+        ticket.PrintTicketInfo();
         std::cout << "\n";
     }
     std::cout << "===========================\n";
 }
 
 void Order::CalculateTotalPrice() {
-    Total_price = 0;
+    TotalPrice = 0;
     for (const auto& ticket : TicketList) {
-        Total_price += ticket.GetFinalPrice();
+        TotalPrice += ticket.GetFinalPrice();
     }
 }
 
@@ -53,36 +53,36 @@ void Order::AddTicket(const Ticket& ticket) {
     std::cout << "   Цена: " << ticket.GetFinalPrice() << " руб.\n";
     std::cout << "   Статус: " << ticket.GetStatus() << "\n";
     std::cout << "   Всего билетов в заказе: " << TicketList.size() << "\n";
-    std::cout << "   Общая стоимость заказа: " << Total_price << " руб.\n";
+    std::cout << "   Общая стоимость заказа: " << TotalPrice << " руб.\n";
 }
 
 bool Order::RemoveTicket(const Ticket& ticket) {
-    std::vector<Ticket*> found_tickets = search->SearchTickets(*this,
+    std::vector<Ticket*> foundtickets = search->SearchTickets(*this,
         ticket.GetPassenger().GetFullName(),  // Имя пассажира
         ticket.GetTrip().GetRoute(),          // Маршрут
         ticket.GetPlaceNumber(),
-        ticket.GetTicketTypeIndex()           // Тип билета
+        ticket.GetTicketType()           // Тип билета
     );
 
-    for (Ticket* found_ticket : found_tickets) {
-        if (found_ticket->GetPlaceNumber() == ticket.GetPlaceNumber()) {
-            int seat_number = found_ticket->GetPlaceNumber();
+    for (Ticket* foundticket : foundtickets) {
+        if (foundticket->GetPlaceNumber() == ticket.GetPlaceNumber()) {
+            int seatnumber = foundticket->GetPlaceNumber();
 
             // Возвращаем место в автобус
-            if (ticket_chose != nullptr) {
-                ticket_chose->ReleaseSeat(seat_number);
+            if (ticketchose != nullptr) {
+                ticketchose->ReleaseSeat(seatnumber);
             }
 
             // Удаляем билет из заказа
             for (auto it = TicketList.begin(); it != TicketList.end(); ++it) {
-                if (it->GetPlaceNumber() == seat_number) {
+                if (it->GetPlaceNumber() == seatnumber) {
                     TicketList.erase(it);
                     CalculateTotalPrice();
 
                     std::cout << "Билет удален из заказа\n";
-                    std::cout << "Место: " << seat_number << "\n";
+                    std::cout << "Место: " << seatnumber << "\n";
                     std::cout << "Пассажир: " << ticket.GetPassenger().GetFullName() << "\n";
-                    std::cout << "Место " << seat_number << " снова доступно для бронирования\n";
+                    std::cout << "Место " << seatnumber << " снова доступно для бронирования\n";
                     return true;
                 }
             }

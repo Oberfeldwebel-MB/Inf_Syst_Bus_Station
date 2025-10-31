@@ -1,9 +1,9 @@
-#include "DriversList.h"
+#include "DriversList.hpp"
 
 #pragma once
 #include <vector>
 #include <iostream>
-#include "Driver.h"
+#include "Driver.hpp"
 
     void DriverList::AddDriver(const Driver& driver) {
         drivers.push_back(driver);
@@ -37,7 +37,7 @@
         std::cout << "=== Список водителей ===\n";
         for (const auto& driver : drivers) {
             driver.PrintInfo();
-            std::cout << "Текущий рейс" << driver.GetCurrentTrip() << "Статус: " << (driver.GetAvailability() ? "Доступен" : "Занят") << "\n";
+            std::cout << "Текущий рейс" << driver.GetDriverCurrentTrip() << "Статус: " << (driver.GetAvailability() ? "Доступен" : "Занят") << "\n";
         }
         std::cout << "========================\n";
     }

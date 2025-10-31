@@ -1,4 +1,4 @@
-#include "Search.h"
+#include "Search.hpp"
 
 // Поиск в расписании 
 
@@ -25,22 +25,22 @@ std::vector<Trip*> Search::SearchTripsByRoute(const Timing& timing, const std::s
     return result;
 }
 
-std::vector<Trip*> Search::SearchTripsByDriver(const Timing& timing, const std::string& driver_name) {
+std::vector<Trip*> Search::SearchTripsByDriver(const Timing& timing, const std::string& driverName) {
     const auto& trips = timing.GetTripList();
     std::vector<Trip*> result;
     for (const auto& trip : trips) {
-        if (trip.GetDriver() && trip.GetDriver()->GetFullName().find(driver_name) != std::string::npos) {
+        if (trip.GetDriver() && trip.GetDriver()->GetFullName().find(driverName) != std::string::npos) {
             result.push_back(const_cast<Trip*>(&trip));
         }
     }
     return result;
 }
 
-std::vector<Trip*> Search::SearchTripsByBus(const Timing& timing, const std::string& bus_code) {
+std::vector<Trip*> Search::SearchTripsByBus(const Timing& timing, const std::string& busCode) {
     const auto& trips = timing.GetTripList();
     std::vector<Trip*> result;
     for (const auto& trip : trips) {
-        if (trip.GetBus() && trip.GetBus()->GetCode() == bus_code) {  // -> вместо .
+        if (trip.GetBus() && trip.GetBus()->GetCode() == busCode) { 
             result.push_back(const_cast<Trip*>(&trip));
         }
     }
@@ -76,10 +76,11 @@ std::vector<Trip*> Search::SearchTripsCombined(const Timing& timing,
 //Поиск в заказах
 
 std::vector<Ticket*> Search::SearchTickets(const Order& order,
-    const std::string& passenger_name,
+    const std::string& passengerName,
     const std::string& route,
-    int seat_number,
-    int type_index) {
+    int seatNumber,
+    Ticket::TicketType ticketType) {
+
     // Получаем все билеты из заказа
     const auto& tickets = order.GetTicketList();
     std::vector<Ticket*> result;
@@ -93,25 +94,34 @@ std::vector<Ticket*> Search::SearchTickets(const Order& order,
     for (const auto& ticket : tickets) {
         bool matches = true;
 
-        //Проверка имени пассажира (если параметр не пустой)
-        if (!passenger_name.empty()) {
-            std::string ticket_passenger = ticket.GetPassenger().GetFullName();
-            // Ищем частичное совпадение (например, "Иванов" найдет "Иванов Иван Иванович")
-            if (ticket_passenger.find(passenger_name) == -1) {
+        // Проверка имени пассажира (если параметр не пустой)
+        if (!passengerName.empty()) {
+            std::string ticketPassenger = ticket.GetPassenger().GetFullName();
+            // Ищем частичное совпадение
+            if (ticketPassenger.find(passengerName) == std::string::npos) {  // Исправлено -1 на npos
                 matches = false;
             }
         }
 
-        //Проверка маршрута
-        if (!route.empty()) {
-            if (ticket.GetTrip().GetRoute().find(route) == std::string::npos)
-                  matches = false;
+        // Проверка маршрута (если параметр не пустой)
+        if (matches && !route.empty()) {
+            if (ticket.GetTrip().GetRoute().find(route) == std::string::npos) {
+                matches = false;
+            }
         }
 
-        //Проверка типа билета
-        if (type_index != -1) {
-            if (ticket.GetPlaceNumber() != seat_number)
+        // Проверка номера места (если параметр не -1)
+        if (matches && seatNumber != -1) {
+            if (ticket.GetPlaceNumber() != seatNumber) {
                 matches = false;
+            }
+        }
+
+        // Проверка типа билета (всегда проверяем, так как enum имеет значения по умолчанию)
+        if (matches) {
+            if (ticket.GetTicketType() != ticketType) {  // Исправлено - проверяем переданный ticketType
+                matches = false;
+            }
         }
 
         if (matches) {
@@ -133,22 +143,22 @@ std::vector<Ticket*> Search::SearchTicketsByRoute(const Order& order, const std:
     return result;
 }
 
-std::vector<Ticket*> Search::SearchTicketsByType(const Order& order, int type_index) {
+std::vector<Ticket*> Search::SearchTicketsByType(const Order& order, Ticket::TicketType ticketType) {
     const auto& tickets = order.GetTicketList();
     std::vector<Ticket*> result;
     for (const auto& ticket : tickets) {
-        if (ticket.GetTicketTypeIndex() == type_index) {
+        if (ticket.GetTicketType() == ticketType) {
             result.push_back(const_cast<Ticket*>(&ticket));
         }
     }
     return result;
 }
 
-std::vector<Ticket*> Search::SearchTicketsBySeat(const Order& order, int seat_number) {
+std::vector<Ticket*> Search::SearchTicketsBySeat(const Order& order, int seatNumber) {
     const auto& tickets = order.GetTicketList();
     std::vector<Ticket*> result;
     for (const auto& ticket : tickets) {
-        if (ticket.GetPlaceNumber() == seat_number) {
+        if (ticket.GetPlaceNumber() == seatNumber) {
             result.push_back(const_cast<Ticket*>(&ticket));
         }
     }

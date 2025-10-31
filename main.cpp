@@ -1,18 +1,18 @@
-#include "DriversList.h"
-#include "People.h"
-#include "Passenger.h"
-#include "Workers.h"
-#include "Driver.h"
-#include "Admin.h"
-#include "Bus.h"
-#include "BusList.h"
-#include "Trip.h"
-#include "Timing.h"
-#include "Ticket.h"
-#include "TicketChose.h"
-#include "Order.h"
-#include "Search.h"
-#include "User.h"
+#include "DriversList.hpp"
+#include "People.hpp"
+#include "Passenger.hpp"
+#include "Workers.hpp"
+#include "Driver.hpp"
+#include "Admin.hpp"
+#include "Bus.hpp"
+#include "BusList.hpp"
+#include "Trip.hpp"
+#include "Timing.hpp"
+#include "Ticket.hpp"
+#include "TicketChose.hpp"
+#include "Order.hpp"
+#include "Search.hpp"
+#include "User.hpp"
 #include <windows.h>
 #include <iostream>
 #include <vector>
@@ -33,7 +33,7 @@ int main() {
     Passenger staticPassenger("Иванов", "Иван", "Иванович", "1234", "567890", "ivanov@mail.ru");
 
     cout << "Созданы статические объекты:\n";
-    staticBus.Print_Bus_info();
+    staticBus.PrintBusInfo();
     cout << "Водитель: " << staticDriver.GetFullName() << "\n";
     cout << "Пассажир: " << staticPassenger.GetFullName() << "\n\n";
 
@@ -46,7 +46,7 @@ int main() {
     Admin* dynamicAdmin = new Admin("Румянцев", "Максим", "Станиславович", 60000);
 
     cout << "Созданы динамические объекты:\n";
-    dynamicBus->Print_Bus_info();
+    dynamicBus->PrintBusInfo();
     cout << "Водитель: " << dynamicDriver->GetFullName() << "\n";
     cout << "Администратор: " << dynamicAdmin->GetFullName() << "\n\n";
 
@@ -90,8 +90,8 @@ int main() {
     cout << "---------------------------------------\n";
 
     Driver* driverArray[2] = {
-        new Driver("Кузнецов", "Алексей", "Владимирович", 48000, "D111111"),
-        new Driver("Новикова", "Ольга", "Петровна", 52000, "D222222")
+        new Driver("Ганюшкин", "Константин", "Владимирович", 48000, "D111111"),
+        new Driver("Валяев", "Федор", "Сергеевич", 52000, "D222222")
     };
 
     cout << "Массив динамических водителей:\n";

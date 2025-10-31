@@ -1,4 +1,4 @@
-#include "Workers.h"
+#include "Workers.hpp"
 #include <iostream> 
 
 void Workers::change_work_avail(bool avail) {
@@ -6,7 +6,7 @@ void Workers::change_work_avail(bool avail) {
 	std::cout << "[Workers] Доступность изменена на: " << (Availability ? "Доступен" : "Не доступен") << std::endl;
 }
 
-void Workers::Make_Salary(int newSalary) {
+void Workers::MakeSalary(int newSalary) {
 	Salary = newSalary;
 	std::cout << "[Workers] Зарплата установлена: " << Salary << " руб." << std::endl;
 }

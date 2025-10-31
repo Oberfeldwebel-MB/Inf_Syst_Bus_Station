@@ -1,43 +1,43 @@
-#include "Bus.h"
+#include "Bus.hpp"
 #include <iostream>
 
-void Bus::Print_Bus_info() {
+void Bus::PrintBusInfo() {
 	std::cout << "=== Данные автобуса ===\n";
 	std::cout << "Марка: " << Brand << "\n";
 	std::cout << "Модель: " << Model << "\n";
-	std::cout << "Количество мест: " << Place_count << "\n";
-	std::cout << "Код автобуса: " << Code_bus << "\n";
-	std::cout << "Техническое состояние: " << Tech_sost << "\n";
-	std::cout << "Последнее ТО: " << Last_check_TO << "\n";
-	std::cout << "Статус: " << (Bus_availability ? "Доступен" : "Не доступен") << "\n";
+	std::cout << "Количество мест: " << PlaceCount << "\n";
+	std::cout << "Код автобуса: " << CodeBus << "\n";
+	std::cout << "Техническое состояние: " << TechSost << "\n";
+	std::cout << "Последнее ТО: " << LastCheckTO << "\n";
+	std::cout << "Статус: " << (BusAvailability ? "Доступен" : "Не доступен") << "\n";
 	std::cout << "=======================\n";
 }
 
-bool Bus::Check_avail_bus(){
-	return Bus_availability;
+bool Bus::CheckAvailBus(){
+	return BusAvailability;
 }
 
-void Bus::Change_avail_bus(bool state) {
-	Bus_availability = state;
+void Bus::ChangeAvailBus(bool state) {
+	BusAvailability = state;
 	if (state) { std::cout << "Автобус теперь доступен\n"; }
 	else { std::cout << "Автобус теперь недоступен\n"; }
 }
 
-void Bus::Set_trip_bus() {
-	if (Bus_availability)
-		std::cout << "Bus " << Code_bus << " assigned to a trip.\n";
+void Bus::SetTripBus() {
+	if (BusAvailability)
+		std::cout << "Bus " << CodeBus << " assigned to a trip.\n";
 	else
-		std::cout << "Bus " << Code_bus << " is not available for a trip.\n";
+		std::cout << "Bus " << CodeBus << " is not available for a trip.\n";
 }
 
-void Bus::Go_to_TO(std::string& date) {
-	Last_check_TO = date;
-	Tech_sost = "In maintenance";
-	Bus_availability = false;
-	std::cout << "Bus " << Code_bus << " sent to maintenance on " << date << ".\n";
+void Bus::GoToTO(std::string& date) {
+	LastCheckTO = date;
+	TechSost = "In maintenance";
+	BusAvailability = false;
+	std::cout << "Bus " << CodeBus << " sent to maintenance on " << date << ".\n";
 }
 
 void Bus::Change_sost(std::string& newState) {
-	Tech_sost = newState;
-	std::cout << "Bus " << Code_bus << " technical condition updated to: " << newState << "\n";
+	TechSost = newState;
+	std::cout << "Bus " << CodeBus << " technical condition updated to: " << newState << "\n";
 }

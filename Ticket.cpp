@@ -1,38 +1,57 @@
-#include "Ticket.h"
+#include "Ticket.hpp"
 
 void Ticket::CalculateFinalPrice() {
-    // Цена для разных типов билетов
-    std::map<int, double> discounts = {
-        {0, 1.0},  // Взрослый - 100%
-        {1, 0.5},  // Детский - 50%
-        {2, 0.3}   // Багажный - 30%
-    };
+    double basePrice = TripData.GetPrice();
+    double discountMultiplier = 1.0;
 
-    double base_price = Trip_data.GetPrice();
-    double discount_multiplier = discounts[Ticket_type_index];
-    Final_price = base_price * discount_multiplier;
+    switch (Type) {
+    case TicketType::ADULT:
+        discountMultiplier = 1.0;  // 100%
+        break;
+    case TicketType::CHILD:
+        discountMultiplier = 0.5;  // 50%
+        break;
+    case TicketType::LUGGAGE:
+        discountMultiplier = 0.3;  // 30%
+        break;
+    }
+
+    FinalPrice = basePrice * discountMultiplier;
 }
 
-void Ticket::Print_ticket_info() const {
+std::string Ticket::GetTicketTypeName() const {
+    switch (Type) {
+    case TicketType::ADULT:
+        return "Взрослый";
+    case TicketType::CHILD:
+        return "Детский";
+    case TicketType::LUGGAGE:
+        return "Багажный";
+    default:
+        return "Неизвестный";
+    }
+}
+
+void Ticket::PrintTicketInfo() const {
     std::cout << "=== Информация о билете ===\n";
-    std::cout << "Место: " << Place_number << "\n";
+    std::cout << "Место: " << PlaceNumber << "\n";
     std::cout << "Тип: " << GetTicketTypeName() << "\n";
-    std::cout << "Маршрут: " << Trip_data.GetRoute() << "\n";
-    std::cout << "Цена: " << Final_price << " руб.\n";  
-    std::cout << "Пассажир: " << Passenger_data.GetFullName() << "\n";
-    std::cout << "Статус билета: " << Ticket_status << "\n";
+    std::cout << "Маршрут: " << TripData.GetRoute() << "\n";
+    std::cout << "Цена: " << FinalPrice << " руб.\n";  
+    std::cout << "Пассажир: " << PassengerData.GetFullName() << "\n";
+    std::cout << "Статус билета: " << TicketStatus << "\n";
 
     // информация об автобусе и водителе
-    if (Trip_data.GetBus()) {
-        std::cout << "Автобус: " << Trip_data.GetBus()->GetBrand()  
-            << " [" << Trip_data.GetBus()->GetCode() << "]\n";      
+    if (TripData.GetBus()) {
+        std::cout << "Автобус: " << TripData.GetBus()->GetBrand()  
+            << " [" << TripData.GetBus()->GetCode() << "]\n";      
     }
     else {
         std::cout << "Автобус: не назначен\n";
     }
 
-    if (Trip_data.GetDriver()) {
-        std::cout << "Водитель: " << Trip_data.GetDriver()->GetFullName() << "\n";  // -> вместо .
+    if (TripData.GetDriver()) {
+        std::cout << "Водитель: " << TripData.GetDriver()->GetFullName() << "\n";  // -> вместо .
     }
     else {
         std::cout << "Водитель: не назначен\n";

@@ -1,24 +1,22 @@
-#include "User.h"
-#include "Timing.h"
-#include "TicketChose.h"
-#include "Trip.h"
-#include "Passenger.h"
+#include "User.hpp"
+#include "Timing.hpp"
+#include "TicketChose.hpp"
+#include "Trip.hpp"
+#include "Passenger.hpp"
 #include <iostream>
 
 User::User(const std::string& surname,
     const std::string& name,
     const std::string& fatName,
-    const std::string& psprt_ser,
-    const std::string& psprt_num,
+    const std::string& psprtSer,
+    const std::string& psprtNum,
     const std::string& email,
     Timing* timingPtr)
-    : People(surname, name, fatName, psprt_ser, psprt_num, email),
+    : People(surname, name, fatName, psprtSer, psprtNum, email),
     userOrder(nullptr), timing(timingPtr) {
 }
 
-User::~User() {
-    delete userOrder;  // Очищаем память в деструкторе
-}
+
 
 void User::InitializeOrder(TicketChose* ticketChose) {
     if (userOrder) {
@@ -87,22 +85,38 @@ void User::SearchAndBookTicket() {
     std::cin >> seatNumber;
     std::cin.ignore();
 
-    // 8. Выбор типа билета
+    // Выбор типа билета
     std::cout << "Выберите тип билета:\n";
     std::cout << "0 - Взрослый\n1 - Детский\n2 - Багажный\n";
-    int ticketType;
+    int ticketTypeChoice;
     std::cout << "Ваш выбор: ";
-    std::cin >> ticketType;
+    std::cin >> ticketTypeChoice;
     std::cin.ignore();
+
+    // Преобразуем ввод в Ticket::TicketType
+    Ticket::TicketType ticketType;
+    switch (ticketTypeChoice) {
+    case 0:
+        ticketType = Ticket::TicketType::ADULT;
+        break;
+    case 1:
+        ticketType = Ticket::TicketType::CHILD;
+        break;
+    case 2:
+        ticketType = Ticket::TicketType::LUGGAGE;
+        break;
+    default:
+        std::cout << "Неверный тип билета! Будет выбран взрослый билет.\n";
+        ticketType = Ticket::TicketType::ADULT;
+        break;
+    }
 
     // 9. Создаем пассажира (самого пользователя)
     Passenger passenger(GetSurname(), GetName(), GetFatName(),
         GetPassportSeries(), GetPassportNumber(), GetEmail());
 
-     //10. Бронируем билет
-    ticketChooser.Ticket_to_order(*userOrder, seatNumber, passenger, ticketType);
-
-    std::cout << "Бронирование завершено!\n";
+    // 10. Бронируем билет (исправлено)
+    ticketChooser.TicketToOrder(*userOrder, seatNumber, passenger, ticketType);
 }
 
 void User::ViewMyOrder() const {

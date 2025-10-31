@@ -1,31 +1,31 @@
-﻿#include "Trip.h"
+﻿#include "Trip.hpp"
 #include "iostream"
 
 
 void Trip::Start_trip() {
-    Status_tr = "В пути";
-    std::cout << "Поездка началась: " << Start_point << " - " << Finish_point << "\n";
-    std::cout << "Водитель: " << Driver_data->GetFullName() << "\n";
-    std::cout << "Автобус: " << Bus_data->GetBrand() << " [" << Bus_data->GetCode() << "]\n";
+    StatusTrip = "В пути";
+    std::cout << "Поездка началась: " << StartPoint << " - " << FinishPoint << "\n";
+    std::cout << "Водитель: " << DriverData->GetFullName() << "\n";
+    std::cout << "Автобус: " << BusData->GetBrand() << " [" << BusData->GetCode() << "]\n";
 }
 
 void Trip::Complete_trip() {
-    Status_tr = "Завершена";
-    std::cout << "Поездка завершена : " << Start_point << " - " << Finish_point << "\n";
+    StatusTrip = "Завершена";
+    std::cout << "Поездка завершена : " << StartPoint << " - " << FinishPoint << "\n";
 }
 
 void Trip::Cancel_trip() {
-    Status_tr = "Отменена";
-    std::cout << "Поездка отменена: " << Start_point << " - " << Finish_point << "\n";
+    StatusTrip = "Отменена";
+    std::cout << "Поездка отменена: " << StartPoint << " - " << FinishPoint << "\n";
 }
 
 void Trip::Print_trip_info() const {
     std::cout << "=== Информация о поездке ===\n";
-    std::cout << "Маршрут: " << Start_point << " → " << Finish_point << "\n";
-    std::cout << "Статус: " << Status_tr << "\n";
-    std::cout << "Цена билета: " << Price_tick << " руб.\n";
-    std::cout << "Автобус: " << Bus_data->GetBrand() << " [" << Bus_data->GetCode() << "]\n";
-    std::cout << "Водитель: " << Driver_data->GetFullName() << "\n";
+    std::cout << "Маршрут: " << StartPoint << " → " << FinishPoint << "\n";
+    std::cout << "Статус: " << StatusTrip << "\n";
+    std::cout << "Цена билета: " << PriceTicket << " руб.\n";
+    std::cout << "Автобус: " << BusData->GetBrand() << " [" << BusData->GetCode() << "]\n";
+    std::cout << "Водитель: " << DriverData->GetFullName() << "\n";
     std::cout << "=============================\n";
 }
 
@@ -54,7 +54,7 @@ void Trip::Change_driver(DriverList& driverList) {
     //поиск и установка водителя
     Driver* foundDriver = driverList.FindDriverByName(selectedName);
     if (foundDriver && foundDriver->GetAvailability()) {
-        Driver_data = foundDriver;
+        DriverData = foundDriver;
         std::cout << "Водитель изменен на: " << foundDriver->GetFullName() << "\n";
 
         // Автоматически меняем статус водителя на "занят"
@@ -89,14 +89,14 @@ void Trip::Change_bus(BusList & busList) {
         std::cin >> selectedCode;
 
         // Поиск и установка автобуса
-        Bus* foundBus = busList.Find_Bus_By_Code(selectedCode);
+        Bus* foundBus = busList.FindBusByCode(selectedCode);
         if (foundBus && foundBus->GetAvailability()) {
-            Bus_data = foundBus;
+            BusData = foundBus;
             std::cout << "Автобус изменен на: " << foundBus->GetBrand()
                 << " [" << foundBus->GetCode() << "]\n";
 
             //Изменение статуса автобуса на "недоступен"
-            foundBus->Change_avail_bus(false);
+            foundBus->ChangeAvailBus(false);
         }
         else {
             std::cout << "Автобус не найден или недоступен!\n";

@@ -127,7 +127,6 @@
     <ClCompile Include="Order.cpp" />
     <ClCompile Include="Passenger.cpp" />
     <ClCompile Include="People.cpp" />
-    <ClCompile Include="Report.cpp" />
     <ClCompile Include="Search.cpp" />
     <ClCompile Include="Ticket.cpp" />
     <ClCompile Include="TicketChose.cpp" />
@@ -137,52 +136,49 @@
     <ClCompile Include="Workers.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Admin.h">
+    <ClInclude Include="Admin.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="Bus.h">
+    <ClInclude Include="Bus.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="BusList.h">
+    <ClInclude Include="BusList.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="Driver.h">
+    <ClInclude Include="Driver.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="DriversList.h">
+    <ClInclude Include="DriversList.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="Order.h">
+    <ClInclude Include="Order.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="Passenger.h">
+    <ClInclude Include="Passenger.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="People.h">
+    <ClInclude Include="People.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="Report.h">
+    <ClInclude Include="Search.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="Search.h">
+    <ClInclude Include="Ticket.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="Ticket.h">
+    <ClInclude Include="TicketChose.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="TicketChose.h">
+    <ClInclude Include="Timing.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="Timing.h">
+    <ClInclude Include="Trip.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="Trip.h">
+    <ClInclude Include="User.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="User.h">
-      <FileType>CppForm</FileType>
-    </ClInclude>
-    <ClInclude Include="Workers.h">
+    <ClInclude Include="Workers.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
   </ItemGroup>

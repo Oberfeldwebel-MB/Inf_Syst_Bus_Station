@@ -1,17 +1,17 @@
-#include "Driver.h"
+#include "Driver.hpp"
 #include <iostream>
 
-bool Driver::Check_need_med(const std::string& current_date) {
-	if (Last_med != current_date) {
-		std::cout << "Медосмотр требуется. Последний: " << Last_med << ", дата: " << current_date << "\n";
+bool Driver::CheckNeedMed(const std::string& current_date) {
+	if (LastMed != current_date) {
+		std::cout << "Медосмотр требуется. Последний: " << LastMed << ", дата: " << current_date << "\n";
 		return true;
 	}
 	std::cout << "Медосмотр не требуется.\n";
 	return false;
 }
 
-void Driver::Set_trip(const std::string& trip) {
-	Current_trip = trip;
+void Driver::SetTrip(const std::string& trip) {
+	CurrentDriverTrip = trip;
 	std::cout << "Водителю установлен рейс: " << trip << "\n";
 }
 

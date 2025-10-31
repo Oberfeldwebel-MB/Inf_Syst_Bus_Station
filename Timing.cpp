@@ -1,14 +1,15 @@
-#include "Timing.h"
+#include "Timing.hpp"
+#include "Trip.hpp"
 #include <iostream>
-#include "Trip.h"
 
-void Timing::Add_trip(const Trip& trip) {
+
+void Timing::AddTrip(const Trip& trip) {
     tripList.push_back(trip);
     std::cout << "Поездка добавлена в расписание: "
         << trip.GetRoute() << "\n";
 }
 
-void Timing::Display_all_trips() const {
+void Timing::DisplayAllTrips() const {
     std::cout << "=== Все поездки (" << tripList.size() << ") ===\n";
     if (tripList.empty()) {
         std::cout << "Расписание пусто\n";
@@ -23,7 +24,7 @@ void Timing::Display_all_trips() const {
     std::cout << "==========================\n";
 }
 
-void Timing::Display_active_trips() const {
+void Timing::DisplayActiveTrips() const {
     std::cout << "=== Активные поездки ===\n";
     int count = 0;
     for (const auto& trip : tripList) {
@@ -39,7 +40,7 @@ void Timing::Display_active_trips() const {
     std::cout << "==========================\n";
 }
 
-void Timing::Display_completed_trips() const {
+void Timing::DisplayCompletedTrips() const {
     std::cout << "=== Завершенные поездки ===\n";
     int count = 0;
     for (const auto& trip : tripList) {
@@ -55,7 +56,7 @@ void Timing::Display_completed_trips() const {
     std::cout << "==========================\n";
 }
 
-void Timing::Display_planned_trips() const {
+void Timing::DisplayPlannedTrips() const {
     std::cout << "=== Запланированные поездки ===\n";
     int count = 0;
     for (const auto& trip : tripList) {
@@ -72,8 +73,8 @@ void Timing::Display_planned_trips() const {
 }
 
 
-Trip* Timing::Chose_trip() {
-    Display_active_trips();  
+Trip* Timing::ChoseTrip() {
+    DisplayActiveTrips();  
 
     if (tripList.empty()) {
         std::cout << "Нет доступных поездок!\n";
