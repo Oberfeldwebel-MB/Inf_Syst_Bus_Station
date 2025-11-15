@@ -10,7 +10,7 @@ public class User extends People {
                 String passportSeries, String passportNumber, String email,
                 Timing timing) {
         super(surname, name, middleName, passportSeries, passportNumber, email);
-        this.search = new Search();
+        this.search = new Search("", "", "");
         this.timing = timing;
         this.userOrder = null;
     }

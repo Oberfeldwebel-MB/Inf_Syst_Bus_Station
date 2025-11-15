@@ -83,13 +83,10 @@ public class Admin extends Workers {
         String selectedCodeBus = scanner.nextLine();
         
         Bus foundBus = busList.findBusByCode(selectedCodeBus);
-        if (foundBus != null) {
-            System.out.println("Found bus: " + foundBus.getBrand() + " " + foundBus.getModel());
+        System.out.println(foundBus != null ? 
+            "Found bus: " + foundBus.getBrand() + " " + foundBus.getModel() : 
+            "Bus with code '" + selectedCodeBus + "' not found!");
             return foundBus;
-        } else {
-            System.out.println("Bus with code '" + selectedCodeBus + "' not found!");
-            return null;
-        }
     }
     
     public Driver chooseDriver() {
@@ -101,13 +98,9 @@ public class Admin extends Workers {
         String selectedDriverName = scanner.nextLine();
         
         Driver foundDriver = driverList.findDriverByName(selectedDriverName);
-        if (foundDriver != null) {
-            System.out.println("Found driver: " + foundDriver.getFullName() + 
-                             " (License: " + foundDriver.getLicense() + ")");
+        System.out.println(foundDriver != null ? 
+            "Found driver: " + foundDriver.getFullName() + " (License: " + foundDriver.getLicense() + ")" : 
+            "Driver '" + selectedDriverName + "' not found!");
             return foundDriver;
-        } else {
-            System.out.println("Driver '" + selectedDriverName + "' not found!");
-            return null;
-        }
     }
 }

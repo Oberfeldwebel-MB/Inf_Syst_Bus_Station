@@ -65,18 +65,13 @@ public class Ticket {
         System.out.println("Ticket status: " + ticketStatus);
 
         // Информация по автобусу и водителю
-        if (tripData.getBus() != null) {
-            System.out.println("Bus: " + tripData.getBus().getBrand()  
-                + " [" + tripData.getBus().getCode() + "]");
-        } else {
-            System.out.println("Bus: not assigned");
-        }
+        System.out.println(tripData.getBus() != null ? 
+            "Bus: " + tripData.getBus().getBrand() + " [" + tripData.getBus().getCode() + "]" : 
+            "Bus: not assigned");
 
-        if (tripData.getDriver() != null) {
-            System.out.println("Driver: " + tripData.getDriver().getFullName());
-        } else {
-            System.out.println("Driver: not assigned");
-        }
+        System.out.println(tripData.getDriver() != null ? 
+            "Driver: " + tripData.getDriver().getFullName() : 
+            "Driver: not assigned");
 
         System.out.println("==========================");
     }

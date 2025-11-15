@@ -25,19 +25,11 @@ public class Bus {
 
     public void changeAvailBus(boolean state) {
         busAvailability = state;
-        if (state) {
-            System.out.println("Bus is now available");
-        } else {
-            System.out.println("Bus is now unavailable");
-        }
+        System.out.println(state ? "Bus is now available" : "Bus is now unavailable");
     }
 
     public void setTripBus() {
-        if (busAvailability) {
-            System.out.println("Bus " + codeBus + " assigned to a trip.");
-        } else {
-            System.out.println("Bus " + codeBus + " is not available for a trip.");
-        }
+        System.out.println("Bus " + codeBus + (busAvailability ? " assigned to a trip." : " is not available for a trip."));
     }
 
     public void goToTO(String date) {

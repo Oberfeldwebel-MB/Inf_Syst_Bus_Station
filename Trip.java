@@ -41,16 +41,13 @@ public class Trip {
         System.out.println("Route: " + startPoint + " → " + finishPoint);
         System.out.println("Status: " + statusTrip);
         System.out.println("Ticket price: " + priceTicket + " rub.");
-        if (busData != null) {
-            System.out.println("Bus: " + busData.getBrand() + " [" + busData.getCode() + "]");
-        } else {
-            System.out.println("Bus: not assigned");
-        }
-        if (driverData != null) {
-            System.out.println("Driver: " + driverData.getFullName());
-        } else {
-            System.out.println("Driver: not assigned");
-        }
+        System.out.println(busData != null ? 
+            "Bus: " + busData.getBrand() + " [" + busData.getCode() + "]" : 
+            "Bus: not assigned");
+            
+        System.out.println(driverData != null ? 
+            "Driver: " + driverData.getFullName() : 
+            "Driver: not assigned");
         System.out.println("=========================");
     }
 

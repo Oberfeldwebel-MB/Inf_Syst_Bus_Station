@@ -12,9 +12,7 @@ public class Search {
         this.searchDate = date;
     }
 
-    public Search() {
-        this("", "", "");
-    }
+    
 
     // Поиск в расписании (Timing)
     public List<Trip> searchTripsByDate(Timing timing, String date) {

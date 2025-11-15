@@ -13,12 +13,9 @@ public class Driver extends Workers {
     }
 
     public boolean checkNeedMedical(String currentDate) {
-        if (!lastMedical.equals(currentDate)) {
-            System.out.println("Medical examination required. Last: " + lastMedical + ", date: " + currentDate);
-            return true;
-        }
-        System.out.println("Medical examination not required.");
-        return false;
+        boolean result = (!lastMedical.equals(currentDate));
+        System.out.println(result ? "Medical examination required. Last: " + lastMedical + ", date: " + currentDate : "Medical examination not required.");
+        return result;
     }
 
     public void setTrip(String trip) {
