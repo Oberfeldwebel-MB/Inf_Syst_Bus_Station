@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <iostream>
 #include "People.hpp"
 
 class Passenger : public People {
@@ -15,11 +16,17 @@ public:
         const std::string& psprtser = "",
         const std::string& psprtnum = "",
         const std::string& email = "")
-        : People(surname, name, fatName),
+        : People(surname, name, fatName),// вызов конструктора базового класса
         PsprtSer(psprtser), PsprtNum(psprtnum), Email(email) {
     }
 
-    // Геттеры для данных пассажира
+    // Конструктор копирования
+    Passenger(const Passenger& other);
+
+    // перегрузка оператора для вывода
+    friend std::ostream& operator<<(std::ostream& os, const Passenger& passenger);
+
+    // Геттеры
     std::string GetPassportSeries() const { return PsprtSer; }
     std::string GetPassportNumber() const { return PsprtNum; }
     std::string GetEmail() const { return Email; }

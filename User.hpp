@@ -4,12 +4,13 @@
 #include "Search.hpp"
 #include "Timing.hpp"
 #include "TicketChose.hpp"
+#include <memory>
 
 class User : public People {
 private:
-    Order* userOrder;    // Обычный указатель на заказ
-    Search search;       // Объект для поиска
-    Timing* timing;      // Указатель на расписание
+    std::shared_ptr<Order> userOrder;    // Заменяем на умный указатель
+    Search search;
+    std::shared_ptr<Timing> timing;      // Заменяем на умный указатель
 
 public:
     User(const std::string& surname = "",
@@ -18,13 +19,17 @@ public:
         const std::string& psprt_ser = "",
         const std::string& psprt_num = "",
         const std::string& email = "",
-        Timing* timingPtr = nullptr);
+        std::shared_ptr<Timing> timingPtr = nullptr);
 
-    ~User() = default;  
+    ~User() = default;
 
-    
-    void SearchAndBookTicket();  // Поиск и бронирование билета
-    void ViewMyOrder() const;    // Просмотр своего заказа
-    void InitializeOrder(TicketChose* ticketChose);
-    Order* GetOrder() const { return userOrder; }
+    // Конструктор копирования
+    User(const User& other);
+
+    void SearchAndBookTicket();
+    void ViewMyOrder() const;
+    void InitializeOrder(std::shared_ptr<TicketChose> ticketChose);
+
+    std::shared_ptr<Order> GetOrder() const { return userOrder; }
+    void SetTiming(std::shared_ptr<Timing> timingPtr) { timing = timingPtr; }
 };
