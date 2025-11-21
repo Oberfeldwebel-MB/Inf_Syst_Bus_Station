@@ -26,10 +26,25 @@ private:
     TicketType Type;
 
 public:
-    Ticket(int placeNumber, const Trip& trip, const Passenger& passenger, TicketType type);
+    // Конструктор
+    Ticket::Ticket(int placeNumber, const Trip& trip, const Passenger& passenger, TicketType type)
+        : PlaceNumber(placeNumber), TripData(trip), PassengerData(passenger),
+        Type(type), TicketAvail(true), TicketStatus("Забронирован") {
+
+        if (placeNumber <= 0) {
+            throw std::invalid_argument("Номер места должен быть положительным!");
+        }
+
+        CalculateFinalPrice();
+    }
 
     // Конструктор копирования
-    Ticket(const Ticket& other);
+    Ticket::Ticket(const Ticket& other)
+        : PlaceNumber(other.PlaceNumber), TripData(other.TripData),
+        PassengerData(other.PassengerData), TicketAvail(other.TicketAvail),
+        TicketStatus(other.TicketStatus), FinalPrice(other.FinalPrice),
+        Type(other.Type) {
+    }
 
     ~Ticket() = default;
 

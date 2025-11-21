@@ -14,8 +14,8 @@ std::vector<std::shared_ptr<Trip>> Search::SearchTripsByDate(const Timing& timin
         std::vector<std::shared_ptr<Trip>> result;
 
         for (const auto& trip : trips) {
-            if (trip && trip->GetRoute().find(date) != std::string::npos) { // Исправлено на ->
-                result.push_back(trip); // Просто добавляем существующий shared_ptr
+            if (trip && trip->GetRoute().find(date) != std::string::npos) { 
+                result.push_back(trip); 
             }
         }
         return result;
@@ -38,8 +38,8 @@ std::vector<std::shared_ptr<Trip>> Search::SearchTripsByRoute(const Timing& timi
         std::string target_route = start + " - " + finish;
 
         for (const auto& trip : trips) {
-            if (trip && trip->GetRoute() == target_route) { // Исправлено на ->
-                result.push_back(trip); // Просто добавляем существующий shared_ptr
+            if (trip && trip->GetRoute() == target_route) { 
+                result.push_back(trip); 
             }
         }
         return result;
@@ -62,7 +62,7 @@ std::vector<std::shared_ptr<Trip>> Search::SearchTripsByDriver(const Timing& tim
 
         for (const auto& trip : trips) {
             if (trip && trip->GetDriver() && trip->GetDriver()->GetFullName().find(driverName) != std::string::npos) { // Исправлено на ->
-                result.push_back(trip); // Просто добавляем существующий shared_ptr
+                result.push_back(trip); 
             }
         }
         return result;
@@ -84,8 +84,8 @@ std::vector<std::shared_ptr<Trip>> Search::SearchTripsByBus(const Timing& timing
         std::vector<std::shared_ptr<Trip>> result;
 
         for (const auto& trip : trips) {
-            if (trip && trip->GetBus() && trip->GetBus()->GetCode() == busCode) { // Исправлено на ->
-                result.push_back(trip); // Просто добавляем существующий shared_ptr
+            if (trip && trip->GetBus() && trip->GetBus()->GetCode() == busCode) { 
+                result.push_back(trip); 
             }
         }
         return result;
@@ -106,22 +106,22 @@ std::vector<std::shared_ptr<Trip>> Search::SearchTripsCombined(const Timing& tim
         std::vector<std::shared_ptr<Trip>> result;
 
         for (const auto& trip : trips) {
-            if (!trip) continue; // Пропускаем пустые указатели
+            if (!trip) continue; 
 
             bool matches = true;
 
-            if (!start.empty() && trip->GetRoute().find(start) == std::string::npos) { // Исправлено на ->
+            if (!start.empty() && trip->GetRoute().find(start) == std::string::npos) { 
                 matches = false;
             }
-            if (!finish.empty() && trip->GetRoute().find(finish) == std::string::npos) { // Исправлено на ->
+            if (!finish.empty() && trip->GetRoute().find(finish) == std::string::npos) { 
                 matches = false;
             }
-            if (!date.empty() && trip->GetRoute().find(date) == std::string::npos) { // Исправлено на ->
+            if (!date.empty() && trip->GetRoute().find(date) == std::string::npos) { 
                 matches = false;
             }
 
             if (matches) {
-                result.push_back(trip); // Просто добавляем существующий shared_ptr
+                result.push_back(trip); 
             }
         }
         return result;

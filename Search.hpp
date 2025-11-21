@@ -14,6 +14,7 @@ private:
     std::string SearchDate;
 
 public:
+    // конструктор
     Search(const std::string& otp = "",
         const std::string& pr = "",
         const std::string& date = "")

@@ -11,14 +11,18 @@ public:
     DriverList() = default;
     ~DriverList() = default;
 
-    //  онструктор копировани€
-    DriverList(const DriverList& other);
+    //  онструктор копировани€ 
+    DriverList::DriverList(const DriverList& other) {
+        for (const auto& driver : other.drivers) {
+            // новые копии водителей
+            drivers.push_back(std::make_shared<Driver>(*driver));
+        }
+    }
 
-    // ¬озвращаем константную и неконстантную ссылки
+    
     const std::vector<std::shared_ptr<Driver>>& GetDrivers() const { return drivers; }
     std::vector<std::shared_ptr<Driver>>& GetDrivers() { return drivers; }
 
-    // ќсновные методы с умными указател€ми
     void AddDriver(std::shared_ptr<Driver> driver);
     std::shared_ptr<Driver> FindDriverByName(const std::string& fullName);
     bool RemoveDriver(const std::string& fullName);

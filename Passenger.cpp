@@ -1,15 +1,6 @@
 #include "Passenger.hpp"
 #include <iostream>
 
-
-// Конструктор копирования
-Passenger::Passenger(const Passenger& other)
-    : People(other),  // Вызов конструктора базового класса
-    PsprtSer(other.PsprtSer),
-    PsprtNum(other.PsprtNum),
-    Email(other.Email) {
-}
-
 void Passenger::PrintPassengerInfo() const {
     std::cout << "=== Информация о пассажире ===\n";
     std::cout << "ФИО: " << GetFullName() << "\n";

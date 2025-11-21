@@ -9,6 +9,14 @@ private:
 
 public:
     BusList() = default;
+
+    // Конструктор копирования 
+    BusList::BusList(const BusList& other) {
+        for (const auto& bus : other.buses) {
+            // Создаем новые копии автобусов
+            buses.push_back(std::make_shared<Bus>(*bus));
+        }
+    }
     ~BusList() = default;
 
    

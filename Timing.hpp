@@ -6,14 +6,19 @@
 
 class Timing {
 private:
-    std::vector<std::shared_ptr<Trip>> tripList;  // Заменяем на умные указатели
+    std::vector<std::shared_ptr<Trip>> tripList; 
 
 public:
     Timing() = default;
     ~Timing() = default;
 
     // Конструктор копирования
-    Timing(const Timing& other);
+    Timing::Timing(const Timing& other) {
+        for (const auto& trip : other.tripList) {
+            // новые копии поездок
+            tripList.push_back(std::make_shared<Trip>(*trip));
+        }
+    }
 
     // Управление расписанием
     std::shared_ptr<Trip> ChoseTrip();  

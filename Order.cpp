@@ -5,17 +5,6 @@
 #include <sstream>
 #include <ctime>
 
-
-Order::Order(std::shared_ptr<TicketChose> chose)
-    : ticketchose(chose), PayStatus("Не оплачен"), TotalPrice(0.0) {
-}
-
-Order::Order(const Order& other)
-    : TicketList(other.TicketList), PayStatus(other.PayStatus),
-    TotalPrice(other.TotalPrice), ticketchose(other.ticketchose),
-    search(other.search), orderId(other.orderId + "_copy") {
-}
-
 void Order::PrintOrderInfo() const {
     std::cout << "=== Информация о заказе ===\n";
     std::cout << "ID заказа: " << orderId << "\n";

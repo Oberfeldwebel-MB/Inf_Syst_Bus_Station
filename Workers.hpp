@@ -10,14 +10,25 @@ protected:
 
 public:
     // Конструктор
-    Workers(const std::string& surname = "",
+    Workers::Workers(const std::string& surname = "",
         const std::string& name = "",
         const std::string& fatName = "",
         int salary = 0,
-        bool available = true);
+        bool available = true)
+        : People(surname, name, fatName, "", "", ""),  // Вызов конструктора базового класса
+        Salary(salary), Availability(available) {
+
+        // Валидация параметров
+        if (salary < 0) {
+            throw std::invalid_argument("Зарплата не может быть отрицательной!");
+        }
+    }
 
     // Конструктор копирования
-    Workers(const Workers& other);
+    Workers::Workers(const Workers& other)
+        : People(other), Salary(other.Salary), Availability(other.Availability) {
+        ;
+    }
 
     ~Workers() = default;
 

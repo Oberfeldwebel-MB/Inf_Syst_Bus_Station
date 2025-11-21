@@ -8,23 +8,34 @@
 
 class User : public People {
 private:
-    std::shared_ptr<Order> userOrder;    // Заменяем на умный указатель
+    std::shared_ptr<Order> userOrder;    
     Search search;
-    std::shared_ptr<Timing> timing;      // Заменяем на умный указатель
+    std::shared_ptr<Timing> timing;    
 
 public:
-    User(const std::string& surname = "",
-        const std::string& name = "",
-        const std::string& fatName = "",
-        const std::string& psprt_ser = "",
-        const std::string& psprt_num = "",
-        const std::string& email = "",
-        std::shared_ptr<Timing> timingPtr = nullptr);
-
-    ~User() = default;
+    // Конструктор
+    User::User(const std::string& surname,
+        const std::string& name,
+        const std::string& fatName,
+        const std::string& psprtSer,
+        const std::string& psprtNum,
+        const std::string& email,
+        std::shared_ptr<Timing> timingPtr)
+        : People(surname, name, fatName, psprtSer, psprtNum, email),
+        timing(timingPtr) {
+    }
 
     // Конструктор копирования
-    User(const User& other);
+    User::User(const User& other)
+        : People(other), search(other.search), timing(other.timing) {
+
+        if (other.userOrder) {
+            userOrder = std::make_shared<Order>(*other.userOrder);
+        }
+
+    }
+
+    ~User() = default;
 
     void SearchAndBookTicket();
     void ViewMyOrder() const;

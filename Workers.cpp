@@ -2,25 +2,6 @@
 #include <iostream>
 #include <stdexcept>
 
-
-// Конструктор
-Workers::Workers(const std::string& surname,
-    const std::string& name,
-    const std::string& fatName,
-    int salary,
-    bool available)
-    : People(surname, name, fatName), Salary(salary), Availability(available) {
-
-    if (salary < 0) {
-        throw std::invalid_argument("Зарплата не может быть отрицательной!");
-    }
-}
-
-// Конструктор копирования
-Workers::Workers(const Workers& other)
-    : People(other), Salary(other.Salary), Availability(other.Availability) {;
-}
-
 void Workers::change_work_avail(bool avail) {
     try {
         Availability = avail;

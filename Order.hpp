@@ -17,8 +17,17 @@ private:
     std::string orderId;
 
 public:
-    Order(std::shared_ptr<TicketChose> chose = nullptr);
-    Order(const Order& other);  //  онструктор копировани€
+    //конструктор
+    Order::Order(std::shared_ptr<TicketChose> chose)
+        : ticketchose(chose), PayStatus("Ќе оплачен"), TotalPrice(0.0) {
+    }
+
+    //конструктор копировани€
+    Order::Order(const Order& other)
+        : TicketList(other.TicketList), PayStatus(other.PayStatus),
+        TotalPrice(other.TotalPrice), ticketchose(other.ticketchose),
+        search(other.search), orderId(other.orderId + "_copy") {
+    }
 
     ~Order() = default;
 

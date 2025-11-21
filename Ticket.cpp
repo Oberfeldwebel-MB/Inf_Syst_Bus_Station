@@ -3,29 +3,6 @@
 #include <stdexcept>
 #include <map>
 
-
-// Конструктор
-Ticket::Ticket(int placeNumber, const Trip& trip, const Passenger& passenger, TicketType type)
-    : PlaceNumber(placeNumber), TripData(trip), PassengerData(passenger),
-    Type(type), TicketAvail(true), TicketStatus("Забронирован") {
-
-    if (placeNumber <= 0) {
-        throw std::invalid_argument("Номер места должен быть положительным!");
-    }
-
-    CalculateFinalPrice();
-    totalTickets++;
-}
-
-// Конструктор копирования
-Ticket::Ticket(const Ticket& other)
-    : PlaceNumber(other.PlaceNumber), TripData(other.TripData),
-    PassengerData(other.PassengerData), TicketAvail(other.TicketAvail),
-    TicketStatus(other.TicketStatus), FinalPrice(other.FinalPrice),
-    Type(other.Type) {
-    totalTickets++;
-}
-
 const std::map<Ticket::TicketType, double> Ticket::DISCOUNT_COEFFICIENTS = {
     {Ticket::TicketType::ADULT, 1.0},
     {Ticket::TicketType::CHILD, 0.5},

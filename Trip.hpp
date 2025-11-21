@@ -18,14 +18,25 @@ private:
 
 public:
     // Конструктор
-    Trip(const std::string& start = "",
-        const std::string& finish = "",
-        int price = 0,
-        std::shared_ptr<Bus> bus = nullptr,
-        std::shared_ptr<Driver> driver = nullptr);
+    Trip::Trip(const std::string& start,
+        const std::string& finish,
+        int price,
+        std::shared_ptr<Bus> bus,
+        std::shared_ptr<Driver> driver)
+        : StartPoint(start), FinishPoint(finish), PriceTicket(price),
+        BusData(bus), DriverData(driver) {
+
+        StatusTrip = "Запланирована";
+        totalTrips++;
+    }
 
     // Конструктор копирования
-    Trip(const Trip& other);
+    Trip::Trip(const Trip& other)
+        : StartPoint(other.StartPoint), FinishPoint(other.FinishPoint),
+        StatusTrip(other.StatusTrip), PriceTicket(other.PriceTicket),
+        BusData(other.BusData), DriverData(other.DriverData) {
+        totalTrips++;
+    }
 
     ~Trip() = default;
 

@@ -3,36 +3,12 @@
 #include <stdexcept>
 #include <memory>
 
-
-// Конструктор
-User::User(const std::string& surname,
-    const std::string& name,
-    const std::string& fatName,
-    const std::string& psprtSer,
-    const std::string& psprtNum,
-    const std::string& email,
-    std::shared_ptr<Timing> timingPtr)
-    : People(surname, name, fatName, psprtSer, psprtNum, email),
-    timing(timingPtr) {
-}
-
-// Конструктор копирования
-User::User(const User& other)
-    : People(other), search(other.search), timing(other.timing) {
-
-    if (other.userOrder) {
-        userOrder = std::make_shared<Order>(*other.userOrder);
-    }
-
-}
-
 void User::InitializeOrder(std::shared_ptr<TicketChose> ticketChose) {
     try {
         if (!ticketChose) {
             throw std::invalid_argument("TicketChose не может быть пустым!");
         }
 
-        // Автоматическое управление памятью - не нужно delete!
         userOrder = std::make_shared<Order>(ticketChose);
         std::cout << "Заказ инициализирован для пользователя: " << GetFullName() << "\n";
     }

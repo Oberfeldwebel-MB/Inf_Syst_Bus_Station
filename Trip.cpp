@@ -2,29 +2,6 @@
 #include <iostream>
 #include <stdexcept>
 
-// Инициализация статического поля
-int Trip::totalTrips = 0;
-
-// Конструктор
-Trip::Trip(const std::string& start,
-    const std::string& finish,
-    int price,
-    std::shared_ptr<Bus> bus,
-    std::shared_ptr<Driver> driver)
-    : StartPoint(start), FinishPoint(finish), PriceTicket(price),
-    BusData(bus), DriverData(driver) {
-
-    StatusTrip = "Запланирована";
-    totalTrips++;
-}
-
-// Конструктор копирования
-Trip::Trip(const Trip& other)
-    : StartPoint(other.StartPoint), FinishPoint(other.FinishPoint),
-    StatusTrip(other.StatusTrip), PriceTicket(other.PriceTicket),
-    BusData(other.BusData), DriverData(other.DriverData) {
-    totalTrips++;
-}
 
 void Trip::Start_trip() {
     try {

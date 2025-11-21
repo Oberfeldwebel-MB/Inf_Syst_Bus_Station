@@ -3,39 +3,6 @@
 #include <stdexcept>
 #include <algorithm>
 
-
-TicketChose::TicketChose(std::unique_ptr<Trip> trip)
-    : currentTrip(std::move(trip)) {
-
-    try {
-        if (!currentTrip) {
-            throw std::invalid_argument("Нельзя создать TicketChose с пустой поездкой!");
-        }
-
-        std::shared_ptr<Bus> bus = currentTrip->GetBus();
-        if (!bus) {
-            throw std::invalid_argument("Не указан автобус для поездки!");
-        }
-
-        int totalSeats = bus->GetPlaces();
-        if (totalSeats <= 0) {
-            throw std::invalid_argument("Количество мест в автобусе должно быть положительным!");
-        }
-
-        // Заполняем доступные места (от 1 до количества мест в автобусе)
-        for (int i = 1; i <= totalSeats; i++) {
-            availableSeats.push_back(i);
-        }
-
-        std::cout << "Создан выбор мест для поездки: "
-            << currentTrip->GetRoute() << " (мест: " << totalSeats << ")\n";
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка создания TicketChose: " << e.what() << "\n";
-        throw;
-    }
-}
-
 bool TicketChose::IsSeatAvailable(int seatNumber) const {
     try {
         if (seatNumber <= 0) {

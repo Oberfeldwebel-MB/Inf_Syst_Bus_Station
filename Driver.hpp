@@ -11,16 +11,26 @@ private:
     std::string CurrentDriverTrip;
 
 public:
-    Driver(const std::string& surname = "",
-        const std::string& name = "",
-        const std::string& fatName = "",
-        int salary = 0,
-        const std::string& license = "",
-        const std::string& lastMed = "",
-        const std::string& currentDriverTrip = "");
+    // Конструктор
+    Driver::Driver(const std::string& surname,
+        const std::string& name,
+        const std::string& fatName,
+        int salary,
+        const std::string& license,
+        const std::string& lastMed,
+        const std::string& currentDriverTrip)
+        : Workers(surname, name, fatName, salary), // вызов базового конструктора
+        DriverLicense(license), LastMed(lastMed),
+        CurrentDriverTrip(currentDriverTrip) {
+    }
 
     // Конструктор копирования
-    Driver(const Driver& other);
+    Driver::Driver(const Driver& other)
+        : Workers(other),  // Вызов конструктора базового класса
+        DriverLicense(other.DriverLicense),
+        LastMed(other.LastMed),
+        CurrentDriverTrip(other.CurrentDriverTrip) {
+    }
 
     ~Driver() = default;
 

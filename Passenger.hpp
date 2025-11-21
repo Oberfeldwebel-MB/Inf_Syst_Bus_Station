@@ -16,12 +16,17 @@ public:
         const std::string& psprtser = "",
         const std::string& psprtnum = "",
         const std::string& email = "")
-        : People(surname, name, fatName),// вызов конструктора базового класса
+        : People(surname, name, fatName, "", "", ""),// вызов конструктора базового класса
         PsprtSer(psprtser), PsprtNum(psprtnum), Email(email) {
     }
 
     //  онструктор копировани€
-    Passenger(const Passenger& other);
+    Passenger::Passenger(const Passenger& other)
+        : People(other),  // ¬ызов конструктора базового класса
+        PsprtSer(other.PsprtSer),
+        PsprtNum(other.PsprtNum),
+        Email(other.Email) {
+    }
 
     // перегрузка оператора дл€ вывода
     friend std::ostream& operator<<(std::ostream& os, const Passenger& passenger);

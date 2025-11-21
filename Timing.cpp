@@ -2,16 +2,6 @@
 #include <iostream>
 #include <stdexcept>
 
-
-
-//  онструктор копировани€
-Timing::Timing(const Timing& other) {
-    for (const auto& trip : other.tripList) {
-        // новые копии поездок
-        tripList.push_back(std::make_shared<Trip>(*trip));
-    }
-}
-
 void Timing::AddTrip(std::shared_ptr<Trip> trip) {
     try {
         if (!trip) {

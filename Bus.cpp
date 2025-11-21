@@ -3,24 +3,6 @@
 #include <stdexcept>
 #include <sstream>
 
-// Конструктор
-Bus::Bus(const std::string& brand,
-    const std::string& model,
-    int placeCount,
-    const std::string& code,
-    const std::string& techSost,
-    const std::string& lastCheck)
-    : Brand(brand), Model(model), PlaceCount(placeCount),
-    CodeBus(code), TechSost(techSost), LastCheckTO(lastCheck) {
-}
-
-// Конструктор копирования
-Bus::Bus(const Bus& other)
-    : Brand(other.Brand), Model(other.Model), PlaceCount(other.PlaceCount),
-    BusAvailability(other.BusAvailability), CodeBus(other.CodeBus),
-    TechSost(other.TechSost), LastCheckTO(other.LastCheckTO) {
-}
-
 void Bus::PrintBusInfo() const {
     std::cout << "=== Данные автобуса ===\n";
     std::cout << "Марка: " << this->Brand << "\n";

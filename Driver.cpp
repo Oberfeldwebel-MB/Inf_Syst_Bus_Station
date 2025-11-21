@@ -2,29 +2,6 @@
 #include <iostream>
 #include <stdexcept>
 
-
-
-// Конструктор
-Driver::Driver(const std::string& surname,
-    const std::string& name,
-    const std::string& fatName,
-    int salary,
-    const std::string& license,
-    const std::string& lastMed,
-    const std::string& currentDriverTrip)
-    : Workers(surname, name, fatName, salary), // вызов базового конструктора
-    DriverLicense(license), LastMed(lastMed),
-    CurrentDriverTrip(currentDriverTrip) {
-}
-
-// Конструктор копирования
-Driver::Driver(const Driver& other)
-    : Workers(other),  // Вызов конструктора базового класса
-    DriverLicense(other.DriverLicense),
-    LastMed(other.LastMed),
-    CurrentDriverTrip(other.CurrentDriverTrip) {
-}
-
 bool Driver::CheckNeedMed(const std::string& current_date) {
     try {
         if (current_date.empty()) {

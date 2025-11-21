@@ -14,15 +14,21 @@ protected:
 
 public:
     // Конструктор
-    People(const std::string& surname = "",
-        const std::string& name = "",
-        const std::string& fatName = "",
-        const std::string& psprtser = "",
-        const std::string& psprtnum = "",
-        const std::string& email = "");
+    People::People(const std::string& surname,
+        const std::string& name,
+        const std::string& fatName,
+        const std::string& psprtser,
+        const std::string& psprtnum,
+        const std::string& email)
+        : Surname(surname), Name(name), FatName(fatName),
+        PsprtSer(psprtser), PsprtNum(psprtnum), Email(email) {
+    }
 
     // Конструктор копирования
-    People(const People& other);
+    People::People(const People& other)
+        : Surname(other.Surname), Name(other.Name), FatName(other.FatName),
+        PsprtSer(other.PsprtSer), PsprtNum(other.PsprtNum), Email(other.Email) {
+    }
 
     // Виртуальный деструктор
     virtual ~People() = default;

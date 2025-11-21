@@ -3,14 +3,6 @@
 #include <algorithm>
 #include <stdexcept>
 
-//  онструктор копировани€ 
-DriverList::DriverList(const DriverList& other) {
-    for (const auto& driver : other.drivers) {
-        // новые копии водителей
-        drivers.push_back(std::make_shared<Driver>(*driver));
-    }
-}
-
 void DriverList::AddDriver(std::shared_ptr<Driver> driver) {
     try {
         if (!driver) {
