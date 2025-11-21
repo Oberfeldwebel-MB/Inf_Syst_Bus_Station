@@ -1,15 +1,25 @@
 #include "Order.hpp"
 #include "Search.hpp"
+#include <iostream>
+#include <stdexcept>
+#include <sstream>
+#include <ctime>
 
 void Order::PrintOrderInfo() const {
     std::cout << "=== Информация о заказе ===\n";
+    std::cout << "ID заказа: " << orderId << "\n";
     std::cout << "Статус оплаты: " << PayStatus << "\n";
     std::cout << "Общая стоимость: " << TotalPrice << " руб.\n";
     std::cout << "Количество билетов: " << TicketList.size() << "\n\n";
 
-    for (const auto& ticket : TicketList) {
-        ticket.PrintTicketInfo();
-        std::cout << "\n";
+    if (TicketList.empty()) {
+        std::cout << "Заказ пуст\n";
+    }
+    else {
+        for (const auto& ticket : TicketList) {
+            ticket.PrintTicketInfo();
+            std::cout << "\n";
+        }
     }
     std::cout << "===========================\n";
 }
@@ -22,76 +32,128 @@ void Order::CalculateTotalPrice() {
 }
 
 void Order::AddTicket(const Ticket& ticket) {
-    //Проверяем, нет ли уже билета с таким номером места в заказе
-    for (const auto& existing_ticket : TicketList) {
-        if (existing_ticket.GetPlaceNumber() == ticket.GetPlaceNumber()) {
-            std::cout << "Ошибка: Билет на место " << ticket.GetPlaceNumber()
-                << " уже есть в заказе!\n";
-            return;
+    try {
+        // Проверяем, нет ли уже билета с таким номером места
+        for (const auto& existing_ticket : TicketList) {
+            if (existing_ticket.GetPlaceNumber() == ticket.GetPlaceNumber()) {
+                throw std::runtime_error("Билет на место " +
+                    std::to_string(ticket.GetPlaceNumber()) + " уже есть в заказе!");
+            }
         }
+
+        if (!ticket.IsAvailable()) {
+            throw std::runtime_error("Билет на место " +
+                std::to_string(ticket.GetPlaceNumber()) + " недоступен!");
+        }
+
+        TicketList.push_back(ticket);
+        CalculateTotalPrice();
+
+        std::cout << "Билет добавлен в заказ:\n";
+        std::cout << "   Место: " << ticket.GetPlaceNumber() << "\n";
+        std::cout << "   Пассажир: " << ticket.GetPassenger().GetFullName() << "\n";
     }
-
-    // Проверяем, что билет доступен для добавления
-    if (!ticket.IsAvailable()) {
-        std::cout << "Ошибка: Билет на место " << ticket.GetPlaceNumber()
-            << " недоступен для добавления!\n";
-        return;
+    catch (const std::exception& e) {
+        std::cerr << "Ошибка добавления билета: " << e.what() << "\n";
+        throw;
     }
-
-    // Добавляем билет в заказ
-    TicketList.push_back(ticket);
-
-    // Пересчитываем общую стоимость
-    CalculateTotalPrice();
-
-    // Выводим информацию о добавлении
-    std::cout << " Билет успешно добавлен в заказ:\n";
-    std::cout << "   Место: " << ticket.GetPlaceNumber() << "\n";
-    std::cout << "   Пассажир: " << ticket.GetPassenger().GetFullName() << "\n";
-    std::cout << "   Маршрут: " << ticket.GetTrip().GetRoute() << "\n";
-    std::cout << "   Тип: " << ticket.GetTicketTypeName() << "\n";
-    std::cout << "   Цена: " << ticket.GetFinalPrice() << " руб.\n";
-    std::cout << "   Статус: " << ticket.GetStatus() << "\n";
-    std::cout << "   Всего билетов в заказе: " << TicketList.size() << "\n";
-    std::cout << "   Общая стоимость заказа: " << TotalPrice << " руб.\n";
 }
 
 bool Order::RemoveTicket(const Ticket& ticket) {
-    std::vector<Ticket*> foundtickets = search->SearchTickets(*this,
-        ticket.GetPassenger().GetFullName(),  // Имя пассажира
-        ticket.GetTrip().GetRoute(),          // Маршрут
-        ticket.GetPlaceNumber(),
-        ticket.GetTicketType()           // Тип билета
-    );
+    try {
+        int seatNumber = ticket.GetPlaceNumber();
 
-    for (Ticket* foundticket : foundtickets) {
-        if (foundticket->GetPlaceNumber() == ticket.GetPlaceNumber()) {
-            int seatnumber = foundticket->GetPlaceNumber();
-
-            // Возвращаем место в автобус
-            if (ticketchose != nullptr) {
-                ticketchose->ReleaseSeat(seatnumber);
-            }
-
-            // Удаляем билет из заказа
-            for (auto it = TicketList.begin(); it != TicketList.end(); ++it) {
-                if (it->GetPlaceNumber() == seatnumber) {
-                    TicketList.erase(it);
-                    CalculateTotalPrice();
-
-                    std::cout << "Билет удален из заказа\n";
-                    std::cout << "Место: " << seatnumber << "\n";
-                    std::cout << "Пассажир: " << ticket.GetPassenger().GetFullName() << "\n";
-                    std::cout << "Место " << seatnumber << " снова доступно для бронирования\n";
-                    return true;
+        for (auto it = TicketList.begin(); it != TicketList.end(); ++it) {
+            if (it->GetPlaceNumber() == seatNumber) {
+                if (ticketchose != nullptr) {
+                    ticketchose->ReleaseSeat(seatNumber);
                 }
+
+                TicketList.erase(it);
+                CalculateTotalPrice();
+
+                std::cout << "Билет удален из заказа. Место: " << seatNumber << "\n";
+                return true;
             }
+        }
+
+        throw std::runtime_error("Билет не найден в заказе! Место: " +
+            std::to_string(ticket.GetPlaceNumber()));
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Ошибка удаления билета: " << e.what() << "\n";
+        return false;
+    }
+}
+
+void Order::PayOrder() {
+    try {
+        if (TicketList.empty()) {
+            throw std::runtime_error("Нельзя оплатить пустой заказ!");
+        }
+
+        if (PayStatus == "Оплачен") {
+            throw std::runtime_error("Заказ уже оплачен!");
+        }
+
+        PayStatus = "Оплачен";
+        std::cout << "Заказ " << orderId << " оплачен! Сумма: " << TotalPrice << " руб.\n";
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Ошибка оплаты заказа: " << e.what() << "\n";
+        throw;
+    }
+}
+
+void Order::CancelOrder() {
+    try {
+        if (TicketList.empty()) {
+            throw std::runtime_error("Заказ уже пуст!");
+        }
+
+        if (ticketchose != nullptr) {
+            for (const auto& ticket : TicketList) {
+                ticketchose->ReleaseSeat(ticket.GetPlaceNumber());
+            }
+        }
+
+        TicketList.clear();
+        TotalPrice = 0;
+        PayStatus = "Отменен";
+
+        std::cout << "Заказ " << orderId << " отменен.\n";
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Ошибка отмены заказа: " << e.what() << "\n";
+        throw;
+    }
+}
+
+// ерегрузка оператора
+Order& Order::operator+=(const Ticket& ticket) {
+    AddTicket(ticket);
+    return *this;
+}
+
+// дружественная функция 
+std::string GenerateOrderReceipt(const Order& order) {
+    std::stringstream receipt;
+
+    receipt << "=== КВИТАНЦИЯ ===\n";
+    receipt << "Заказ: " << order.orderId << "\n";
+    receipt << "Статус: " << order.PayStatus << "\n";
+    receipt << "Билетов: " << order.TicketList.size() << "\n";
+    receipt << "Итого: " << order.TotalPrice << " руб.\n";
+
+    if (!order.TicketList.empty()) {
+        receipt << "----------------\n";
+        for (const auto& ticket : order.TicketList) {
+            receipt << ticket.GetPlaceNumber() << " | "
+                << ticket.GetPassenger().GetFullName() << " | "
+                << ticket.GetFinalPrice() << " руб.\n";
         }
     }
 
-    std::cout << "Билет не найден в заказе!\n";
-    std::cout << "Место: " << ticket.GetPlaceNumber() << "\n";
-    std::cout << "Пассажир: " << ticket.GetPassenger().GetFullName() << "\n";
-    return false;
+    receipt << "=================\n";
+    return receipt.str();
 }
-
