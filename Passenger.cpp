@@ -8,3 +8,18 @@ void Passenger::PrintPassengerInfo() const {
     std::cout << "Email: " << Email << "\n";
     std::cout << "==============================\n";
 }
+
+// перегрузка оператора вывода
+std::ostream& operator<<(std::ostream& os, const Passenger& passenger) {
+    os << "ѕассажир: " << passenger.GetFullName();
+
+    if (!passenger.PsprtSer.empty() && !passenger.PsprtNum.empty()) {
+        os << " (паспорт: " << passenger.PsprtSer << " " << passenger.PsprtNum << ")";
+    }
+
+    if (!passenger.Email.empty()) {
+        os << " <" << passenger.Email << ">";
+    }
+
+    return os;
+}

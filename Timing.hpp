@@ -1,26 +1,35 @@
 #pragma once
 #include <vector>
+#include <memory>
 #include <iostream>
-
-class Trip;
+#include "Trip.hpp"
 
 class Timing {
 private:
-    std::vector<Trip> tripList;
+    std::vector<std::shared_ptr<Trip>> tripList; 
 
 public:
     Timing() = default;
     ~Timing() = default;
 
+    // Конструктор копирования
+    Timing::Timing(const Timing& other) {
+        for (const auto& trip : other.tripList) {
+            // новые копии поездок
+            tripList.push_back(std::make_shared<Trip>(*trip));
+        }
+    }
+
     // Управление расписанием
-    Trip* ChoseTrip();
-    void AddTrip(const Trip& trip);
+    std::shared_ptr<Trip> ChoseTrip();  
+    void AddTrip(std::shared_ptr<Trip> trip); 
+    bool RemoveTrip(const std::string& route);
     void DisplayAllTrips() const;
-    void DisplayActiveTrips() const;      // Только активные поездки
-    void DisplayCompletedTrips() const;   // Только завершенные
-    void DisplayPlannedTrips() const;     // Только запланированные
+    void DisplayActiveTrips() const;
+    void DisplayCompletedTrips() const;
+    void DisplayPlannedTrips() const;
 
-
-    std::vector<Trip>& GetTripList() { return tripList; }
-    const std::vector<Trip>& GetTripList() const { return tripList; }
+    // Геттеры
+    std::vector<std::shared_ptr<Trip>>& GetTripList() { return tripList; }
+    const std::vector<std::shared_ptr<Trip>>& GetTripList() const { return tripList; }
 };
