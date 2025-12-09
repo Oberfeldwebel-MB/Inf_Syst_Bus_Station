@@ -1,7 +1,10 @@
 #pragma once
+#include "ISystemObject.hpp"  // ДОБАВИЛИ
 #include <string>
+#include <iostream>
+#include <memory>
 
-class Bus {
+class Bus : public ISystemObject {
 private:
     std::string Brand;
     std::string Model;
@@ -9,40 +12,62 @@ private:
     bool BusAvailability = true;
     std::string CodeBus;
     std::string TechSost;
-    std::string LastCheckTO;
+    std::string LastCheckTO;  
 
 public:
-    Bus(const std::string& brand = "",
-        const std::string& model = "",
-        int placeCount = 0,
-        const std::string& code = "",
-        const std::string& techSost = "",
-        const std::string& lastCheck = "")
-        : Brand(brand), Model(model), PlaceCount(placeCount),
-        CodeBus(code), TechSost(techSost), LastCheckTO(lastCheck) {
-    }
+    // Конструктор (добавили год выпуска)
+    Bus(const std::string& brand,
+        const std::string& model,
+        int placeCount,
+        const std::string& code,
+        const std::string& techSost,
+        const std::string& lastCheck
+        );  
+
+
     ~Bus() = default;
 
-    // методы класса
-    bool CheckAvailBus();
+    // === РЕАЛИЗАЦИЯ ИНТЕРФЕЙСА ISystemObject ===
+    std::string getId() const override;
+    std::string getName() const override;
+    std::string getType() const override;
+    void displayInfo() const override;
+    double getSortValue() const override;
+    bool containsText(const std::string& text) const override;
+    bool isMarkedForRemoval() const override;
+
+    // === СУЩЕСТВУЮЩИЕ МЕТОДЫ Bus ===
+    bool CheckAvailBus() const;
     void ChangeAvailBus(bool state);
     void SetTripBus();
-    void GoToTO(std::string& date);  
-    void Change_sost(std::string& newState);
-    void PrintBusInfo();
+    void GoToTO(const std::string& date);
+    void Change_sost(const std::string& newState);
+    void PrintBusInfo() const;
 
-    // методы для изменения полей (сеттеры)
-    void SetBrand(std::string& newBrand) 
-        { Brand = newBrand; }
-    void SetModel(std::string& newModel) 
-        { Model = newModel; }
-    void SetPlaceCount(int count) 
-        { PlaceCount = count; }
+    // Перегрузка операторов
+    bool operator==(const Bus& other) const;
+    bool operator!=(const Bus& other) const;
+    Bus& operator=(const Bus& other);
+    friend std::ostream& operator<<(std::ostream& os, const Bus& bus);
 
-    // Методы для получения данных из переменных (геттеры)
-    std::string GetBrand() const { return Brand; }
-    std::string GetModel() const { return Model; }
-    int GetPlaces() const { return PlaceCount; }
-    bool GetAvailability() const { return BusAvailability; }
-    std::string GetCode() const { return CodeBus; }
+    // Дружественные функции
+    friend std::string GetBusFullInfo(const Bus& bus);
+
+    // Геттеры
+    std::string GetBrand() const { return this->Brand; }
+    std::string GetModel() const { return this->Model; }
+    int GetPlaces() const { return this->PlaceCount; }
+    bool GetAvailability() const { return this->BusAvailability; }
+    std::string GetCode() const { return this->CodeBus; }
+    std::string GetTechCondition() const { return this->TechSost; }
+    std::string GetLastMaintenance() const { return this->LastCheckTO; }
+
+    // Сеттеры
+    void SetBrand(const std::string& newBrand) { this->Brand = newBrand; }
+    void SetModel(const std::string& newModel) { this->Model = newModel; }
+    void SetPlaceCount(int count) { this->PlaceCount = count; }
+    void SetCode(const std::string& code) { this->CodeBus = code; }
+
+    // Для STL алгоритмов сортировки
+    bool operator<(const Bus& other) const;
 };

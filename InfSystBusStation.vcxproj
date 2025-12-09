@@ -118,25 +118,48 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AddBusForm.cpp" />
+    <ClCompile Include="AddDriverForm.cpp" />
+    <ClCompile Include="AddTripForm.cpp" />
     <ClCompile Include="Admin.cpp" />
+    <ClCompile Include="AppFormBase.cpp" />
     <ClCompile Include="Bus.cpp" />
     <ClCompile Include="BusList.cpp" />
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="DriversList.cpp" />
+    <ClCompile Include="Ivalidatable.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Order.cpp" />
     <ClCompile Include="Passenger.cpp" />
+    <ClCompile Include="Password.cpp" />
     <ClCompile Include="People.cpp" />
     <ClCompile Include="Search.cpp" />
+    <ClCompile Include="StartForm.cpp" />
     <ClCompile Include="Ticket.cpp" />
     <ClCompile Include="TicketChose.cpp" />
     <ClCompile Include="Timing.cpp" />
+    <ClCompile Include="TimingForm.cpp" />
     <ClCompile Include="Trip.cpp" />
     <ClCompile Include="User.cpp" />
     <ClCompile Include="Workers.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AddBusForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="AddDriverForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="AddTripForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="Admin.hpp">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="AppFormBase.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="IAppForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="Bus.hpp">
@@ -151,10 +174,17 @@
     <ClInclude Include="DriversList.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="ISystemObject.hpp" />
+    <ClInclude Include="Ivalidatable.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="Order.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="Passenger.hpp">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="Password.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="People.hpp">
@@ -163,6 +193,10 @@
     <ClInclude Include="Search.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="StartForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="SystemContainer.hpp" />
     <ClInclude Include="Ticket.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
@@ -170,6 +204,9 @@
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="Timing.hpp">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="TimingForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="Trip.hpp">
@@ -181,6 +218,32 @@
     <ClInclude Include="Workers.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="AddBusForm.resx">
+      <DependentUpon>AddBusForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddDriverForm.resx">
+      <DependentUpon>AddDriverForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddTripForm.resx">
+      <DependentUpon>AddTripForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="IAppForm.resx">
+      <DependentUpon>IAppForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Password.resx">
+      <DependentUpon>Password.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="StartForm.resx">
+      <DependentUpon>StartForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TimingForm.resx">
+      <DependentUpon>TimingForm.h</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="database.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

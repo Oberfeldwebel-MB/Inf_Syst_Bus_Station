@@ -1,47 +1,93 @@
 ﻿#include "BusList.hpp"
 #include <iostream>
+#include <algorithm>
+#include <stdexcept>
 
-//Добавление автобуса
-void BusList::AddBus(const Bus& bus) {
-    buses.push_back(bus);
-    std::cout << "[BusList] Автобус " << bus.GetCode() << " добавлен в список\n";
+void BusList::AddBus(std::shared_ptr<Bus> bus) {
+    try {
+        if (!bus) {
+            throw std::invalid_argument("Нельзя добавить пустой указатель на автобус!");
+        }
+
+        auto allBuses = container.getAll(); // Получаем все автобусы из контейнера
+
+        // Проверка нет ли уже автобуса с таким кодом
+        for (const auto& existingBus : allBuses) { 
+            if (existingBus->GetCode() == bus->GetCode()) {
+                throw std::runtime_error("Автобус с кодом '" + bus->GetCode() + "' уже существует!");
+            }
+        }
+
+        container.add(bus); 
+        std::cout << "[BusList] Автобус " << bus->GetCode() << " добавлен в список\n";
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Ошибка добавления автобуса: " << e.what() << "\n";
+        throw;
+    }
 }
 
-// Удаление автобуса по коду
 bool BusList::RemoveBus(const std::string& code) {
-    for (size_t i = 0; i < buses.size(); i++) {
-        if (buses[i].GetCode() == code) {
+    try {
+        if (code.empty()) {
+            throw std::invalid_argument("Код автобуса не может быть пустым!");
+        }
+
+        bool result = container.remove(code);
+
+        if (result) {
             std::cout << "[BusList] Автобус " << code << " удален\n";
-            buses.erase(buses.begin() + i);
-            return true;
         }
+        else {
+            std::cout << "[BusList] Автобус с кодом " << code << " не найден\n";
+        }
+
+        return result;
     }
-    std::cout << "[BusList] Автобус с кодом " << code << " не найден\n";
-    return false;
+    catch (const std::exception& e) {
+        std::cerr << "Ошибка удаления автобуса: " << e.what() << "\n";
+        return false;
+    }
 }
 
-// Поиск автобуса по коду
-Bus* BusList::FindBusByCode(const std::string& code) {
-    for (auto& bus : buses) {
-        if (bus.GetCode() == code) {
-            return &bus;
+std::shared_ptr<Bus> BusList::FindBusByCode(const std::string& code) {
+    try {
+        if (code.empty()) {
+            throw std::invalid_argument("Код автобуса не может быть пустым!");
         }
+        return container.findById(code);
     }
-    return nullptr;
+    catch (const std::exception& e) {
+        std::cerr << "Ошибка поиска автобуса: " << e.what() << "\n";
+        return nullptr;
+    }
 }
 
-// Отображение всех автобусов
-void BusList::DisplayAllBuses() {
-    std::cout << "=== Список автобусов ===\n";
-    if (buses.empty()) {
+void BusList::DisplayAllBuses() const {
+    std::cout << "=== Список автобусов (" << container.size() << ") ===\n";
+    auto allBuses = container.getAll();
+
+    if (allBuses.empty()) {
         std::cout << "Список автобусов пуст\n";
     }
     else {
-        for (const auto& bus : buses) {
-            std::cout << "[" << bus.GetCode() << "] " << bus.GetBrand()
-                << " " << bus.GetModel() << " (" << bus.GetPlaces() << " мест) - "
-                << (bus.GetAvailability() ? "Доступен" : "Не доступен") << "\n";
+        for (const auto& bus : allBuses) {
+            std::cout << "[" << bus->GetCode() << "] " << bus->GetBrand()
+                << " " << bus->GetModel() << " (" << bus->GetPlaces() << " мест) - "
+                << (bus->GetAvailability() ? "Доступен" : "Не доступен") << "\n";
         }
     }
     std::cout << "========================\n";
+}
+
+// Дружественная функция перегрузки оператора вывода
+std::ostream& operator<<(std::ostream& os, const BusList& busList) {
+    auto allBuses = busList.container.getAll();
+
+    os << "BusList содержит " << allBuses.size() << " автобусов:\n";
+    for (const auto& bus : allBuses) {
+        os << "  - " << bus->GetBrand() << " " << bus->GetModel()
+            << " [" << bus->GetCode() << "]\n";
+    }
+    return os;
 }
