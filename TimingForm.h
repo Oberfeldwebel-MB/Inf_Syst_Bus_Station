@@ -188,6 +188,7 @@ namespace InfSystBusStation {
 			this->base_students_dataGridView->RowTemplate->Height = 24;
 			this->base_students_dataGridView->Size = System::Drawing::Size(1147, 466);
 			this->base_students_dataGridView->TabIndex = 1;
+			this->base_students_dataGridView->CellContentClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &TimingForm::base_students_dataGridView_CellContentClick);
 			// 
 			// Num
 			// 
@@ -317,6 +318,8 @@ namespace InfSystBusStation {
 		reference_form^ sprav = gcnew reference_form();
 		sprav->Show();
 	}
-	};
+	private: System::Void base_students_dataGridView_CellContentClick(System::Object^ sender, System::Windows::Forms::DataGridViewCellEventArgs^ e) {
+	}
+};
 }
 

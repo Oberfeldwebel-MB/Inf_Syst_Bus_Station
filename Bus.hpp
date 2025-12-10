@@ -1,73 +1,81 @@
 #pragma once
-#include "ISystemObject.hpp"  // ДОБАВИЛИ
-#include <string>
-#include <iostream>
-#include <memory>
 
-class Bus : public ISystemObject {
-private:
-    std::string Brand;
-    std::string Model;
-    int PlaceCount = 0;
-    bool BusAvailability = true;
-    std::string CodeBus;
-    std::string TechSost;
-    std::string LastCheckTO;  
+using namespace System;
 
-public:
-    // Конструктор (добавили год выпуска)
-    Bus(const std::string& brand,
-        const std::string& model,
-        int placeCount,
-        const std::string& code,
-        const std::string& techSost,
-        const std::string& lastCheck
-        );  
+namespace InfSystBusStation {
 
+    public ref class Bus {
+    private:
+        String^ brand;               // Марка
+        String^ model;               // Модель
+        int placeCount;              // Количество мест
+        bool isAvailable;            // Доступность
+        String^ code;                // Код автобуса (формат: А888АА)
+        String^ techCondition;       // Техническое состояние
+        String^ lastMaintenance;     // Последнее ТО
 
-    ~Bus() = default;
+    public:
+        // Конструктор
+        Bus(String^ brand, String^ model, int placeCount,
+            String^ code, String^ techCondition,
+            String^ lastMaintenance)
+            : brand(brand), model(model), placeCount(placeCount),
+            isAvailable(true), code(code), techCondition(techCondition),
+            lastMaintenance(lastMaintenance) {
 
-    // === РЕАЛИЗАЦИЯ ИНТЕРФЕЙСА ISystemObject ===
-    std::string getId() const override;
-    std::string getName() const override;
-    std::string getType() const override;
-    void displayInfo() const override;
-    double getSortValue() const override;
-    bool containsText(const std::string& text) const override;
-    bool isMarkedForRemoval() const override;
+            if (placeCount <= 0) {
+                throw gcnew ArgumentException("Количество мест должно быть больше 0!");
+            }
+        }
 
-    // === СУЩЕСТВУЮЩИЕ МЕТОДЫ Bus ===
-    bool CheckAvailBus() const;
-    void ChangeAvailBus(bool state);
-    void SetTripBus();
-    void GoToTO(const std::string& date);
-    void Change_sost(const std::string& newState);
-    void PrintBusInfo() const;
+        virtual ~Bus() {}
 
-    // Перегрузка операторов
-    bool operator==(const Bus& other) const;
-    bool operator!=(const Bus& other) const;
-    Bus& operator=(const Bus& other);
-    friend std::ostream& operator<<(std::ostream& os, const Bus& bus);
+        // === ГЕТТЕРЫ ===
+        String^ GetBrand() { return brand; }
+        String^ GetModel() { return model; }
+        int GetPlaceCount() { return placeCount; }
+        bool GetAvailability() { return isAvailable; }
+        String^ GetCode() { return code; }
+        String^ GetTechCondition() { return techCondition; }
+        String^ GetLastMaintenance() { return lastMaintenance; }
 
-    // Дружественные функции
-    friend std::string GetBusFullInfo(const Bus& bus);
+        // Форматированный код (А/888/АА)
+        String^ GetFormattedCode() {
+            if (code->Length == 6) {
+                return code->Insert(1, "/")->Insert(5, "/");
+            }
+            return code;
+        }
 
-    // Геттеры
-    std::string GetBrand() const { return this->Brand; }
-    std::string GetModel() const { return this->Model; }
-    int GetPlaces() const { return this->PlaceCount; }
-    bool GetAvailability() const { return this->BusAvailability; }
-    std::string GetCode() const { return this->CodeBus; }
-    std::string GetTechCondition() const { return this->TechSost; }
-    std::string GetLastMaintenance() const { return this->LastCheckTO; }
+        String^ GetFullName() {
+            return brand + " " + model + " [" + GetFormattedCode() + "]";
+        }
 
-    // Сеттеры
-    void SetBrand(const std::string& newBrand) { this->Brand = newBrand; }
-    void SetModel(const std::string& newModel) { this->Model = newModel; }
-    void SetPlaceCount(int count) { this->PlaceCount = count; }
-    void SetCode(const std::string& code) { this->CodeBus = code; }
+        // === СЕТТЕРЫ ===
+        void SetBrand(String^ value) { brand = value; }
+        void SetModel(String^ value) { model = value; }
 
-    // Для STL алгоритмов сортировки
-    bool operator<(const Bus& other) const;
-};
+        void SetPlaceCount(int value) {
+            if (value <= 0) {
+                throw gcnew ArgumentException("Количество мест должно быть больше 0!");
+            }
+            placeCount = value;
+        }
+
+        void SetCode(String^ value) { code = value; }
+        void SetTechCondition(String^ value) { techCondition = value; }
+        void SetLastMaintenance(String^ value) { lastMaintenance = value; }
+
+        // === ОСНОВНЫЕ МЕТОДЫ ===
+        bool CheckAvailability();
+        void ChangeAvailability(bool state);
+        void AssignToTrip();
+        void SendToMaintenance(String^ date);
+        void ChangeTechCondition(String^ newState);
+        void PrintInfo();
+
+        // === ПРОВЕРКИ ===
+        bool NeedsMaintenance();           // Нуждается ли в ТО
+        bool IsInCriticalCondition();      // В критическом состоянии
+    };
+}

@@ -1,135 +1,194 @@
+// AddDriverForm.cpp
 #include "AddDriverForm.h"
 
-namespace InfSystBusStatio {
+using namespace InfSystBusStation;
 
-    using namespace System;
-    using namespace System::ComponentModel;
-    using namespace System::Collections;
-    using namespace System::Windows::Forms;
-    using namespace System::Data;
-    using namespace System::Drawing;
-
-    System::Void AddDriverForm::add_button_Click(System::Object^ sender, System::EventArgs^ e) {
-
-        String^ fioText = FIO_add->Text->Replace("_", "")->Replace(" ", "");
-        fioText = fioText->Trim();
-
-        if (fioText->Length < 3) {
-            MessageBox::Show("Некорректный формат ФИО. Пример: А,А,Рогатин", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+System::Void AddDriverForm::AddButtonDriver_Click(System::Object^ sender, System::EventArgs^ e) {
+    try {
+        // === 1. Проверка инициализации списка ===
+        if (driverList == nullptr) {
+            MessageBox::Show("Ошибка: система хранения данных не инициализирована!",
+                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
             return;
         }
 
-        if (fioText[1] != ',' || fioText[3] != ',') {
-            MessageBox::Show("Некорректный формат ФИО (проверьте инициалы). (А,А,Рогатин - пример)", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        // === 2. Получение данных из формы ===
+
+        // ФИО
+        String^ fioStr = FIO_add->Text->Trim();
+        if (String::IsNullOrEmpty(fioStr)) {
+            MessageBox::Show("Введите ФИО водителя!", "Ошибка",
+                MessageBoxButtons::OK, MessageBoxIcon::Warning);
+            FIO_add->Focus();
+            FIO_add->SelectAll();
             return;
         }
 
-        // Проверяем, что инициалы - буквы
-        if (!Char::IsLetter(fioText[0]) || !Char::IsLetter(fioText[2])) {
-            MessageBox::Show("Некорректный формат ФИО (проверьте инициалы). (А,А,Рогатин - пример)", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        // Пол
+        String^ genderStr = "";
+        if (pol_add->GetItemChecked(0)) {
+            genderStr = "М";
+        }
+        else if (pol_add->GetItemChecked(1)) {
+            genderStr = "Ж";
+        }
+
+        if (String::IsNullOrEmpty(genderStr)) {
+            MessageBox::Show("Выберите пол водителя!", "Ошибка",
+                MessageBoxButtons::OK, MessageBoxIcon::Warning);
             return;
         }
 
-        // Проверяем, что фамилия (все, что после 4-го символа) не пустая
-        String^ lastName = fioText->Substring(4);
-        if (String::IsNullOrWhiteSpace(lastName) || lastName->Length < 1) {
-            MessageBox::Show("Укажите фамилию (А,А,Рогатин - пример)", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        // Паспортные данные
+        String^ passportStr = data_add->Text->Trim();
+        String^ passportSeries = "";
+        String^ passportNumber = "";
+
+        if (!String::IsNullOrEmpty(passportStr)) {
+            // Убираем возможные пробелы и символы
+            passportStr = passportStr->Replace(" ", "")->Replace("-", "")->Replace("/", "");
+
+            if (passportStr->Length >= 4) {
+                passportSeries = passportStr->Substring(0, 4);
+                if (passportStr->Length >= 10) {
+                    passportNumber = passportStr->Substring(4, 6);
+                }
+            }
+        }
+
+        // Номер водительского удостоверения
+        String^ licenseStr = maskedTextBox1->Text->Trim();
+        if (String::IsNullOrEmpty(licenseStr)) {
+            MessageBox::Show("Введите номер водительского удостоверения!",
+                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+            maskedTextBox1->Focus();
+            maskedTextBox1->SelectAll();
             return;
         }
 
-        if (String::IsNullOrWhiteSpace(pol_add->Text)) {
-            MessageBox::Show("Поле Пол не может быть пустым.", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        // Зарплата
+        int salary = System::Decimal::ToInt32(ratingNumericUpDown->Value);
+
+        // === 3. ВАЛИДАЦИЯ ДАННЫХ ===
+
+        // Валидация ФИО
+        auto fioValidation = DriverValidator::ValidateFIO(fioStr);
+        if (!fioValidation.isValid) {
+            MessageBox::Show(fioValidation.errorMessage, "Ошибка валидации",
+                MessageBoxButtons::OK, MessageBoxIcon::Warning);
+            FIO_add->Focus();
+            FIO_add->SelectAll();
             return;
         }
 
-        String^ dateText = data_add->Text;
-
-        // Проверяем, что дата заполнена полностью
-        if (!data_add->MaskCompleted) {
-            MessageBox::Show("Пожалуйста, заполните дату полностью.", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        // Валидация пола
+        auto genderValidation = DriverValidator::ValidateGender(genderStr);
+        if (!genderValidation.isValid) {
+            MessageBox::Show(genderValidation.errorMessage, "Ошибка валидации",
+                MessageBoxButtons::OK, MessageBoxIcon::Warning);
             return;
         }
 
-        // Разделяем дату на день, месяц и год
-        array<String^>^ dateParts = dateText->Split('.');
-
-        if (dateParts->Length != 3) {
-            MessageBox::Show("Некорректный формат даты. Используйте dd/MM/yyyy.", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        // Валидация прав
+        auto licenseValidation = DriverValidator::ValidateLicense(licenseStr);
+        if (!licenseValidation.isValid) {
+            MessageBox::Show(licenseValidation.errorMessage, "Ошибка валидации",
+                MessageBoxButtons::OK, MessageBoxIcon::Warning);
+            maskedTextBox1->Focus();
+            maskedTextBox1->SelectAll();
             return;
         }
 
-        int day = Convert::ToInt32(dateParts[0]);
-        int month = Convert::ToInt32(dateParts[1]);
-        int year = Convert::ToInt32(dateParts[2]);
-
-        // Список с количеством дней в каждом месяце
-        array<int>^ daysInMonth = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
-        // Проверка на високосный год для февраля
-        if (DateTime::IsLeapYear(year)) {
-            daysInMonth[1] = 29; // Февраль - 29 дней
-        }
-
-        // Проверяем месяц
-        if (month < 1 || month > 12) {
-            MessageBox::Show("Месяц должен быть между 1 и 12.", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        // Валидация зарплаты
+        auto salaryValidation = DriverValidator::ValidateSalary(salary);
+        if (!salaryValidation.isValid) {
+            MessageBox::Show(salaryValidation.errorMessage, "Ошибка валидации",
+                MessageBoxButtons::OK, MessageBoxIcon::Warning);
+            ratingNumericUpDown->Focus();
+            ratingNumericUpDown->Select(0, ratingNumericUpDown->Text->Length);
             return;
         }
 
-        // Проверяем день
-        if (day < 1 || day > daysInMonth[month - 1]) {
-            MessageBox::Show("День должен быть между 1 и " + daysInMonth[month - 1].ToString() + " для выбранного месяца.", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-            return;
-        }
-
-
-        if (String::IsNullOrWhiteSpace(faculty_add->Text)) {
-            MessageBox::Show("Поле Факультет не может быть пустым.", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-            return;
-        }
-
-        if (String::IsNullOrWhiteSpace(grupp_add->Text)) {
-            MessageBox::Show("Поле Группа не может быть пустым.", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-            return;
-        }
-
-        if (String::IsNullOrWhiteSpace(add_soz_act->Text)) {
-            MessageBox::Show("Поле Соц. активность не может быть пустым.", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-            return;
-        }
-
-        String^ Fio = FIO_add->Text;
-        String^ Pol = "";
-        if (pol_add->CheckedItems->Count > 0) {
-            Pol = pol_add->CheckedItems[0]->ToString();
-        }
-        String^ Data_str = data_add->Text;
-        String^ Faculty = faculty_add->Text;
-        String^ Grupp = grupp_add->Text;
-        String^ Soz_act = add_soz_act->Text;
-        Decimal Rating = 0;
-        try {
-            Rating = Convert::ToDecimal(ratingNumericUpDown->Value); // Если используете NumericUpDown
-            if (Rating < 0 || Rating > 100) {
-                MessageBox::Show("Рейтинг должен быть в диапазоне от 0 до 100.", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        // Валидация паспорта (если введен)
+        if (!String::IsNullOrEmpty(passportSeries) || !String::IsNullOrEmpty(passportNumber)) {
+            auto passportValidation = DriverValidator::ValidatePassport(passportSeries, passportNumber);
+            if (!passportValidation.isValid) {
+                MessageBox::Show(passportValidation.errorMessage, "Ошибка валидации паспорта",
+                    MessageBoxButtons::OK, MessageBoxIcon::Warning);
+                data_add->Focus();
+                data_add->SelectAll();
                 return;
             }
         }
-        catch (FormatException^) {
-            MessageBox::Show("Неверный формат рейтинга. Введите число.", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+
+        // === 4. Проверка существующего водителя ===
+        Driver^ existingDriver = driverList->FindDriverByName(fioStr);
+        if (existingDriver != nullptr) {
+            MessageBox::Show("Водитель с таким ФИО уже существует в системе!",
+                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+            FIO_add->Focus();
+            FIO_add->SelectAll();
             return;
         }
 
-        // Присваиваем значения свойствам
-        this->FIO = Fio;
-        this->Pol = Pol;
-        this->Data_Str = Data_str;
-        this->Faculty = Faculty;
-        this->Grupp = Grupp;
-        this->SozAct = Soz_act;
-        this->Rating = Rating;
+        // === 5. Создание водителя ===
+        Driver^ newDriver = gcnew Driver(fioStr, genderStr, passportSeries,
+            passportNumber, salary, licenseStr);
 
-        this->DialogResult = System::Windows::Forms::DialogResult::OK;
-        this->Close();
+        // Полная валидация перед добавлением
+        auto fullValidation = DriverValidator::ValidateForAddition(newDriver, driverList);
+        if (!fullValidation.isValid) {
+            MessageBox::Show(fullValidation.errorMessage, "Ошибка валидации",
+                MessageBoxButtons::OK, MessageBoxIcon::Warning);
+            return;
+        }
+
+        // === 6. Добавление водителя в систему ===
+        try {
+            driverList->AddDriver(newDriver);
+
+            // === 7. Сообщение об успехе ===
+            MessageBox::Show(
+                "Водитель успешно добавлен в систему!\n\n" +
+                "ФИО: " + fioStr + "\n" +
+                "Пол: " + genderStr + "\n" +
+                "ВУ: " + licenseStr + "\n" +
+                "Зарплата: " + salary.ToString("N0") + " руб.",
+                "Успешно добавлено",
+                MessageBoxButtons::OK,
+                MessageBoxIcon::Information
+            );
+
+            // === 8. Очистка формы ===
+            FIO_add->Clear();
+            pol_add->SetItemChecked(0, false);
+            pol_add->SetItemChecked(1, false);
+            data_add->Clear();
+            maskedTextBox1->Clear();
+            ratingNumericUpDown->Value = 30000;
+
+            // Фокус на первое поле
+            FIO_add->Focus();
+
+            // === 9. Генерация события ===
+            DataAdded(this, EventArgs::Empty);
+
+        }
+        catch (Exception^ ex) {
+            MessageBox::Show(
+                "Ошибка при добавлении водителя: " + ex->Message,
+                "Ошибка данных",
+                MessageBoxButtons::OK,
+                MessageBoxIcon::Error
+            );
+        }
+    }
+    catch (Exception^ ex) {
+        MessageBox::Show(
+            "Ошибка: " + ex->Message,
+            "Ошибка системы",
+            MessageBoxButtons::OK,
+            MessageBoxIcon::Error
+        );
     }
 }

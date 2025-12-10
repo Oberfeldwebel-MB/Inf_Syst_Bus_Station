@@ -1,79 +1,60 @@
-// People.hpp
+// People.h (управляемый)
 #pragma once
-#include "ISystemObject.hpp"  // ДОБАВИЛИ
-#include <string>
-#include <iostream>
-#include <memory>
-#include <array>
 
-class People : public ISystemObject {
-protected:
-    std::string FIO;
-    std::string Gender;
-    std::string PsprtSer;
-    std::string PsprtNum;
-    std::string Email;
-    std::array<int, 2> personalData;  // ЗАМЕНИЛИ сырой указатель на std::array
+using namespace System;
 
-public:
-    // Конструктор
-    People(const std::string& fio,
-        const std::string& gender,
-        const std::string& psprtser,
-        const std::string& psprtnum,
-        const std::string& email) : FIO(fio), Gender(gender),
-        PsprtSer(psprtser), PsprtNum(psprtnum), Email(email),
-        personalData({ 0, 0 }) {  // Инициализация std::array
-        std::cout << "People constructor called for: " << GetFullName() << std::endl;
-    }
+namespace InfSystBusStation {
 
-    // Конструктор копирования
-    People(const People& other) = default;
+    public ref class People abstract {
+    protected:
+        String^ fullName;          // Полное ФИО (например: "Иванов И.И.")
+        String^ gender;            // Пол
+        String^ passportSeries;    // Серия паспорта
+        String^ passportNumber;    // Номер паспорта
+        String^ email;             // Email
 
-    // Виртуальный деструктор
-    virtual People* Clone() const = 0;
+    public:
+        // Конструктор
+        People(String^ fullName, String^ gender,
+            String^ passportSeries, String^ passportNumber,
+            String^ email)
+            : fullName(fullName), gender(gender),
+            passportSeries(passportSeries),
+            passportNumber(passportNumber),
+            email(email) {
+        }
 
-    // === РЕАЛИЗАЦИЯ ИНТЕРФЕЙСА ISystemObject ===
-    std::string getId() const override;
-    std::string getName() const override;
-    std::string getType() const override;
-    void displayInfo() const override;
-    double getSortValue() const override;
-    bool containsText(const std::string& text) const override;
-    bool isMarkedForRemoval() const override;
+        virtual ~People() {}
 
-    // === СУЩЕСТВУЮЩИЕ МЕТОДЫ People (без изменений) ===
-    virtual void PrintInfo() const;
-    virtual std::string GetFullInfo() const;
+        // === ТРАДИЦИОННЫЕ ГЕТТЕРЫ И СЕТТЕРЫ ===
 
-    // Абстрактная функция
-    virtual double CalculateDiscount() const = 0;
+        // ФИО
+        String^ GetFullName() { return fullName; }
+        void SetFullName(String^ value) { fullName = value; }
 
-    void DisplayAllInfo();
+        // Паспортные данные
+        String^ GetPassportSeries() { return passportSeries; }
+        void SetPassportSeries(String^ value) { passportSeries = value; }
 
-    // Перегруженные методы
-    virtual void SetPersonalData(int data);
-    virtual void SetPersonalData(int data1, int data2);
+        String^ GetPassportNumber() { return passportNumber; }
+        void SetPassportNumber(String^ value) { passportNumber = value; }
 
-    // Геттеры
-    std::string GetSurname() const { return Surname; }
-    std::string GetName() const { return Name; }
-    std::string GetFatName() const { return FatName; }
-    std::string GetPassportSeries() const { return PsprtSer; }
-    std::string GetPassportNumber() const { return PsprtNum; }
-    std::string GetEmail() const { return Email; }
-    std::string GetFullName() const;
+        void SetPassport(String^ series, String^ number) {
+            passportSeries = series;
+            passportNumber = number;
+        }
 
-    // Сеттеры
-    virtual void SetSurname(const std::string& surname) { Surname = surname; }
-    virtual void SetName(const std::string& name) { Name = name; }
-    virtual void SetFatName(const std::string& fatName) { FatName = fatName; }
-    virtual void SetPassport(const std::string& series, const std::string& number);
-    virtual void SetEmail(const std::string& email) { Email = email; }
+        // Пол
+        String^ GetGender() { return gender; }
+        void SetGender(String^ value) { gender = value; }
 
-    // Перегрузка оператора вывода
-    friend std::ostream& operator<<(std::ostream& os, const People& person);
+        // Email
+        String^ GetEmail() { return email; }
+        void SetEmail(String^ value) { email = value; }
 
-    // Для STL алгоритмов сортировки
-    bool operator<(const People& other) const;
-};
+        // === ВИРТУАЛЬНЫЕ МЕТОДЫ ===
+        virtual void PrintInfo();
+        virtual String^ GetFullInfo();
+        virtual double CalculateDiscount() abstract;
+    };
+}

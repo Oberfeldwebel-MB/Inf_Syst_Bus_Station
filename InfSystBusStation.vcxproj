@@ -125,9 +125,13 @@
     <ClCompile Include="AppFormBase.cpp" />
     <ClCompile Include="Bus.cpp" />
     <ClCompile Include="BusList.cpp" />
+    <ClCompile Include="BusListForm.cpp" />
+    <ClCompile Include="BusValidator.cpp" />
+    <ClCompile Include="DeleteDriverForm.cpp" />
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="DriversList.cpp" />
-    <ClCompile Include="Ivalidatable.cpp" />
+    <ClCompile Include="DriversListForm.cpp" />
+    <ClCompile Include="DriverValidator.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Order.cpp" />
     <ClCompile Include="Passenger.cpp" />
@@ -159,6 +163,19 @@
     <ClInclude Include="AppFormBase.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="BusListForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="BusValidator.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="DeleteDriverForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="DriversListForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="DriverValidator.hpp" />
     <ClInclude Include="IAppForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
@@ -174,8 +191,7 @@
     <ClInclude Include="DriversList.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="ISystemObject.hpp" />
-    <ClInclude Include="Ivalidatable.h">
+    <ClInclude Include="BaseValidator.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="Order.hpp">
@@ -196,7 +212,6 @@
     <ClInclude Include="StartForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="SystemContainer.hpp" />
     <ClInclude Include="Ticket.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
@@ -228,6 +243,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AddTripForm.resx">
       <DependentUpon>AddTripForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DriversListForm.resx">
+      <DependentUpon>DriversListForm.h</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="IAppForm.resx">
       <DependentUpon>IAppForm.h</DependentUpon>

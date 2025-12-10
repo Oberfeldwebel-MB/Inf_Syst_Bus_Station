@@ -1,74 +1,51 @@
+// Workers.h
 #pragma once
 #include "People.hpp"
-#include <iostream>
-#include <memory>
 
-class Workers : public People {
-protected:
-    int Salary;
-    bool Availability;
+namespace InfSystBusStation {
 
-public:
-    // Конструктор
-    Workers(const std::string& fio,
-        int salary,
-        bool available)
-        : People(fio, "", "", ""),
-        Salary(salary), Availability(available) {
+    public ref class Workers : public People {
+    protected:
+        int salary;
+        bool isAvailable;
+        String^ status;
 
-        if (salary < 0) {
-            throw std::invalid_argument("Зарплата не может быть отрицательной!");
+    public:
+        // Конструктор с доступностью по умолчанию (true)
+        Workers(String^ fullName, String^ gender,
+            String^ passportSeries, String^ passportNumber,
+            int salary)
+            : People(fullName, gender, passportSeries,
+                passportNumber, ""),  // Пустая строка для email
+            salary(salary), isAvailable(true), status("") {
+
+            if (salary < 0) {
+                throw gcnew ArgumentException("Зарплата не может быть отрицательной!");
+            }
         }
 
-        std::cout << "Workers constructor called for: " << GetFullName() << std::endl;
-    }
+        
 
+        virtual ~Workers() {}
 
-    // Виртуальный деструктор
-    ~Workers() {
-        std::cout << "Workers destructor called for: " << GetFullName() << std::endl;
-    }
+        // === ТРАДИЦИОННЫЕ ГЕТТЕРЫ И СЕТТЕРЫ ===
+        int GetSalary() { return salary; }
+        void SetSalary(int value);
 
-    // Запрет конструктора копирования
-    Workers(const Workers&) = delete;
+        bool GetAvailability() { return isAvailable; }
+        void SetAvailability(bool value) { isAvailable = value; }
 
-    Workers& operator=(const Workers& other);
+        String^ GetStatus() { return status; }
+        void SetStatus(String^ value) { status = value; }
 
-    // Переопределение виртуальных функций базового класса
-    void PrintInfo() const override;
-    std::string GetFullInfo() const override;
-    double CalculateDiscount() const override;
+        // === ВИРТУАЛЬНЫЕ МЕТОДЫ ===
+        virtual void PrintInfo() override;
+        virtual String^ GetFullInfo() override;
+        virtual double CalculateDiscount() override;
 
-    // ВИРТУАЛЬНЫЕ ФУНКЦИИ для изменения статуса
-    virtual void SetAvailable();
-    virtual void SetUnavailable(const std::string& reason = "Занят");
-
-    //функция, которая вызывает виртуальные
-    void ChangeWorkAvailability(bool available, const std::string& reason = "") {
-        std::cout << "=== Изменение статуса работника ===" << std::endl;
-        if (available) {
-            SetAvailable();  // Вызов виртуальной функции
-        }
-        else {
-            SetUnavailable(reason);  // Вызов виртуальной функции
-        }
-        std::cout << "Текущий статус: " << (Availability ? "Доступен" : "Не доступен") << std::endl;
-        std::cout << "==================================" << std::endl;
-    }
-
-    // Перегрузка методов
-    void SetPersonalData(int data) override;
-
-    // Для клонирования - глубокое клонирование
-    People* Clone() const override;
-
-    // Геттеры
-    int GetSalary() const { return Salary; }
-    bool GetAvailability() const { return Availability; }
-
-    // Сеттеры
-    void SetSalary(int salary);
-    void change_work_avail(bool avail) {
-        ChangeWorkAvailability(avail);
-    }
-};
+        // === ДОПОЛНИТЕЛЬНЫЕ МЕТОДЫ ===
+        void SetAvailable();
+        void SetUnavailable(String^ reason);
+        void ChangeWorkAvailability(bool available, String^ reason);
+    };
+}

@@ -1,74 +1,128 @@
 #pragma once
-#include <vector>
-#include <memory>
 #include "Bus.hpp"
-#include "SystemContainer.hpp"
-#include <iostream>
 
-class BusList {
-private:
-    SystemContainer<Bus> container;
+namespace InfSystBusStation {
 
-public:
-    BusList() = default;
-    ~BusList() = default;
+    public ref class BusList {
+    private:
+        System::Collections::Generic::List<Bus^>^ buses;
 
-    // Конструктор копирования 
-    BusList(const BusList& other) : container(other.container) {}
-
-    // Два варианта геттера
-    const std::vector<std::shared_ptr<Bus>>& GetBuses() const {
-        return container.getAll();
-    }
-
-    std::vector<std::shared_ptr<Bus>>& GetBuses() {
-        return container.getAllMutable();
-    }
-
-    void AddBus(std::shared_ptr<Bus> bus) {
-        container.add(bus);
-        std::cout << "[BusList] Автобус " << bus->GetCode() << " добавлен в список\n";
-    }
-
-    bool RemoveBus(const std::string& code) {
-        bool result = container.remove(code);
-        if (result) {
-            std::cout << "[BusList] Автобус " << code << " удален\n";
+    public:
+        BusList() {
+            buses = gcnew System::Collections::Generic::List<Bus^>();
         }
-        else {
-            std::cout << "[BusList] Автобус с кодом " << code << " не найден\n";
+
+        ~BusList() {
+            buses->Clear();
         }
-        return result;
-    }
 
-    std::shared_ptr<Bus> FindBusByCode(const std::string& code) {
-        return container.findById(code);
-    }
+        // === ОСНОВНЫЕ МЕТОДЫ ===
 
-    void DisplayAllBuses() const {
-        std::cout << "=== Список автобусов (" << container.size() << ") ===\n";
+        // Добавление автобуса
+        void AddBus(Bus^ bus) {
+            if (bus == nullptr) {
+                throw gcnew System::ArgumentNullException("Нельзя добавить пустую ссылку на автобус!");
+            }
 
-        auto allBuses = container.getAll();
-        if (allBuses.empty()) {
-            std::cout << "Список автобусов пуст\n";
+            // Проверка на уникальность кода
+            for each (Bus ^ existingBus in buses) {
+                if (existingBus->GetCode() == bus->GetCode()) {
+                    throw gcnew System::InvalidOperationException(
+                        "Автобус с кодом '" + bus->GetFormattedCode() + "' уже существует!");
+                }
+            }
+
+            buses->Add(bus);
+            System::Console::WriteLine("[BusList] Автобус {0} добавлен в список", bus->GetFormattedCode());
         }
-        else {
-            for (const auto& bus : allBuses) {
-                std::cout << "[" << bus->GetCode() << "] " << bus->GetBrand()
-                    << " " << bus->GetModel() << " (" << bus->GetPlaces() << " мест) - "
-                    << (bus->GetAvailability() ? "Доступен" : "Не доступен") << "\n";
+
+        // Удаление автобуса по коду
+        bool RemoveBus(String^ code) {
+            for (int i = 0; i < buses->Count; i++) {
+                if (buses[i]->GetCode() == code) {
+                    buses->RemoveAt(i);
+                    System::Console::WriteLine("[BusList] Автобус {0} удален",
+                        buses[i]->GetFormattedCode());
+                    return true;
+                }
+            }
+
+            System::Console::WriteLine("[BusList] Автобус с кодом {0} не найден", code);
+            return false;
+        }
+
+        // Поиск автобуса по коду
+        Bus^ FindBusByCode(String^ code) {
+            for each (Bus ^ bus in buses) {
+                if (bus->GetCode() == code) {
+                    return bus;
+                }
+            }
+            return nullptr;
+        }
+
+        // Получение доступных автобусов
+        System::Collections::Generic::List<Bus^>^ GetAvailableBuses() {
+            auto result = gcnew System::Collections::Generic::List<Bus^>();
+            for each (Bus ^ bus in buses) {
+                if (bus->GetAvailability() && !bus->IsInCriticalCondition()) {
+                    result->Add(bus);
+                }
+            }
+            return result;
+        }
+
+        // Получение автобусов, требующих ТО
+        System::Collections::Generic::List<Bus^>^ GetBusesNeedingMaintenance() {
+            auto result = gcnew System::Collections::Generic::List<Bus^>();
+            for each (Bus ^ bus in buses) {
+                if (bus->NeedsMaintenance() || bus->IsInCriticalCondition()) {
+                    result->Add(bus);
+                }
+            }
+            return result;
+        }
+
+        // Вывод всех автобусов
+        void DisplayAllBuses() {
+            System::Console::WriteLine("=== Список автобусов ({0}) ===", buses->Count);
+
+            if (buses->Count == 0) {
+                System::Console::WriteLine("Список автобусов пуст");
+            }
+            else {
+                for each (Bus ^ bus in buses) {
+                    System::Console::WriteLine("[{0}] {1} {2} ({3} мест) - {4}",
+                        bus->GetFormattedCode(),
+                        bus->GetBrand(),
+                        bus->GetModel(),
+                        bus->GetPlaceCount(),
+                        bus->GetAvailability() ? "Доступен" : "Не доступен");
+                }
+            }
+            System::Console::WriteLine("==========================");
+        }
+
+        // === СВОЙСТВА ===
+
+        property System::Collections::Generic::List<Bus^>^ AllBuses {
+            System::Collections::Generic::List<Bus^>^ get() { return buses; }
+        }
+
+        property int Count {
+            int get() { return buses->Count; }
+        }
+
+        property int AvailableCount {
+            int get() {
+                int count = 0;
+                for each (Bus ^ bus in buses) {
+                    if (bus->GetAvailability() && !bus->IsInCriticalCondition()) {
+                        count++;
+                    }
+                }
+                return count;
             }
         }
-        std::cout << "========================\n";
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, const BusList& busList) {
-        os << "BusList содержит " << busList.container.size() << " автобусов:\n";
-        auto allBuses = busList.container.getAll();
-        for (const auto& bus : allBuses) {
-            os << "  - " << bus->GetBrand() << " " << bus->GetModel()
-                << " [" << bus->GetCode() << "]\n";
-        }
-        return os;
-    }
-};
+    };
+}
