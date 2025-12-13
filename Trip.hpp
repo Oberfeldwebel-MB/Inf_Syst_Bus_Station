@@ -1,70 +1,98 @@
+п»ї// Trip.hpp
 #pragma once
-#include <string>
-#include <memory>
-#include <iostream>
+
 #include "Bus.hpp"
 #include "Driver.hpp"
-#include "DriversList.hpp" 
-#include "BusList.hpp"
 
-class Trip {
-private:
-    std::string StartPoint;
-    std::string FinishPoint;
-    std::string StatusTrip;
-    int PriceTicket = 0;
-    std::shared_ptr<Bus> BusData;
-    std::shared_ptr<Driver> DriverData;
+namespace InfSystBusStation {
 
-public:
-    // Конструктор
-    Trip::Trip(const std::string& start,
-        const std::string& finish,
-        int price,
-        std::shared_ptr<Bus> bus,
-        std::shared_ptr<Driver> driver)
-        : StartPoint(start), FinishPoint(finish), PriceTicket(price),
-        BusData(bus), DriverData(driver) {
+    public ref class Trip {
+    private:
+        String^ startPoint;
+        String^ finishPoint;
+        String^ status;
+        int priceTicket;
+        Bus^ bus;
+        Driver^ driver;
+        DateTime tripDate;
+        String^ tripTime;
 
-        StatusTrip = "Запланирована";
-        totalTrips++;
-    }
+        static int totalTrips = 0;
 
-    // Конструктор копирования
-    Trip::Trip(const Trip& other)
-        : StartPoint(other.StartPoint), FinishPoint(other.FinishPoint),
-        StatusTrip(other.StatusTrip), PriceTicket(other.PriceTicket),
-        BusData(other.BusData), DriverData(other.DriverData) {
-        totalTrips++;
-    }
+    public:
+        // РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹
+        Trip(String^ start, String^ finish, int price, Bus^ bus, Driver^ driver);
+        Trip(String^ start, String^ finish, int price, Bus^ bus, Driver^ driver,
+            DateTime date, String^ time);
+        ~Trip();
 
-    ~Trip() = default;
+        // === РњР•РўРћР”Р« РЈРџР РђР’Р›Р•РќРРЇ РЎРўРђРўРЈРЎРћРњ ===
+        void StartTrip();
+        void CompleteTrip();
+        void CancelTrip();
 
-    // Публичные методы 
-    void Change_driver(DriverList& driverList);
-    void Change_bus(BusList& busList);
+        // === РњР•РўРћР”Р« РР—РњР•РќР•РќРРЇ ===
+        void ChangeDriver(Driver^ newDriver);
+        void ChangeBus(Bus^ newBus);
+        void ChangeRoute(String^ newStart, String^ newFinish);
+        void ChangePrice(int newPrice);
 
-    // методы статуса поездки
-    void Start_trip();
-    void Complete_trip();
-    void Cancel_trip();
-    void Print_trip_info() const;
+        // === РџР РћР’Р•Р РљР ===
+        bool IsAvailableForChanges();
+        bool IsCompleted();
+        bool IsInProgress();
+        bool IsPlanned();
+        bool IsCancelled();
 
-    // Статические поля и методы
-    static int totalTrips;
-    static int GetTotalTrips() { return totalTrips; }
+        // === РРќР¤РћР РњРђР¦РРћРќРќР«Р• РњР•РўРћР”Р« ===
+        void PrintInfo();
+        String^ GetFullInfo();
+        String^ GetShortInfo();
 
-    // геттеры
-    std::string GetRoute() const { return StartPoint + " - " + FinishPoint; }
-    std::string GetStatus() const { return StatusTrip; }
-    int GetPrice() const { return PriceTicket; }
-    std::shared_ptr<Bus> GetBus() const { return BusData; }
-    std::shared_ptr<Driver> GetDriver() const { return DriverData; }
+        // === Р“Р•РўРўР•Р Р« ===
+        String^ GetStartPoint() { return startPoint; }
+        String^ GetFinishPoint() { return finishPoint; }
+        String^ GetRoute() { return startPoint + " в†’ " + finishPoint; }
+        String^ GetStatus() { return status; }
+        int GetPrice() { return priceTicket; }
+        Bus^ GetBus() { return bus; }
+        Driver^ GetDriver() { return driver; }
+        DateTime GetTripDate() { return tripDate; }
+        String^ GetTripTime() { return tripTime; }
 
-    // сеттеры
-    void SetStartPoint(const std::string& start) { StartPoint = start; }
-    void SetFinishPoint(const std::string& finish) { FinishPoint = finish; }
-    void SetPrice(int price) { PriceTicket = price; }
-    void SetBus(std::shared_ptr<Bus> bus) { BusData = bus; }
-    void SetDriver(std::shared_ptr<Driver> driver) { DriverData = driver; }
-};
+        // === РЎР•РўРўР•Р Р« ===
+        void SetStartPoint(String^ value) { startPoint = value; }
+        void SetFinishPoint(String^ value) { finishPoint = value; }
+        void SetPrice(int value) {
+            if (value > 0) priceTicket = value;
+        }
+        void SetBus(Bus^ value) { bus = value; }
+        void SetDriver(Driver^ value) { driver = value; }
+        void SetTripDate(DateTime value) { tripDate = value; }
+        void SetTripTime(String^ value) { tripTime = value; }
+
+        // === РЎРўРђРўРР§Р•РЎРљРР• РњР•РўРћР”Р« ===
+        static property int TotalTrips {
+            int get() { return totalTrips; }
+        }
+
+        static String^ GetStatusDescription(String^ status);
+
+        // === РЎР’РћР™РЎРўР’Рђ ===
+        property String^ Route {
+            String^ get() { return GetRoute(); }
+        }
+
+        property bool CanBeStarted {
+            bool get() { return IsPlanned(); }
+        }
+
+        property bool CanBeCompleted {
+            bool get() { return IsInProgress(); }
+        }
+
+        property bool CanBeCancelled {
+            bool get() { return IsPlanned() || IsInProgress(); }
+        }
+    };
+}

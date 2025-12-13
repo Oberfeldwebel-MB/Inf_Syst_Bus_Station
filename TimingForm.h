@@ -1,325 +1,269 @@
 #pragma once
+
+#include "TripList.hpp"
 #include "AddTripForm.h"
-#include "zapros_form.h"
-#include "reference_form.h"
-#include "delete_form.h"
-#include <msclr\marshal_cppstd.h>
+#include "DeleteTripForm.h"
 
 namespace InfSystBusStation {
 
-	using namespace System;
-	using namespace System::ComponentModel;
-	using namespace System::Collections;
-	using namespace System::Windows::Forms;
-	using namespace System::Data;
-	using namespace System::Drawing;
-	using namespace System::Collections::Generic;
+    using namespace System;
+    using namespace System::ComponentModel;
+    using namespace System::Collections;
+    using namespace System::Windows::Forms;
+    using namespace System::Data;
+    using namespace System::Drawing;
+    using namespace System::Collections::Generic;
 
-	/// <summary>
-	/// Сводка для Student_base
-	/// </summary>
-	public ref class TimingForm : public System::Windows::Forms::Form
-	{
-	public:
-		TimingForm(void) {
-			InitializeComponent();
-			LoadDataFromFile();
+    public ref class TripListForm : public System::Windows::Forms::Form {
+    public:
+        TripListForm(TripList^ tripList, BusList^ busList, DriversList^ driverList) {
+            InitializeComponent();
+            this->tripList = tripList;
+            this->busList = busList;
+            this->driverList = driverList;
+            UpdateDataGridView();
+        }
 
-		}
-	protected:
-		/// <summary>
-		/// Освободить все используемые ресурсы.
-		/// </summary>
-		~TimingForm()
-		{
-			if (components)
-			{
-				delete components;
-			}
-		}
+    protected:
+        ~TripListForm() {
+            if (components) {
+                delete components;
+            }
+        }
 
-	private: System::Windows::Forms::MenuStrip^ base_menuStrip1;
-	public: System::Windows::Forms::ToolStripMenuItem^ AddTrip;
-	public: System::Windows::Forms::ToolStripMenuItem^ DeleteTrip;
-	private:
+    private:
+        TripList^ tripList;
+        BusList^ busList;
+        DriversList^ driverList;
+        System::ComponentModel::Container^ components;
 
-	private:
+        // Элементы формы
+    private:
+        System::Windows::Forms::MenuStrip^ menuStrip;
+        System::Windows::Forms::ToolStripMenuItem^ addTripMenuItem;
+        System::Windows::Forms::ToolStripMenuItem^ deleteTripMenuItem;
+        System::Windows::Forms::ToolStripMenuItem^ editTripMenuItem;
+        System::Windows::Forms::ToolStripMenuItem^ searchMenuItem;
+        System::Windows::Forms::ToolStripMenuItem^ backMenuItem;
 
-
-	public: System::Windows::Forms::ToolStripMenuItem^ change_str;
-	public: System::Windows::Forms::ToolStripMenuItem^ request;
-
-	public: System::Windows::Forms::ToolStripMenuItem^ delete_file;
-	private: System::Windows::Forms::ToolStripMenuItem^ reference;
-	private: System::Windows::Forms::ToolStripMenuItem^ back;
-
-	private: int studentCounter = 1;
-
-
-	public: System::Windows::Forms::DataGridView^ base_students_dataGridView;
-	private: System::Windows::Forms::DataGridViewTextBoxColumn^ Num;
-	public:
-	private: System::Windows::Forms::DataGridViewTextBoxColumn^ StartPoint;
-	private: System::Windows::Forms::DataGridViewTextBoxColumn^ FinishPoint;
-	private: System::Windows::Forms::DataGridViewTextBoxColumn^ BusData;
-	private: System::Windows::Forms::DataGridViewTextBoxColumn^ DepDate;
-	private: System::Windows::Forms::DataGridViewTextBoxColumn^ ArrDate;
-	private: System::Windows::Forms::DataGridViewTextBoxColumn^ Price;
-	private: System::Windows::Forms::DataGridViewTextBoxColumn^ DriverDate;
+        System::Windows::Forms::DataGridView^ tripsDataGridView;
+    private: System::Windows::Forms::DataGridViewCheckBoxColumn^ selectColumn;
+    private: System::Windows::Forms::DataGridViewTextBoxColumn^ numColumn;
+    private: System::Windows::Forms::DataGridViewTextBoxColumn^ startPointColumn;
+    private: System::Windows::Forms::DataGridViewTextBoxColumn^ finishPointColumn;
+    private: System::Windows::Forms::DataGridViewTextBoxColumn^ busColumn;
+    private: System::Windows::Forms::DataGridViewTextBoxColumn^ depDateColumn;
+    private: System::Windows::Forms::DataGridViewTextBoxColumn^ arrDateColumn;
+    private: System::Windows::Forms::DataGridViewTextBoxColumn^ priceColumn;
+    private: System::Windows::Forms::DataGridViewTextBoxColumn^ driverColumn;
+           // Колонка для выбора одной поездки
 
 
 
-	public:
-		String^ dataFilePath = "database.txt"; // Путь к файлу
-		void SaveDataToFile(String^ fio, String^ pol, String^ date, String^ faculty, String^ grupp, Decimal rate, String^ soz_act);
-		void LoadDataFromFile();
-		void SaveDataToFileAfterDeletion();
-		void SaveDataToFileAfterEditing();
-		System::Collections::Generic::List<System::Windows::Forms::DataGridViewRow^>^ SearchTrips(zapros_form^ searchForm);
 
 
-	private:
-		/// <summary>
-		/// Обязательная переменная конструктора.
-		/// </summary>
-		System::ComponentModel::Container^ components;
+
+
+
+
+        System::Windows::Forms::Button^ btnBuyTicket;
 
 #pragma region Windows Form Designer generated code
-		/// <summary>
-		/// Требуемый метод для поддержки конструктора — не изменяйте 
-		/// содержимое этого метода с помощью редактора кода.
-		/// </summary>
-		void InitializeComponent(void)
-		{
-			this->base_menuStrip1 = (gcnew System::Windows::Forms::MenuStrip());
-			this->AddTrip = (gcnew System::Windows::Forms::ToolStripMenuItem());
-			this->DeleteTrip = (gcnew System::Windows::Forms::ToolStripMenuItem());
-			this->change_str = (gcnew System::Windows::Forms::ToolStripMenuItem());
-			this->request = (gcnew System::Windows::Forms::ToolStripMenuItem());
-			this->delete_file = (gcnew System::Windows::Forms::ToolStripMenuItem());
-			this->reference = (gcnew System::Windows::Forms::ToolStripMenuItem());
-			this->back = (gcnew System::Windows::Forms::ToolStripMenuItem());
-			this->base_students_dataGridView = (gcnew System::Windows::Forms::DataGridView());
-			this->Num = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
-			this->StartPoint = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
-			this->FinishPoint = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
-			this->BusData = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
-			this->DepDate = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
-			this->ArrDate = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
-			this->Price = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
-			this->DriverDate = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
-			this->base_menuStrip1->SuspendLayout();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->base_students_dataGridView))->BeginInit();
-			this->SuspendLayout();
-			// 
-			// base_menuStrip1
-			// 
-			this->base_menuStrip1->BackColor = System::Drawing::SystemColors::ActiveBorder;
-			this->base_menuStrip1->ImageScalingSize = System::Drawing::Size(20, 20);
-			this->base_menuStrip1->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(7) {
-				this->AddTrip, this->DeleteTrip,
-					this->change_str, this->request, this->delete_file, this->reference, this->back
-			});
-			this->base_menuStrip1->Location = System::Drawing::Point(0, 0);
-			this->base_menuStrip1->Name = L"base_menuStrip1";
-			this->base_menuStrip1->Size = System::Drawing::Size(1159, 28);
-			this->base_menuStrip1->TabIndex = 0;
-			// 
-			// AddTrip
-			// 
-			this->AddTrip->Name = L"AddTrip";
-			this->AddTrip->Size = System::Drawing::Size(149, 24);
-			this->AddTrip->Text = L"Добавить поездку";
-			this->AddTrip->Click += gcnew System::EventHandler(this, &TimingForm::AddTrip_Click);
-			// 
-			// DeleteTrip
-			// 
-			this->DeleteTrip->Name = L"DeleteTrip";
-			this->DeleteTrip->Size = System::Drawing::Size(138, 24);
-			this->DeleteTrip->Text = L"Удалить поездку";
-			this->DeleteTrip->Click += gcnew System::EventHandler(this, &TimingForm::DeleteTrip_Click);
-			// 
-			// change_str
-			// 
-			this->change_str->Name = L"change_str";
-			this->change_str->Size = System::Drawing::Size(184, 24);
-			this->change_str->Text = L"Редактировать поездку";
-			this->change_str->Click += gcnew System::EventHandler(this, &TimingForm::ChangeTrip_Click);
-			// 
-			// request
-			// 
-			this->request->Name = L"request";
-			this->request->Size = System::Drawing::Size(66, 24);
-			this->request->Text = L"Поиск";
-			this->request->Click += gcnew System::EventHandler(this, &TimingForm::Request_Click);
-			// 
-			// delete_file
-			// 
-			this->delete_file->Name = L"delete_file";
-			this->delete_file->Size = System::Drawing::Size(118, 24);
-			this->delete_file->Text = L"Удалить файл";
-			this->delete_file->Click += gcnew System::EventHandler(this, &TimingForm::DeleteFile_Click);
-			// 
-			// reference
-			// 
-			this->reference->Name = L"reference";
-			this->reference->Size = System::Drawing::Size(81, 24);
-			this->reference->Text = L"Справка";
-			this->reference->Click += gcnew System::EventHandler(this, &TimingForm::Reference_Click);
-			// 
-			// back
-			// 
-			this->back->Name = L"back";
-			this->back->Size = System::Drawing::Size(65, 24);
-			this->back->Text = L"Назад";
-			this->back->Click += gcnew System::EventHandler(this, &TimingForm::Back_Click);
-			// 
-			// base_students_dataGridView
-			// 
-			this->base_students_dataGridView->AllowUserToAddRows = false;
-			this->base_students_dataGridView->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
-			this->base_students_dataGridView->Columns->AddRange(gcnew cli::array< System::Windows::Forms::DataGridViewColumn^  >(8) {
-				this->Num,
-					this->StartPoint, this->FinishPoint, this->BusData, this->DepDate, this->ArrDate, this->Price, this->DriverDate
-			});
-			this->base_students_dataGridView->Location = System::Drawing::Point(0, 31);
-			this->base_students_dataGridView->Name = L"base_students_dataGridView";
-			this->base_students_dataGridView->RowHeadersWidth = 51;
-			this->base_students_dataGridView->RowTemplate->Height = 24;
-			this->base_students_dataGridView->Size = System::Drawing::Size(1147, 466);
-			this->base_students_dataGridView->TabIndex = 1;
-			this->base_students_dataGridView->CellContentClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &TimingForm::base_students_dataGridView_CellContentClick);
-			// 
-			// Num
-			// 
-			this->Num->HeaderText = L"Номер маршрута";
-			this->Num->MinimumWidth = 6;
-			this->Num->Name = L"Num";
-			this->Num->Width = 125;
-			// 
-			// StartPoint
-			// 
-			this->StartPoint->HeaderText = L"Начальный пункт";
-			this->StartPoint->MinimumWidth = 6;
-			this->StartPoint->Name = L"StartPoint";
-			this->StartPoint->Width = 125;
-			// 
-			// FinishPoint
-			// 
-			this->FinishPoint->HeaderText = L"Конечный пункт";
-			this->FinishPoint->MinimumWidth = 6;
-			this->FinishPoint->Name = L"FinishPoint";
-			this->FinishPoint->Width = 125;
-			// 
-			// BusData
-			// 
-			this->BusData->HeaderText = L"Данные об автобусе";
-			this->BusData->MinimumWidth = 6;
-			this->BusData->Name = L"BusData";
-			this->BusData->Width = 125;
-			// 
-			// DepDate
-			// 
-			this->DepDate->HeaderText = L"Дата отправления";
-			this->DepDate->MinimumWidth = 6;
-			this->DepDate->Name = L"DepDate";
-			this->DepDate->Width = 125;
-			// 
-			// ArrDate
-			// 
-			this->ArrDate->HeaderText = L"Дата прибытия";
-			this->ArrDate->MinimumWidth = 6;
-			this->ArrDate->Name = L"ArrDate";
-			this->ArrDate->Width = 125;
-			// 
-			// Price
-			// 
-			this->Price->HeaderText = L"Цена";
-			this->Price->MinimumWidth = 6;
-			this->Price->Name = L"Price";
-			this->Price->Width = 50;
-			// 
-			// DriverDate
-			// 
-			this->DriverDate->HeaderText = L"Данные о водителе";
-			this->DriverDate->MinimumWidth = 6;
-			this->DriverDate->Name = L"DriverDate";
-			this->DriverDate->Width = 125;
-			// 
-			// TimingForm
-			// 
-			this->AutoScaleDimensions = System::Drawing::SizeF(8, 16);
-			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->BackColor = System::Drawing::SystemColors::InactiveCaption;
-			this->ClientSize = System::Drawing::Size(1159, 483);
-			this->Controls->Add(this->base_students_dataGridView);
-			this->Controls->Add(this->base_menuStrip1);
-			this->MainMenuStrip = this->base_menuStrip1;
-			this->Name = L"TimingForm";
-			this->Text = L"Расписание поездок";
-			this->base_menuStrip1->ResumeLayout(false);
-			this->base_menuStrip1->PerformLayout();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->base_students_dataGridView))->EndInit();
-			this->ResumeLayout(false);
-			this->PerformLayout();
+        void InitializeComponent(void) {
+            this->menuStrip = (gcnew System::Windows::Forms::MenuStrip());
+            this->addTripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+            this->deleteTripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+            this->editTripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+            this->searchMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+            this->backMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+            this->tripsDataGridView = (gcnew System::Windows::Forms::DataGridView());
+            this->btnBuyTicket = (gcnew System::Windows::Forms::Button());
+            this->selectColumn = (gcnew System::Windows::Forms::DataGridViewCheckBoxColumn());
+            this->numColumn = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+            this->startPointColumn = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+            this->finishPointColumn = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+            this->busColumn = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+            this->depDateColumn = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+            this->arrDateColumn = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+            this->priceColumn = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+            this->driverColumn = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+            this->menuStrip->SuspendLayout();
+            (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->tripsDataGridView))->BeginInit();
+            this->SuspendLayout();
+            // 
+            // menuStrip
+            // 
+            this->menuStrip->BackColor = System::Drawing::SystemColors::ActiveBorder;
+            this->menuStrip->ImageScalingSize = System::Drawing::Size(20, 20);
+            this->menuStrip->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(5) {
+                this->addTripMenuItem, this->deleteTripMenuItem,
+                    this->editTripMenuItem, this->searchMenuItem, this->backMenuItem
+            });
+            this->menuStrip->Location = System::Drawing::Point(0, 0);
+            this->menuStrip->Name = L"menuStrip";
+            this->menuStrip->Size = System::Drawing::Size(1300, 28);
+            this->menuStrip->TabIndex = 0;
+            // 
+            // addTripMenuItem
+            // 
+            this->addTripMenuItem->Name = L"addTripMenuItem";
+            this->addTripMenuItem->Size = System::Drawing::Size(149, 24);
+            this->addTripMenuItem->Text = L"Добавить поездку";
+            this->addTripMenuItem->Click += gcnew System::EventHandler(this, &TripListForm::AddTrip_Click);
+            // 
+            // deleteTripMenuItem
+            // 
+            this->deleteTripMenuItem->Name = L"deleteTripMenuItem";
+            this->deleteTripMenuItem->Size = System::Drawing::Size(138, 24);
+            this->deleteTripMenuItem->Text = L"Удалить поездку";
+            this->deleteTripMenuItem->Click += gcnew System::EventHandler(this, &TripListForm::DeleteTrip_Click);
+            // 
+            // editTripMenuItem
+            // 
+            this->editTripMenuItem->Name = L"editTripMenuItem";
+            this->editTripMenuItem->Size = System::Drawing::Size(184, 24);
+            this->editTripMenuItem->Text = L"Редактировать поездку";
+            this->editTripMenuItem->Click += gcnew System::EventHandler(this, &TripListForm::EditTrip_Click);
+            // 
+            // searchMenuItem
+            // 
+            this->searchMenuItem->Name = L"searchMenuItem";
+            this->searchMenuItem->Size = System::Drawing::Size(66, 24);
+            this->searchMenuItem->Text = L"Поиск";
+            this->searchMenuItem->Click += gcnew System::EventHandler(this, &TripListForm::Search_Click);
+            // 
+            // backMenuItem
+            // 
+            this->backMenuItem->Name = L"backMenuItem";
+            this->backMenuItem->Size = System::Drawing::Size(65, 24);
+            this->backMenuItem->Text = L"Назад";
+            this->backMenuItem->Click += gcnew System::EventHandler(this, &TripListForm::Back_Click);
+            // 
+            // tripsDataGridView
+            // 
+            this->tripsDataGridView->AllowUserToAddRows = false;
+            this->tripsDataGridView->AllowUserToDeleteRows = false;
+            this->tripsDataGridView->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
+            this->tripsDataGridView->Columns->AddRange(gcnew cli::array< System::Windows::Forms::DataGridViewColumn^  >(9) {
+                this->selectColumn,
+                    this->numColumn, this->startPointColumn, this->finishPointColumn, this->busColumn, this->depDateColumn, this->arrDateColumn,
+                    this->priceColumn, this->driverColumn
+            });
+            this->tripsDataGridView->Location = System::Drawing::Point(12, 40);
+            this->tripsDataGridView->Name = L"tripsDataGridView";
+            this->tripsDataGridView->RowHeadersWidth = 51;
+            this->tripsDataGridView->RowTemplate->Height = 24;
+            this->tripsDataGridView->Size = System::Drawing::Size(1276, 450);
+            this->tripsDataGridView->TabIndex = 1;
+            this->tripsDataGridView->CellContentClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &TripListForm::tripsDataGridView_CellContentClick);
+            // 
+            // btnBuyTicket
+            // 
+            this->btnBuyTicket->BackColor = System::Drawing::Color::LightGreen;
+            this->btnBuyTicket->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Bold));
+            this->btnBuyTicket->Location = System::Drawing::Point(1062, 500);
+            this->btnBuyTicket->Name = L"btnBuyTicket";
+            this->btnBuyTicket->Size = System::Drawing::Size(226, 40);
+            this->btnBuyTicket->TabIndex = 2;
+            this->btnBuyTicket->Text = L"Купить билет";
+            this->btnBuyTicket->UseVisualStyleBackColor = false;
+            this->btnBuyTicket->Click += gcnew System::EventHandler(this, &TripListForm::BuyTicket_Click);
+            // 
+            // selectColumn
+            // 
+            this->selectColumn->HeaderText = L"Выбрать";
+            this->selectColumn->MinimumWidth = 6;
+            this->selectColumn->Name = L"selectColumn";
+            this->selectColumn->Width = 70;
+            // 
+            // numColumn
+            // 
+            this->numColumn->HeaderText = L"Номер поездки";
+            this->numColumn->MinimumWidth = 6;
+            this->numColumn->Name = L"numColumn";
+            this->numColumn->Width = 125;
+            // 
+            // startPointColumn
+            // 
+            this->startPointColumn->HeaderText = L"Начальный пункт";
+            this->startPointColumn->MinimumWidth = 6;
+            this->startPointColumn->Name = L"startPointColumn";
+            this->startPointColumn->Width = 125;
+            // 
+            // finishPointColumn
+            // 
+            this->finishPointColumn->HeaderText = L"Конечный пункт";
+            this->finishPointColumn->MinimumWidth = 6;
+            this->finishPointColumn->Name = L"finishPointColumn";
+            this->finishPointColumn->Width = 125;
+            // 
+            // busColumn
+            // 
+            this->busColumn->HeaderText = L"Данные об автобусе";
+            this->busColumn->MinimumWidth = 6;
+            this->busColumn->Name = L"busColumn";
+            this->busColumn->Width = 150;
+            // 
+            // depDateColumn
+            // 
+            this->depDateColumn->HeaderText = L"Дата отправления";
+            this->depDateColumn->MinimumWidth = 6;
+            this->depDateColumn->Name = L"depDateColumn";
+            this->depDateColumn->Width = 125;
+            // 
+            // arrDateColumn
+            // 
+            this->arrDateColumn->HeaderText = L"Дата прибытия";
+            this->arrDateColumn->MinimumWidth = 6;
+            this->arrDateColumn->Name = L"arrDateColumn";
+            this->arrDateColumn->Width = 125;
+            // 
+            // priceColumn
+            // 
+            this->priceColumn->HeaderText = L"Цена билета";
+            this->priceColumn->MinimumWidth = 6;
+            this->priceColumn->Name = L"priceColumn";
+            this->priceColumn->Width = 125;
+            // 
+            // driverColumn
+            // 
+            this->driverColumn->HeaderText = L"Данные о водителе";
+            this->driverColumn->MinimumWidth = 6;
+            this->driverColumn->Name = L"driverColumn";
+            this->driverColumn->Width = 150;
+            // 
+            // TripListForm
+            // 
+            this->AutoScaleDimensions = System::Drawing::SizeF(8, 16);
+            this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
+            this->BackColor = System::Drawing::SystemColors::InactiveCaption;
+            this->ClientSize = System::Drawing::Size(1300, 550);
+            this->Controls->Add(this->btnBuyTicket);
+            this->Controls->Add(this->tripsDataGridView);
+            this->Controls->Add(this->menuStrip);
+            this->MainMenuStrip = this->menuStrip;
+            this->Name = L"TripListForm";
+            this->StartPosition = System::Windows::Forms::FormStartPosition::CenterScreen;
+            this->Text = L"Расписание поездок";
+            this->menuStrip->ResumeLayout(false);
+            this->menuStrip->PerformLayout();
+            (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->tripsDataGridView))->EndInit();
+            this->ResumeLayout(false);
+            this->PerformLayout();
 
-		}
-
+        }
 #pragma endregion
-	private: System::Void AddTrip_Click(System::Object^ sender, System::EventArgs^ e) {
-		add_form^ AddForm = gcnew add_form;
-		if (AddForm->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
-			// Собираем данные из формы
-			String^ fio = AddForm->FIO;
-			String^ pol = AddForm->Pol;
-			String^ date = AddForm->Data_Str;
-			String^ faculty = AddForm->Faculty;
-			String^ grupp = AddForm->Grupp;
-			String^ soz_act = AddForm->SozAct;
-			Decimal rate = AddForm->Rating;
-			int rowIndex_to_ch;
 
-			// Сохраняем данные в файл (метод SaveDataToFile)
-			SaveDataToFile(fio, pol, date, faculty, grupp, rate, soz_act);
-		}
-	}
-	private: System::Void DeleteTrip_Click(System::Object^ sender, System::EventArgs^ e) {
-		delete_form^ DeleteForm = gcnew delete_form(base_students_dataGridView);
-		if (DeleteForm->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
-			int rowIndexToDelete = DeleteForm->RowIndexToDelete;
+    public:
+        void UpdateDataGridView();
 
-			if (rowIndexToDelete >= 0) {
-				// Удаляем строку из DataGridView
-				base_students_dataGridView->Rows->RemoveAt(rowIndexToDelete);
-
-				// Обновляем файл
-				SaveDataToFileAfterDeletion();
-
-				// Перенумеровываем строки
-				RenumberRows();
-			}
-		}
-	}
-	private: System::Void TimingForm::RenumberRows() {
-		for (int i = 0; i < base_students_dataGridView->Rows->Count; i++) {
-			base_students_dataGridView->Rows[i]->Cells["Num"]->Value = i + 1;
-		}
-	}
-	private: System::Void Back_Click(System::Object^ sender, System::EventArgs^ e);
-	private: System::Void DeleteFile_Click(System::Object^ sender, System::EventArgs^ e) {
-		System::IO::File::Delete(dataFilePath);
-		MessageBox::Show("Файл успешно удален.", "Успех", MessageBoxButtons::OK, MessageBoxIcon::Information);
-		LoadDataFromFile();
-	}
-	private: System::Void ChangeTrip_Click(System::Object^ sender, System::EventArgs^ e);
-	private: System::Void Request_Click(System::Object^ sender, System::EventArgs^ e);
-
-	private: System::Void Reference_Click(System::Object^ sender, System::EventArgs^ e) {
-		reference_form^ sprav = gcnew reference_form();
-		sprav->Show();
-	}
-	private: System::Void base_students_dataGridView_CellContentClick(System::Object^ sender, System::Windows::Forms::DataGridViewCellEventArgs^ e) {
-	}
-};
+    private:
+        System::Void AddTrip_Click(System::Object^ sender, System::EventArgs^ e);
+        System::Void DeleteTrip_Click(System::Object^ sender, System::EventArgs^ e);
+        System::Void EditTrip_Click(System::Object^ sender, System::EventArgs^ e);
+        System::Void Search_Click(System::Object^ sender, System::EventArgs^ e);
+        System::Void Back_Click(System::Object^ sender, System::EventArgs^ e);
+        System::Void BuyTicket_Click(System::Object^ sender, System::EventArgs^ e);
+        System::Void tripsDataGridView_CellContentClick(System::Object^ sender, System::Windows::Forms::DataGridViewCellEventArgs^ e);
+    };
 }
-

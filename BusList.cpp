@@ -1,93 +1,93 @@
-﻿#include "BusList.hpp"
-#include <iostream>
-#include <algorithm>
-#include <stdexcept>
+﻿// BusListForm.cpp
+#include "BusListForm.h"
 
-void BusList::AddBus(std::shared_ptr<Bus> bus) {
-    try {
-        if (!bus) {
-            throw std::invalid_argument("Нельзя добавить пустой указатель на автобус!");
-        }
+using namespace InfSystBusStation;
 
-        auto allBuses = container.getAll(); // Получаем все автобусы из контейнера
+void BusListForm::UpdateDataGridView() {
+    busesDataGridView->Rows->Clear();
 
-        // Проверка нет ли уже автобуса с таким кодом
-        for (const auto& existingBus : allBuses) { 
-            if (existingBus->GetCode() == bus->GetCode()) {
-                throw std::runtime_error("Автобус с кодом '" + bus->GetCode() + "' уже существует!");
-            }
-        }
-
-        container.add(bus); 
-        std::cout << "[BusList] Автобус " << bus->GetCode() << " добавлен в список\n";
+    if (busList == nullptr || busList->Count == 0) {
+        busesCountLabel->Text = "Всего автобусов: 0";
+        availableLabel->Text = "Доступно: 0";
+        return;
     }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка добавления автобуса: " << e.what() << "\n";
-        throw;
-    }
-}
 
-bool BusList::RemoveBus(const std::string& code) {
-    try {
-        if (code.empty()) {
-            throw std::invalid_argument("Код автобуса не может быть пустым!");
+    int rowIndex = 0;
+    for each (Bus ^ bus in busList->AllBuses) {
+        busesDataGridView->Rows->Add();
+
+        // Заполняем данные в колонки
+        busesDataGridView->Rows[rowIndex]->Cells[0]->Value = (rowIndex + 1).ToString();
+        busesDataGridView->Rows[rowIndex]->Cells[1]->Value = bus->GetFormattedCode();
+        busesDataGridView->Rows[rowIndex]->Cells[2]->Value = bus->GetBrand();
+        busesDataGridView->Rows[rowIndex]->Cells[3]->Value = bus->GetModel();
+        busesDataGridView->Rows[rowIndex]->Cells[4]->Value = bus->GetPlaceCount().ToString();
+        busesDataGridView->Rows[rowIndex]->Cells[5]->Value = bus->GetTechCondition();
+        busesDataGridView->Rows[rowIndex]->Cells[6]->Value = bus->GetLastMaintenance();
+
+        // Статус с цветовой индикацией
+        if (bus->GetAvailability() && !bus->IsInCriticalCondition()) {
+            busesDataGridView->Rows[rowIndex]->Cells[7]->Value = "Доступен";
+            busesDataGridView->Rows[rowIndex]->DefaultCellStyle->BackColor = Drawing::Color::LightGreen;
         }
-
-        bool result = container.remove(code);
-
-        if (result) {
-            std::cout << "[BusList] Автобус " << code << " удален\n";
+        else if (bus->IsInCriticalCondition()) {
+            busesDataGridView->Rows[rowIndex]->Cells[7]->Value = "Требует ремонта";
+            busesDataGridView->Rows[rowIndex]->DefaultCellStyle->BackColor = Drawing::Color::LightCoral;
         }
         else {
-            std::cout << "[BusList] Автобус с кодом " << code << " не найден\n";
+            busesDataGridView->Rows[rowIndex]->Cells[7]->Value = "Не доступен";
+            busesDataGridView->Rows[rowIndex]->DefaultCellStyle->BackColor = Drawing::Color::LightGray;
         }
 
-        return result;
+        rowIndex++;
     }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка удаления автобуса: " << e.what() << "\n";
-        return false;
+
+    busesCountLabel->Text = "Всего автобусов: " + busList->Count.ToString();
+    availableLabel->Text = "Доступно: " + busList->AvailableCount.ToString();
+}
+
+System::Void BusListForm::AddBus_Click(System::Object^ sender, System::EventArgs^ e) {
+    if (busList == nullptr) {
+        MessageBox::Show("Ошибка: список автобусов не инициализирован!",
+            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        return;
+    }
+
+    // Используем метод BusList для открытия формы добавления
+    if (busList->ShowAddBusForm(this)) {
+        UpdateDataGridView();
+        MessageBox::Show("Автобус успешно добавлен!", "Успех",
+            MessageBoxButtons::OK, MessageBoxIcon::Information);
     }
 }
 
-std::shared_ptr<Bus> BusList::FindBusByCode(const std::string& code) {
-    try {
-        if (code.empty()) {
-            throw std::invalid_argument("Код автобуса не может быть пустым!");
-        }
-        return container.findById(code);
+System::Void BusListForm::DeleteBus_Click(System::Object^ sender, System::EventArgs^ e) {
+    if (busList == nullptr) {
+        MessageBox::Show("Ошибка: список автобусов не инициализирован!",
+            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        return;
     }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка поиска автобуса: " << e.what() << "\n";
-        return nullptr;
+
+    if (busList->Count == 0) {
+        MessageBox::Show("Список автобусов пуст!", "Информация",
+            MessageBoxButtons::OK, MessageBoxIcon::Information);
+        return;
+    }
+
+    // Используем метод BusList для открытия формы удаления
+    if (busList->ShowDeleteBusForm(this)) {
+        UpdateDataGridView();
+        MessageBox::Show("Автобус успешно удален!", "Успех",
+            MessageBoxButtons::OK, MessageBoxIcon::Information);
     }
 }
 
-void BusList::DisplayAllBuses() const {
-    std::cout << "=== Список автобусов (" << container.size() << ") ===\n";
-    auto allBuses = container.getAll();
-
-    if (allBuses.empty()) {
-        std::cout << "Список автобусов пуст\n";
-    }
-    else {
-        for (const auto& bus : allBuses) {
-            std::cout << "[" << bus->GetCode() << "] " << bus->GetBrand()
-                << " " << bus->GetModel() << " (" << bus->GetPlaces() << " мест) - "
-                << (bus->GetAvailability() ? "Доступен" : "Не доступен") << "\n";
-        }
-    }
-    std::cout << "========================\n";
+System::Void BusListForm::Back_Click(System::Object^ sender, System::EventArgs^ e) {
+    this->Close();
 }
 
-// Дружественная функция перегрузки оператора вывода
-std::ostream& operator<<(std::ostream& os, const BusList& busList) {
-    auto allBuses = busList.container.getAll();
-
-    os << "BusList содержит " << allBuses.size() << " автобусов:\n";
-    for (const auto& bus : allBuses) {
-        os << "  - " << bus->GetBrand() << " " << bus->GetModel()
-            << " [" << bus->GetCode() << "]\n";
-    }
-    return os;
+System::Void BusListForm::Refresh_Click(System::Object^ sender, System::EventArgs^ e) {
+    UpdateDataGridView();
+    MessageBox::Show("Список автобусов обновлен!", "Обновление",
+        MessageBoxButtons::OK, MessageBoxIcon::Information);
 }

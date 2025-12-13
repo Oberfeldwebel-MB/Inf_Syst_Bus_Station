@@ -1,390 +1,208 @@
+п»ї// TripListForm.cpp
 #include "TimingForm.h"
-#include <fstream> 
-#include "StartForm.h"
-#include "ChangeTripform.h"
-#include "Resultform.h"
-#include "ZaprosForm.h"
 
+using namespace InfSystBusStation;
 
-namespace InfSystBusStation {
+void TripListForm::UpdateDataGridView() {
+    tripsDataGridView->Rows->Clear();
 
-    using namespace System;
-    using namespace System::ComponentModel;
-    using namespace System::Collections;
-    using namespace System::Windows::Forms;
-    using namespace System::Data;
-    using namespace System::Drawing;
-    using namespace System::IO;
-    using namespace System::Collections::Generic;
-    using namespace System::Text::RegularExpressions;
-    using namespace System::Globalization;
-
-
-    void TimingForm::LoadDataFromFile() {
-        try {
-            // Очищаем DataGridView
-            base_students_dataGridView->Rows->Clear();
-
-            if (File::Exists(dataFilePath)) {
-                StreamReader^ sr = gcnew StreamReader(dataFilePath, System::Text::Encoding::UTF8);
-
-                // Пропускаем строку заголовков
-                sr->ReadLine();
-
-                // Читаем данные построчно
-                String^ line;
-                while ((line = sr->ReadLine()) != nullptr) {
-                    array<String^>^ values = line->Split('\t');
-
-                    // Проверяем, что количество значений соответствует ожидаемому
-                    if (values->Length == 8) {
-                        int rowIndex = base_students_dataGridView->Rows->Add();
-                        DataGridViewRow^ row = base_students_dataGridView->Rows[rowIndex];
-
-                        row->Cells["Num"]->Value = values[0];
-                        row->Cells["FIO"]->Value = values[1];
-                        row->Cells["Pol"]->Value = values[2];
-                        row->Cells["Date"]->Value = values[3];
-                        row->Cells["Faculty"]->Value = values[4];
-                        row->Cells["Grupp"]->Value = values[5];
-                        row->Cells["Rating"]->Value = values[6];
-                        row->Cells["Soz_Act"]->Value = values[7];
-                    }
-                }
-                sr->Close();
-            }
-            TimingForm::RenumberRows();
-        }
-        catch (Exception^ ex) {
-            MessageBox::Show("Ошибка при загрузке данных из файла: " + ex->Message, "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        }
+    if (tripList == nullptr || tripList->Count == 0) {
+        btnBuyTicket->Enabled = false;
+        return;
     }
 
-    void TimingForm::SaveDataToFile(String^ fio, String^ pol, String^ date, String^ faculty, String^ grupp, Decimal rate, String^ soz_act) {
-        try {
-            // Читаем все строки из файла во временный список
-            List<String^>^ lines = gcnew List<String^>();
-            if (File::Exists(dataFilePath)) {
-                StreamReader^ sr = gcnew StreamReader(dataFilePath, System::Text::Encoding::UTF8);
-                sr->ReadLine(); // Пропускаем заголовок
-                String^ line;
-                while ((line = sr->ReadLine()) != nullptr) {
-                    lines->Add(line);
-                }
-                sr->Close();
-            }
+    int rowIndex = 0;
 
-            //        // Добавляем новую строку с данными
-            String^ newLine = String::Format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}",
-                lines->Count + 1, // Автоматически генерируем номер строки
-                fio, pol, date, faculty, grupp, rate, soz_act);
-            lines->Add(newLine);
+    for each (Trip ^ trip in tripList->AllTrips) {
+        tripsDataGridView->Rows->Add();
 
-            // Записываем все строки обратно в файл
-            StreamWriter^ sw = gcnew StreamWriter(dataFilePath, false, System::Text::Encoding::UTF8);
-            sw->WriteLine("Num\tFIO\tPol\tDate\tFaculty\tGrupp\tRating\tSoz_Act"); // Записываем заголовок
-            for (int i = 0; i < lines->Count; i++) {
-                sw->WriteLine(lines[i]);
-            }
-            sw->Close();
+        // Р“Р°Р»РѕС‡РєР° РІС‹Р±РѕСЂР° (С‚РѕР»СЊРєРѕ РґР»СЏ Р·Р°РїР»Р°РЅРёСЂРѕРІР°РЅРЅС‹С… РїРѕРµР·РґРѕРє)
+        bool isPlanned = trip->IsPlanned();
+        tripsDataGridView->Rows[rowIndex]->Cells[0]->Value = false;
+        tripsDataGridView->Rows[rowIndex]->Cells[0]->ReadOnly = !isPlanned;
 
-            MessageBox::Show("Данные успешно сохранены в файл.", "Информация", MessageBoxButtons::OK, MessageBoxIcon::Information);
+        // РќРѕРјРµСЂ РјР°СЂС€СЂСѓС‚Р°
+        tripsDataGridView->Rows[rowIndex]->Cells[1]->Value = (rowIndex + 1).ToString();
 
-            // Обновляем DataGridView (перезагружаем данные из файла)
-            LoadDataFromFile();
+        // РќР°С‡Р°Р»СЊРЅС‹Р№ РїСѓРЅРєС‚
+        tripsDataGridView->Rows[rowIndex]->Cells[2]->Value = trip->GetStartPoint();
+
+        // РљРѕРЅРµС‡РЅС‹Р№ РїСѓРЅРєС‚
+        tripsDataGridView->Rows[rowIndex]->Cells[3]->Value = trip->GetFinishPoint();
+
+        // Р”Р°РЅРЅС‹Рµ РѕР± Р°РІС‚РѕР±СѓСЃРµ
+        String^ busInfo = "РќРµ РЅР°Р·РЅР°С‡РµРЅ";
+        if (trip->GetBus() != nullptr) {
+            busInfo = trip->GetBus()->GetBrand() + " " + trip->GetBus()->GetModel() +
+                " [" + trip->GetBus()->GetFormattedCode() + "]";
         }
-        catch (Exception^ ex) {
-            MessageBox::Show("Ошибка при сохранении данных в файл: " + ex->Message, "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        tripsDataGridView->Rows[rowIndex]->Cells[4]->Value = busInfo;
+
+        // Р”Р°С‚Р° РѕС‚РїСЂР°РІР»РµРЅРёСЏ
+        tripsDataGridView->Rows[rowIndex]->Cells[5]->Value = trip->GetTripDate().ToString("dd.MM.yyyy");
+
+        // Р”Р°С‚Р° РїСЂРёР±С‹С‚РёСЏ (РјРѕР¶РЅРѕ РґРѕР±Р°РІРёС‚СЊ РІСЂРµРјСЏ РІ РїСѓС‚Рё)
+        DateTime arrivalDate = trip->GetTripDate().AddHours(2); // РџСЂРёРјРµСЂ: +2 С‡Р°СЃР°
+        tripsDataGridView->Rows[rowIndex]->Cells[6]->Value = arrivalDate.ToString("dd.MM.yyyy HH:mm");
+
+        // Р¦РµРЅР° Р±РёР»РµС‚Р°
+        tripsDataGridView->Rows[rowIndex]->Cells[7]->Value = trip->GetPrice().ToString("N0") + " СЂСѓР±.";
+
+        // Р”Р°РЅРЅС‹Рµ Рѕ РІРѕРґРёС‚РµР»Рµ
+        String^ driverInfo = "РќРµ РЅР°Р·РЅР°С‡РµРЅ";
+        if (trip->GetDriver() != nullptr) {
+            driverInfo = trip->GetDriver()->GetFullName();
         }
+        tripsDataGridView->Rows[rowIndex]->Cells[8]->Value = driverInfo;
+
+        // Р¦РІРµС‚РѕРІР°СЏ РёРЅРґРёРєР°С†РёСЏ
+        if (!isPlanned) {
+            tripsDataGridView->Rows[rowIndex]->DefaultCellStyle->BackColor = Drawing::Color::LightGray;
+            tripsDataGridView->Rows[rowIndex]->DefaultCellStyle->ForeColor = Drawing::Color::Gray;
+        }
+        else {
+            tripsDataGridView->Rows[rowIndex]->DefaultCellStyle->BackColor = Drawing::Color::White;
+        }
+
+        rowIndex++;
     }
-    void TimingForm::SaveDataToFileAfterDeletion() {
-        try {
-            // Создаем временный список для хранения данных
-            List<String^>^ lines = gcnew List<String^>();
+}
 
-            // Проходим по всем строкам в DataGridView и добавляем их во временный список
-            for (int i = 0; i < base_students_dataGridView->Rows->Count; i++) {
-                DataGridViewRow^ row = base_students_dataGridView->Rows[i];
-                String^ newLine = String::Format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}",
-                    row->Cells["Num"]->Value,
-                    row->Cells["FIO"]->Value,
-                    row->Cells["Pol"]->Value,
-                    row->Cells["Date"]->Value,
-                    row->Cells["Faculty"]->Value,
-                    row->Cells["Grupp"]->Value,
-                    row->Cells["Rating"]->Value,
-                    row->Cells["Soz_Act"]->Value);
-                lines->Add(newLine);
-            }
-
-            // Записываем все строки обратно в файл
-            StreamWriter^ sw = gcnew StreamWriter(dataFilePath, false, System::Text::Encoding::UTF8);
-            sw->WriteLine("Num\tFIO\tPol\tDate\tFaculty\tGrupp\tRating\tSoz_Act"); // Записываем заголовок
-            for (int i = 0; i < lines->Count; i++) {
-                sw->WriteLine(lines[i]);
-            }
-            sw->Close();
-
-            MessageBox::Show("Данные успешно сохранены в файл после удаления.", "Информация", MessageBoxButtons::OK, MessageBoxIcon::Information);
-        }
-        catch (Exception^ ex) {
-            MessageBox::Show("Ошибка при сохранении данных в файл после удаления: " + ex->Message, "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        }
+System::Void TripListForm::AddTrip_Click(System::Object^ sender, System::EventArgs^ e) {
+    if (tripList == nullptr) {
+        MessageBox::Show("РћС€РёР±РєР°: СЃРїРёСЃРѕРє РїРѕРµР·РґРѕРє РЅРµ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅ!", "РћС€РёР±РєР°",
+            MessageBoxButtons::OK, MessageBoxIcon::Error);
+        return;
     }
 
-    System::Void TimingForm::Back_Click(System::Object^ sender, System::EventArgs^ e) {
-        dekanat^ dekanatForm = gcnew dekanat();
-        dekanatForm->Show();
-        this->Close();
+    if (busList == nullptr || driverList == nullptr) {
+        MessageBox::Show("РћС€РёР±РєР°: СЃРїРёСЃРєРё Р°РІС‚РѕР±СѓСЃРѕРІ РёР»Рё РІРѕРґРёС‚РµР»РµР№ РЅРµ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅС‹!", "РћС€РёР±РєР°",
+            MessageBoxButtons::OK, MessageBoxIcon::Error);
+        return;
     }
 
-    System::Void TimingForm::SaveDataToFileAfterEditing() {
-        try {
-            StreamWriter^ sw = gcnew StreamWriter(dataFilePath, false, System::Text::Encoding::UTF8);
-            sw->WriteLine("Num\tFIO\tPol\tDate\tFaculty\tGrupp\tRating\tSoz_Act"); // Заголовок
+    // РСЃРїРѕР»СЊР·СѓРµРј РјРµС‚РѕРґ TripList РґР»СЏ РѕС‚РєСЂС‹С‚РёСЏ С„РѕСЂРјС‹ РґРѕР±Р°РІР»РµРЅРёСЏ
+    if (tripList->ShowAddTripForm(this, busList, driverList)) {
+        UpdateDataGridView();
+        MessageBox::Show("РџРѕРµР·РґРєР° СѓСЃРїРµС€РЅРѕ РґРѕР±Р°РІР»РµРЅР°!", "РЈСЃРїРµС…",
+            MessageBoxButtons::OK, MessageBoxIcon::Information);
+    }
+}
 
-            for each (DataGridViewRow ^ row in base_students_dataGridView->Rows) {
-                //if (!row->IsNewRow) {
-                String^ line = String::Format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}",
-                    row->Cells["Num"]->Value,
-                    row->Cells["FIO"]->Value,
-                    row->Cells["Pol"]->Value,
-                    row->Cells["date"]->Value,
-                    row->Cells["Faculty"]->Value,
-                    row->Cells["Grupp"]->Value,
-                    row->Cells["Rating"]->Value,
-                    row->Cells["soz_act"]->Value
-                );
-                sw->WriteLine(line);
-                //}
-            }
-            sw->Close();
-        }
-        catch (Exception^ ex) {
-            MessageBox::Show("Ошибка при сохранении: " + ex->Message, "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        }
+System::Void TripListForm::DeleteTrip_Click(System::Object^ sender, System::EventArgs^ e) {
+    if (tripList == nullptr) {
+        MessageBox::Show("РћС€РёР±РєР°: СЃРїРёСЃРѕРє РїРѕРµР·РґРѕРє РЅРµ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅ!", "РћС€РёР±РєР°",
+            MessageBoxButtons::OK, MessageBoxIcon::Error);
+        return;
     }
 
-    System::Void TimingForm::ChangeTrip_Click(System::Object^ sender, System::EventArgs^ e) {
-        change_str_form^ editForm = gcnew change_str_form();
+    if (tripList->Count == 0) {
+        MessageBox::Show("Р Р°СЃРїРёСЃР°РЅРёРµ РїСѓСЃС‚Рѕ!", "РРЅС„РѕСЂРјР°С†РёСЏ",
+            MessageBoxButtons::OK, MessageBoxIcon::Information);
+        return;
+    }
 
-        if (editForm->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
-            // Обновляем только отмеченные поля
-            int rowIndex_to_ch = editForm->str_corr - 1;  // 
+    // РСЃРїРѕР»СЊР·СѓРµРј РјРµС‚РѕРґ TripList РґР»СЏ РѕС‚РєСЂС‹С‚РёСЏ С„РѕСЂРјС‹ СѓРґР°Р»РµРЅРёСЏ
+    if (tripList->ShowDeleteTripForm(this)) {
+        UpdateDataGridView();
+        MessageBox::Show("РџРѕРµР·РґРєР° СѓСЃРїРµС€РЅРѕ СѓРґР°Р»РµРЅР°!", "РЈСЃРїРµС…",
+            MessageBoxButtons::OK, MessageBoxIcon::Information);
+    }
+}
 
-            if (rowIndex_to_ch >= 0 && rowIndex_to_ch < base_students_dataGridView->Rows->Count) {
-                DataGridViewRow^ selected_row = base_students_dataGridView->Rows[rowIndex_to_ch];
+System::Void TripListForm::EditTrip_Click(System::Object^ sender, System::EventArgs^ e) {
+    // TODO: Р РµР°Р»РёР·РѕРІР°С‚СЊ С„РѕСЂРјСѓ СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ РїРѕРµР·РґРєРё
+    MessageBox::Show("Р¤СѓРЅРєС†РёСЏ СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ РїРѕРµР·РґРєРё Р±СѓРґРµС‚ СЂРµР°Р»РёР·РѕРІР°РЅР° РїРѕР·Р¶Рµ", "Р’ СЂР°Р·СЂР°Р±РѕС‚РєРµ",
+        MessageBoxButtons::OK, MessageBoxIcon::Information);
+}
 
-                if (editForm->FIO_checkBox->Checked) selected_row->Cells["FIO"]->Value = editForm->NewFIO;
-                if (editForm->pol_checkBox->Checked) selected_row->Cells["Pol"]->Value = editForm->NewPol;
-                if (editForm->data_checkBox->Checked) selected_row->Cells["date"]->Value = editForm->NewDate;
-                if (editForm->faculty_checkBox->Checked) selected_row->Cells["Faculty"]->Value = editForm->NewFaculty;
-                if (editForm->grupp_checkBox->Checked) selected_row->Cells["Grupp"]->Value = editForm->NewGrupp;
-                if (editForm->rate_checkBox->Checked) selected_row->Cells["Rating"]->Value = editForm->NewRating;
-                if (editForm->soz_act_checkBox->Checked) selected_row->Cells["soz_act"]->Value = editForm->NewSozAct;
+System::Void TripListForm::Search_Click(System::Object^ sender, System::EventArgs^ e) {
+    // TODO: Р РµР°Р»РёР·РѕРІР°С‚СЊ С„РѕСЂРјСѓ РїРѕРёСЃРєР° РїРѕРµР·РґРѕРє
+    MessageBox::Show("Р¤СѓРЅРєС†РёСЏ РїРѕРёСЃРєР° РїРѕРµР·РґРѕРє Р±СѓРґРµС‚ СЂРµР°Р»РёР·РѕРІР°РЅР° РїРѕР·Р¶Рµ", "Р’ СЂР°Р·СЂР°Р±РѕС‚РєРµ",
+        MessageBoxButtons::OK, MessageBoxIcon::Information);
+}
 
+System::Void TripListForm::Back_Click(System::Object^ sender, System::EventArgs^ e) {
+    this->Close();
+}
 
-                SaveDataToFileAfterEditing();
+System::Void TripListForm::BuyTicket_Click(System::Object^ sender, System::EventArgs^ e) {
+    try {
+        // РќР°С…РѕРґРёРј РІС‹Р±СЂР°РЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ
+        int selectedRowIndex = -1;
+        for (int i = 0; i < tripsDataGridView->Rows->Count; i++) {
+            DataGridViewRow^ row = tripsDataGridView->Rows[i];
+            if (row->Cells[0]->Value != nullptr && safe_cast<bool>(row->Cells[0]->Value)) {
+                if (selectedRowIndex != -1) {
+                    MessageBox::Show("РџРѕР¶Р°Р»СѓР№СЃС‚Р°, РІС‹Р±РµСЂРёС‚Рµ С‚РѕР»СЊРєРѕ РѕРґРЅСѓ РїРѕРµР·РґРєСѓ!", "Р’РЅРёРјР°РЅРёРµ",
+                        MessageBoxButtons::OK, MessageBoxIcon::Warning);
+                    return;
+                }
+                selectedRowIndex = i;
+            }
+        }
+
+        if (selectedRowIndex == -1) {
+            MessageBox::Show("Р’С‹Р±РµСЂРёС‚Рµ РїРѕРµР·РґРєСѓ РґР»СЏ РїРѕРєСѓРїРєРё Р±РёР»РµС‚Р°!", "Р’РЅРёРјР°РЅРёРµ",
+                MessageBoxButtons::OK, MessageBoxIcon::Warning);
+            return;
+        }
+
+        // РџРѕР»СѓС‡Р°РµРј РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РІС‹Р±СЂР°РЅРЅРѕР№ РїРѕРµР·РґРєРµ
+        DataGridViewRow^ selectedRow = tripsDataGridView->Rows[selectedRowIndex];
+
+        String^ startPoint = safe_cast<String^>(selectedRow->Cells[2]->Value);
+        String^ finishPoint = safe_cast<String^>(selectedRow->Cells[3]->Value);
+        String^ busInfo = safe_cast<String^>(selectedRow->Cells[4]->Value);
+        String^ depDate = safe_cast<String^>(selectedRow->Cells[5]->Value);
+        String^ arrDate = safe_cast<String^>(selectedRow->Cells[6]->Value);
+        String^ price = safe_cast<String^>(selectedRow->Cells[7]->Value);
+        String^ driverInfo = safe_cast<String^>(selectedRow->Cells[8]->Value);
+
+        // TODO: РћС‚РєСЂС‹С‚СЊ С„РѕСЂРјСѓ РїРѕРєСѓРїРєРё Р±РёР»РµС‚Р° СЃ РїРµСЂРµРґР°С‡РµР№ РёРЅС„РѕСЂРјР°С†РёРё
+        // РќР°РїСЂРёРјРµСЂ: TicketPurchaseForm^ ticketForm = gcnew TicketPurchaseForm(...);
+        // ticketForm->ShowDialog();
+
+        MessageBox::Show(
+            "РџРµСЂРµС…РѕРґ Рє РїРѕРєСѓРїРєРµ Р±РёР»РµС‚Р°:\n\n" +
+            "РњР°СЂС€СЂСѓС‚: " + startPoint + " в†’ " + finishPoint + "\n" +
+            "Р”Р°С‚Р° РѕС‚РїСЂР°РІР»РµРЅРёСЏ: " + depDate + "\n" +
+            "Р”Р°С‚Р° РїСЂРёР±С‹С‚РёСЏ: " + arrDate + "\n" +
+            "РђРІС‚РѕР±СѓСЃ: " + busInfo + "\n" +
+            "Р’РѕРґРёС‚РµР»СЊ: " + driverInfo + "\n" +
+            "Р¦РµРЅР°: " + price + "\n\n" +
+            "Р¤РѕСЂРјР° РїРѕРєСѓРїРєРё Р±РёР»РµС‚Р° Р±СѓРґРµС‚ РѕС‚РєСЂС‹С‚Р°.",
+            "РРЅС„РѕСЂРјР°С†РёСЏ Рѕ РїРѕРµР·РґРєРµ",
+            MessageBoxButtons::OK,
+            MessageBoxIcon::Information
+        );
+
+        // Р—РґРµСЃСЊ РјРѕР¶РЅРѕ РѕС‚РєСЂС‹С‚СЊ С„РѕСЂРјСѓ РїРѕРєСѓРїРєРё Р±РёР»РµС‚Р°
+        // TicketPurchaseForm^ ticketForm = gcnew TicketPurchaseForm(selectedTripInfo);
+        // ticketForm->ShowDialog();
+
+    }
+    catch (Exception^ ex) {
+        MessageBox::Show("РћС€РёР±РєР° РїСЂРё РІС‹Р±РѕСЂРµ РїРѕРµР·РґРєРё: " + ex->Message, "РћС€РёР±РєР°",
+            MessageBoxButtons::OK, MessageBoxIcon::Error);
+    }
+}
+
+System::Void TripListForm::tripsDataGridView_CellContentClick(System::Object^ sender,
+    System::Windows::Forms::DataGridViewCellEventArgs^ e) {
+
+    // Р•СЃР»Рё РєР»РёРєРЅСѓР»Рё РЅР° СЏС‡РµР№РєСѓ СЃ РіР°Р»РѕС‡РєРѕР№ (РїРµСЂРІР°СЏ РєРѕР»РѕРЅРєР°)
+    if (e->ColumnIndex == 0 && e->RowIndex >= 0) {
+        // Р•СЃР»Рё РІС‹Р±РёСЂР°РµРј СЌС‚Сѓ РїРѕРµР·РґРєСѓ, СЃРЅРёРјР°РµРј РІС‹Р±РѕСЂ СЃ РґСЂСѓРіРёС…
+        bool isChecked = safe_cast<bool>(tripsDataGridView->Rows[e->RowIndex]->Cells[0]->Value);
+
+        if (isChecked) {
+            // РЎРЅРёРјР°РµРј РІС‹Р±РѕСЂ СЃРѕ РІСЃРµС… РґСЂСѓРіРёС… СЃС‚СЂРѕРє
+            for (int i = 0; i < tripsDataGridView->Rows->Count; i++) {
+                if (i != e->RowIndex) {
+                    tripsDataGridView->Rows[i]->Cells[0]->Value = false;
+                }
             }
         }
     }
-
-    List<DataGridViewRow^>^ TimingForm::SearchTrips(zapros_form^ searchForm) {
-        List<DataGridViewRow^>^ results = gcnew List<DataGridViewRow^>();
-
-        for each (DataGridViewRow ^ row in base_students_dataGridView->Rows) {
-
-            bool match = true;
-
-            // Проверяем каждое поле, если оно участвует в поиске
-            if (searchForm->UseFIO) {
-                String^ fio = row->Cells["FIO"]->Value != nullptr
-                    ? row->Cells["FIO"]->Value->ToString()
-                    : "";
-
-                String^ searchFio = searchForm->SearchFIO != nullptr
-                    ? searchForm->SearchFIO
-                    : "";
-
-                String^ cleanedFio = fio->Replace(".", "")->Replace(",", "")->Replace(" ", "");
-                String^ cleanedSearch = searchFio->Replace(".", "")->Replace(",", "")->Replace(" ", "");
-
-                // Вариант 1: Поиск по любому месту в ФИО (включая фамилию)
-                match = cleanedFio->Contains(cleanedSearch);
-
-                // Вариант 2: Умный поиск (инициалы или фамилия)
-                if (!match) {
-                    // Разбиваем ФИО на части (ЯМКлевакин -> ["Я", "М", "Клевакин"])
-                    array<String^>^ parts = Regex::Split(cleanedFio, "([А-ЯA-Z])+");
-
-                    // Проверяем каждую часть
-                    for each (String ^ part in parts) {
-                        if (part->Length > 0 && part->Contains(cleanedSearch)) {
-                            match = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (searchForm->UsePol == 1 && match == 1) {
-                String^ pol = safe_cast<String^>(row->Cells["Pol"]->Value);
-                if (pol == nullptr || pol != searchForm->SearchPol) {
-                    match = false;
-                }
-            }
-
-
-            if (searchForm->UseDate == 1 && match == 1) {
-                DateTime searchDate;
-                bool dateParseSuccess = DateTime::TryParseExact(searchForm->search_data->Text,
-                    "dd.MM.yyyy",
-                    CultureInfo::InvariantCulture,
-                    DateTimeStyles::None,
-                    searchDate);
-
-                if (!dateParseSuccess)
-                {
-                    match = false;
-                    System::Diagnostics::Debug::WriteLine("Ошибка парсинга введенной даты!");
-                }
-                else
-                {
-                    Object^ cellValue = row->Cells["date"]->Value;
-                    if (cellValue != nullptr)
-                    {
-                        DateTime studentDate;
-                        bool studentDateParseSuccess = DateTime::TryParseExact(cellValue->ToString(),
-                            "dd.MM.yyyy",
-                            CultureInfo::InvariantCulture,
-                            DateTimeStyles::None,
-                            studentDate);
-
-                        // Отладочный вывод
-                        System::Diagnostics::Debug::WriteLine("Попытка парсинга даты студента: " + cellValue->ToString() +
-                            " Успех: " + studentDateParseSuccess +
-                            " Результат: " + (studentDateParseSuccess ? studentDate.ToString("dd.MM.yyyy") : "N/A"));
-
-                        if (!studentDateParseSuccess)
-                        {
-                            match = false;
-                            System::Diagnostics::Debug::WriteLine("Ошибка парсинга даты студента!");
-                        }
-                        else
-                        {
-                            // Сравниваем даты
-                            if (searchForm->date_bol_zad->Checked)
-                                match = (studentDate > searchDate);
-                            else if (searchForm->date_rav_zad->Checked)
-                                match = (studentDate.Date == searchDate.Date); // Сравниваем только даты
-                            else if (searchForm->date_men_zad->Checked)
-                                match = (studentDate < searchDate);
-
-                            System::Diagnostics::Debug::WriteLine("Сравнение: " + studentDate.ToString("dd.MM.yyyy") +
-                                " vs " + searchDate.ToString("dd.MM.yyyy") +
-                                " Результат: " + match);
-                        }
-                    }
-                    else
-                    {
-                        match = false;
-                        System::Diagnostics::Debug::WriteLine("Дата студента отсутствует!");
-                    }
-                }
-            }
-
-            if (searchForm->UseFaculty == 1 && match == 1) {
-                String^ faculty = row->Cells["Faculty"]->Value != nullptr
-                    ? row->Cells["Faculty"]->Value->ToString()
-                    : "";
-
-                String^ searchFaculty = searchForm->SearchFaculty != nullptr
-                    ? searchForm->SearchFaculty
-                    : "";
-
-                match = faculty->Contains(searchFaculty);
-            }
-
-            if (searchForm->UseGrupp == 1 && match == 1) {
-                String^ grupp = row->Cells["Grupp"]->Value != nullptr
-                    ? row->Cells["Grupp"]->Value->ToString()
-                    : "";
-
-                String^ searchGrupp = searchForm->SearchGrupp != nullptr
-                    ? searchForm->SearchGrupp
-                    : "";
-
-                match = grupp->Contains(searchGrupp);
-            }
-
-            if (searchForm->UseRating == 1 && match == 1) {
-                Decimal rating = 0;
-
-                if (row->Cells["Rating"]->Value != nullptr)
-                {
-                    String^ strValue = safe_cast<String^>(row->Cells["Rating"]->Value);
-                    if (!String::IsNullOrWhiteSpace(strValue))
-                    {
-                        rating = Decimal::Parse(strValue);
-                        if (searchForm->rate_bol_zad->Checked) match = (rating >= searchForm->SearchRating);
-                        if (searchForm->rate_rav_zad->Checked) match = (rating == searchForm->SearchRating);
-                        if (searchForm->rate_men_zad->Checked) match = (rating <= searchForm->SearchRating);
-                    }
-                }
-            }
-
-            if (searchForm->UseSozAct == 1 && match == 1) {
-                Decimal sozact = 3;
-                Decimal search_soz = 3;
-
-                if (row->Cells["soz_act"]->Value != nullptr)
-                {
-                    String^ strValue_soz = safe_cast<String^>(row->Cells["soz_act"]->Value);
-
-                    if (!String::IsNullOrWhiteSpace(strValue_soz))
-                    {
-
-                        sozact = Convert::ToDecimal(row->Cells["soz_act"]->Value);
-                        search_soz = Decimal::Parse(searchForm->SearchSozAct);
-                        if (searchForm->soz_bol_zad->Checked) match = (sozact >= search_soz);
-                        if (searchForm->soz_rav_zad->Checked) match = (sozact == search_soz);
-                        if (searchForm->soz_men_zad->Checked) match = (sozact <= search_soz);
-                    }
-                }
-            }
-
-            if (match == 1) {
-                results->Add(row);
-            }
-        }
-        return results;
-    }
-
-    System::Void TimingForm::Request_Click(System::Object^ sender, System::EventArgs^ e) {
-        zapros_form^ searchForm = gcnew zapros_form();
-        if (searchForm->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
-            // Ищем студентов
-            List<DataGridViewRow^>^ foundStudents = SearchStudents(searchForm);
-
-
-            // Открываем форму с результатами
-            result_form^ resultsForm = gcnew result_form();
-            this->Close();
-
-            // Копируем найденные строки в resultsForm->results_base
-            for each (DataGridViewRow ^ row in foundStudents) {
-                int index = resultsForm->results_base->Rows->Add();
-                DataGridViewRow^ newRow = resultsForm->results_base->Rows[index];
-
-                // Копируем значения ячеек
-                for (int i = 0; i < row->Cells->Count; i++) {
-                    newRow->Cells[i]->Value = row->Cells[i]->Value;
-                }
-            }
-
-            resultsForm->ShowDialog();
-        }
-    }
-
-    
 }

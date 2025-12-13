@@ -1,64 +1,101 @@
+// Admin.hpp
 #pragma once
-#include "Workers.hpp"
-#include "Timing.hpp"
-#include "Bus.hpp"
-#include "Driver.hpp"
-#include <memory>
-#include <vector>
-#include <string>
-#include <array>
 
-class Admin : public Workers {
-private:
-    std::shared_ptr<Timing> currentTiming;
-    std::array<std::string, 3> adminLogs;  // ЗАМЕНА сырого указателя
+#include "DriversList.hpp"
+#include "BusList.hpp"
+#include "TripList.hpp"
 
-public:
-    // Конструктор с вызовом конструктора базового класса
-    Admin(const std::string& surname,
-        const std::string& name,
-        const std::string& fatName,
-        int salary) : Workers(surname, name, fatName, salary, true), // Вызываем конструктор Workers
-        currentTiming(nullptr),                        // Инициализируем умный указатель
-        adminLogs({ "Создан аккаунт", "Готов к работе", "" }) // Инициализируем array
-    {
-        std::cout << "Admin constructor called for: " << GetFullName()
-            << " (Salary: " << salary << ")" << std::endl;
-    }
+namespace InfSystBusStation {
 
-    // Виртуальный деструктор
-    virtual ~Admin();
+    public ref class Admin {
+    private:
+        DriversList^ driversList;
+        BusList^ busList;
+        TripList^ tripList;
 
-    // Запрет конструктора копирования по умолчанию
-    Admin(const Admin&) = delete;
+    public:
+        Admin();
+        ~Admin();
 
-    // Перегрузка оператора присваивания
-    Admin& operator=(const Workers& other);
+        // === ИНИЦИАЛИЗАЦИЯ ===
+        void Initialize();
 
-    // переопределение виртуальных функций
-    void SetAvailable() override;
-    void SetUnavailable(const std::string& reason = "Занят") override;
+        // === МЕТОДЫ ДЛЯ ВОДИТЕЛЕЙ ===
+        bool AddDriver(String^ fio, String^ gender, String^ passportSeries,
+            String^ passportNumber, int salary, String^ license);
+        bool RemoveDriver(String^ fio);
+        bool EditDriver(String^ oldFio, String^ newFio, String^ newGender,
+            String^ newPassportSeries, String^ newPassportNumber,
+            int newSalary, String^ newLicense);
+        Driver^ FindDriver(String^ fio);
+        bool IsDriverAvailable(String^ fio);
 
-    // Перегрузка методов базового класса
-    void PrintInfo() const override;
-    std::string GetFullInfo() const override;
-    double CalculateDiscount() const override;
+        // === МЕТОДЫ ДЛЯ АВТОБУСОВ ===
+        bool AddBus(String^ brand, String^ model, int placeCount,
+            String^ code, String^ techCondition, String^ lastMaintenance);
+        bool RemoveBus(String^ code);
+        bool EditBus(String^ oldCode, String^ newBrand, String^ newModel,
+            int newPlaceCount, String^ newTechCondition, String^ newLastMaintenance);
+        Bus^ FindBus(String^ code);
+        bool IsBusAvailable(String^ code);
 
-    // Виртуальные функции
-    virtual void ManageSchedule();
+        // === МЕТОДЫ ДЛЯ ПОЕЗДОК ===
+        bool AddTrip(String^ startPoint, String^ finishPoint, int price,
+            String^ busCode, String^ driverFio,
+            DateTime depDate, String^ depTime);
+        bool RemoveTrip(String^ route);
+        bool EditTrip(String^ oldRoute, String^ newStartPoint, String^ newFinishPoint,
+            int newPrice, String^ newBusCode, String^ newDriverFio,
+            DateTime newDepDate, String^ newDepTime);
+        Trip^ FindTrip(String^ route);
+        bool StartTrip(String^ route);
+        bool CompleteTrip(String^ route);
+        bool CancelTrip(String^ route);
 
-    // Перегрузка методов
-    void SetPersonalData(int data) override;
+        // === ПОЛУЧЕНИЕ ДАННЫХ ===
+        System::Collections::Generic::List<Driver^>^ GetAllDrivers();
+        System::Collections::Generic::List<Bus^>^ GetAllBuses();
+        System::Collections::Generic::List<Trip^>^ GetAllTrips();
 
-    // Клонирование - ИСПРАВЛЕНО
-    People* Clone() const override;
+        System::Collections::Generic::List<Driver^>^ GetAvailableDrivers();
+        System::Collections::Generic::List<Bus^>^ GetAvailableBuses();
+        System::Collections::Generic::List<Trip^>^ GetPlannedTrips();
+        System::Collections::Generic::List<Trip^>^ GetActiveTrips();
 
-    // Оригинальные методы класса Admin
-    void ChangeBusTiming(std::shared_ptr<Timing> timing);
-    std::shared_ptr<Bus> ChoseBus();
-    std::shared_ptr<Driver> ChoseDriver();
+        // === ФОРМЫ ===
+        void ShowDriversListForm(Form^ owner);
+        void ShowAddDriverForm(Form^ owner);
+        void ShowDeleteDriverForm(Form^ owner);
 
-    // Геттеры
-    std::shared_ptr<Timing> GetCurrentTiming() const { return currentTiming; }
-    const std::array<std::string, 3>& GetAdminLogs() const { return adminLogs; }
-};
+        void ShowBusListForm(Form^ owner);
+        void ShowAddBusForm(Form^ owner);
+        void ShowDeleteBusForm(Form^ owner);
+
+        void ShowTripListForm(Form^ owner);
+        void ShowAddTripForm(Form^ owner);
+        void ShowDeleteTripForm(Form^ owner);
+        void ShowEditTripForm(Form^ owner);
+
+        // === СТАТИСТИКА ===
+        String^ GetSystemStatistics();
+        int GetTotalDrivers();
+        int GetTotalBuses();
+        int GetTotalTrips();
+        int GetActiveTripsCount();
+        int GetAvailableBusesCount();
+        int GetAvailableDriversCount();
+
+        // === СВОЙСТВА ===
+        property DriversList^ DriverSystem {
+            DriversList^ get() { return driversList; }
+        }
+
+        property BusList^ BusSystem {
+            BusList^ get() { return busList; }
+        }
+
+        property TripList^ TripSystem {
+            TripList^ get() { return tripList; }
+        }
+    };
+}
