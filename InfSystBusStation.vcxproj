@@ -122,6 +122,7 @@
     <ClCompile Include="AddDriverForm.cpp" />
     <ClCompile Include="AddTripForm.cpp" />
     <ClCompile Include="Admin.cpp" />
+    <ClCompile Include="AdminForm.cpp" />
     <ClCompile Include="AppFormBase.cpp" />
     <ClCompile Include="Bus.cpp" />
     <ClCompile Include="BusList.cpp" />
@@ -140,8 +141,11 @@
     <ClCompile Include="Order.cpp" />
     <ClCompile Include="Passenger.cpp" />
     <ClCompile Include="AuthForm.cpp" />
+    <ClCompile Include="PassengerForm.cpp" />
     <ClCompile Include="People.cpp" />
+    <ClCompile Include="ResultForm.cpp" />
     <ClCompile Include="Search.cpp" />
+    <ClCompile Include="SearchForm.cpp" />
     <ClCompile Include="StartForm.cpp" />
     <ClCompile Include="Ticket.cpp" />
     <ClCompile Include="TicketChose.cpp" />
@@ -149,6 +153,7 @@
     <ClCompile Include="TimingForm.cpp" />
     <ClCompile Include="Trip.cpp" />
     <ClCompile Include="User.cpp" />
+    <ClCompile Include="UserForm.cpp" />
     <ClCompile Include="Workers.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -162,6 +167,9 @@
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="Admin.hpp">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="AdminForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="AppFormBase.h">
@@ -220,10 +228,19 @@
     <ClInclude Include="AuthForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="PassengerForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="People.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="ResultForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="Search.hpp">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="SearchForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="StartForm.h">
@@ -247,6 +264,9 @@
     <ClInclude Include="User.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="UserForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="Workers.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
@@ -260,6 +280,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AddTripForm.resx">
       <DependentUpon>AddTripForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdminForm.resx">
+      <DependentUpon>AdminForm.h</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ChangePasswordForm.resx">
       <DependentUpon>ChangePasswordForm.h</DependentUpon>
@@ -276,11 +299,17 @@
     <EmbeddedResource Include="AuthForm.resx">
       <DependentUpon>AuthForm.h</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="PassengerForm.resx">
+      <DependentUpon>PassengerForm.h</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="StartForm.resx">
       <DependentUpon>StartForm.h</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TimingForm.resx">
       <DependentUpon>TimingForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UserForm.resx">
+      <DependentUpon>UserForm.h</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

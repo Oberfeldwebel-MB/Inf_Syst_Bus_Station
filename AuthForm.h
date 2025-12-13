@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ChangePasswordForm.h"  // Подключаем форму смены пароля
+#include "ChangePasswordForm.h"
 
 namespace InfSystBusStation {
 
@@ -22,8 +22,6 @@ namespace InfSystBusStation {
 		{
 			InitializeComponent();
 			this->Text = L"Авторизация администратора - Автобусный парк";
-			// Инициализируем файл пароля
-			InitializePasswordFile();
 		}
 
 	protected:
@@ -51,8 +49,7 @@ namespace InfSystBusStation {
 		System::Windows::Forms::Button^ change_pass;
 		System::Windows::Forms::Button^ back_from_pass;
 
-		// Методы для работы с паролем
-		System::Void InitializePasswordFile();
+		// Оставляем только ChangePassword для совместимости
 		System::Void ChangePassword(String^ newPassword);
 
 	private:

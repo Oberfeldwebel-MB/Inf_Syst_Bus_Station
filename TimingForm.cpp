@@ -3,7 +3,7 @@
 
 using namespace InfSystBusStation;
 
-void TripListForm::UpdateDataGridView() {
+void TimingForm::UpdateDataGridView() {
     tripsDataGridView->Rows->Clear();
 
     if (tripList == nullptr || tripList->Count == 0) {
@@ -68,7 +68,7 @@ void TripListForm::UpdateDataGridView() {
     }
 }
 
-System::Void TripListForm::AddTrip_Click(System::Object^ sender, System::EventArgs^ e) {
+System::Void TimingForm::AddTrip_Click(System::Object^ sender, System::EventArgs^ e) {
     if (tripList == nullptr) {
         MessageBox::Show("Ошибка: список поездок не инициализирован!", "Ошибка",
             MessageBoxButtons::OK, MessageBoxIcon::Error);
@@ -89,7 +89,7 @@ System::Void TripListForm::AddTrip_Click(System::Object^ sender, System::EventAr
     }
 }
 
-System::Void TripListForm::DeleteTrip_Click(System::Object^ sender, System::EventArgs^ e) {
+System::Void TimingForm::DeleteTrip_Click(System::Object^ sender, System::EventArgs^ e) {
     if (tripList == nullptr) {
         MessageBox::Show("Ошибка: список поездок не инициализирован!", "Ошибка",
             MessageBoxButtons::OK, MessageBoxIcon::Error);
@@ -110,23 +110,23 @@ System::Void TripListForm::DeleteTrip_Click(System::Object^ sender, System::Even
     }
 }
 
-System::Void TripListForm::EditTrip_Click(System::Object^ sender, System::EventArgs^ e) {
+System::Void TimingForm::EditTrip_Click(System::Object^ sender, System::EventArgs^ e) {
     // TODO: Реализовать форму редактирования поездки
     MessageBox::Show("Функция редактирования поездки будет реализована позже", "В разработке",
         MessageBoxButtons::OK, MessageBoxIcon::Information);
 }
 
-System::Void TripListForm::Search_Click(System::Object^ sender, System::EventArgs^ e) {
+System::Void TimingForm::Search_Click(System::Object^ sender, System::EventArgs^ e) {
     // TODO: Реализовать форму поиска поездок
     MessageBox::Show("Функция поиска поездок будет реализована позже", "В разработке",
         MessageBoxButtons::OK, MessageBoxIcon::Information);
 }
 
-System::Void TripListForm::Back_Click(System::Object^ sender, System::EventArgs^ e) {
+System::Void TimingForm::Back_Click(System::Object^ sender, System::EventArgs^ e) {
     this->Close();
 }
 
-System::Void TripListForm::BuyTicket_Click(System::Object^ sender, System::EventArgs^ e) {
+System::Void TimingForm::BuyTicket_Click(System::Object^ sender, System::EventArgs^ e) {
     try {
         // Находим выбранную строку
         int selectedRowIndex = -1;
@@ -188,7 +188,7 @@ System::Void TripListForm::BuyTicket_Click(System::Object^ sender, System::Event
     }
 }
 
-System::Void TripListForm::tripsDataGridView_CellContentClick(System::Object^ sender,
+System::Void TimingForm::tripsDataGridView_CellContentClick(System::Object^ sender,
     System::Windows::Forms::DataGridViewCellEventArgs^ e) {
 
     // Если кликнули на ячейку с галочкой (первая колонка)
