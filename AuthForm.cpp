@@ -1,160 +1,261 @@
 #include "AuthForm.h"
-#include "ChangePasswordForm.h"
-#include "StartForm.h"
-#include "AdminForm.h"
 
 namespace InfSystBusStation {
 
-	// Статическая переменная для хранения пароля (вместо файла)
-	static String^ currentAdminPassword = "admin123";
+	System::Void AuthForm::InitializeFormBasedOnMode()
+	{
+		if (!_isAdminMode)
+		{
+			// Режим обычного пользователя - скрываем элементы пароля
+			label1->Visible = false;
+			check_pass_box->Visible = false;
+			change_pass->Visible = false;
 
-	System::Void AuthForm::back_from_pass_Click(System::Object^ sender, System::EventArgs^ e) {
-		// Возвращаемся на стартовую форму
+			// Меняем текст кнопки и положение
+			next_pass->Text = L"Продолжить";
+			next_pass->Location = System::Drawing::Point(167, 200);
+
+			// Увеличиваем размер формы для лучшего отображения
+			this->ClientSize = System::Drawing::Size(443, 280);
+
+			// Меняем заголовок формы
+			this->Text = L"Регистрация пользователя - Автобусный парк";
+
+			// Изменяем подсказки
+			labelFIO->Text = L"Введите ваше ФИО (формат А.А.Рогатин)";
+			labelInfo->Text = L"Пример: А.А.Рогатин или А.А.Р.";
+			labelEmail->Text = L"Введите ваш email";
+			labelEmailInfo->Text = L"Пример: example@mail.ru или user@gmail.com";
+		}
+		else
+		{
+			// Режим администратора - показываем все элементы
+			label1->Visible = true;
+			check_pass_box->Visible = true;
+			change_pass->Visible = true;
+
+			// Возвращаем стандартные настройки
+			next_pass->Text = L"Войти";
+			next_pass->Location = System::Drawing::Point(167, 280);
+
+			this->ClientSize = System::Drawing::Size(443, 380);
+
+			this->Text = L"Авторизация администратора - Автобусный парк";
+
+			labelFIO->Text = L"Введите ФИО администратора (формат А.А.Рогатин)";
+			labelInfo->Text = L"Пример: А.А.Рогатин или А.А.Р.";
+			labelEmail->Text = L"Введите email администратора";
+			labelEmailInfo->Text = L"Пример: admin@buspark.ru или admin@gmail.com";
+		}
+	}
+
+	System::Void AuthForm::ValidateFIOFormat()
+	{
+		String^ fio = fio_textbox->Text->Trim();
+
+		if (String::IsNullOrEmpty(fio))
+		{
+			fio_textbox->BackColor = System::Drawing::Color::White;
+			return;
+		}
+
+		// Паттерн для формата: А.А.Рогатин или А.А.Р.
+		System::Text::RegularExpressions::Regex^ regex =
+			gcnew System::Text::RegularExpressions::Regex(L"^[А-ЯЁ]\\.[А-ЯЁ]\\.([А-ЯЁ][а-яё]+|[А-ЯЁ]\\.)$");
+
+		if (regex->IsMatch(fio))
+		{
+			fio_textbox->BackColor = System::Drawing::Color::LightGreen;
+		}
+		else
+		{
+			fio_textbox->BackColor = System::Drawing::Color::LightPink;
+		}
+	}
+
+	System::Void AuthForm::ValidateEmailFormat()
+	{
+		String^ email = email_textbox->Text->Trim();
+
+		if (String::IsNullOrEmpty(email))
+		{
+			email_textbox->BackColor = System::Drawing::Color::White;
+			return;
+		}
+
+		// Простая валидация email
+		try
+		{
+			System::Net::Mail::MailAddress^ mailAddress = gcnew System::Net::Mail::MailAddress(email);
+			email_textbox->BackColor = System::Drawing::Color::LightGreen;
+		}
+		catch (Exception^)
+		{
+			System::Text::RegularExpressions::Regex^ regex =
+				gcnew System::Text::RegularExpressions::Regex(
+					L"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+
+			if (regex->IsMatch(email))
+			{
+				email_textbox->BackColor = System::Drawing::Color::LightGreen;
+			}
+			else
+			{
+				email_textbox->BackColor = System::Drawing::Color::LightPink;
+			}
+		}
+	}
+
+	System::Void AuthForm::fio_textbox_TextChanged(System::Object^ sender, System::EventArgs^ e)
+	{
+		ValidateFIOFormat();
+	}
+
+	System::Void AuthForm::email_textbox_TextChanged(System::Object^ sender, System::EventArgs^ e)
+	{
+		ValidateEmailFormat();
+	}
+
+	System::Void AuthForm::next_pass_Click(System::Object^ sender, System::EventArgs^ e)
+	{
+		// Проверка ФИО
+		String^ fio = fio_textbox->Text->Trim();
+
+		if (String::IsNullOrEmpty(fio))
+		{
+			MessageBox::Show(L"Пожалуйста, введите ФИО!", L"Ошибка",
+				MessageBoxButtons::OK, MessageBoxIcon::Warning);
+			fio_textbox->Focus();
+			return;
+		}
+
+		// Проверка формата ФИО
+		System::Text::RegularExpressions::Regex^ fioRegex =
+			gcnew System::Text::RegularExpressions::Regex(L"^[А-ЯЁ]\\.[А-ЯЁ]\\.([А-ЯЁ][а-яё]+|[А-ЯЁ]\\.)$");
+
+		if (!fioRegex->IsMatch(fio))
+		{
+			MessageBox::Show(L"Неверный формат ФИО! Используйте формат: А.А.Рогатин или А.А.Р.",
+				L"Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+			fio_textbox->Focus();
+			fio_textbox->SelectAll();
+			return;
+		}
+
+		// Проверка email
+		String^ email = email_textbox->Text->Trim();
+
+		if (String::IsNullOrEmpty(email))
+		{
+			MessageBox::Show(L"Пожалуйста, введите email!", L"Ошибка",
+				MessageBoxButtons::OK, MessageBoxIcon::Warning);
+			email_textbox->Focus();
+			return;
+		}
+
+		// Проверка формата email
+		System::Text::RegularExpressions::Regex^ emailRegex =
+			gcnew System::Text::RegularExpressions::Regex(
+				L"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+
+		if (!emailRegex->IsMatch(email))
+		{
+			MessageBox::Show(L"Неверный формат email! Используйте формат: example@mail.ru",
+				L"Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+			email_textbox->Focus();
+			email_textbox->SelectAll();
+			return;
+		}
+
+		// Сохраняем данные
+		_userFIO = fio;
+		_userEmail = email;
+
+		if (_isAdminMode)
+		{
+			// Проверка пароля для режима администратора
+			String^ password = check_pass_box->Text;
+
+			if (String::IsNullOrEmpty(password))
+			{
+				MessageBox::Show(L"Пожалуйста, введите пароль!", L"Ошибка",
+					MessageBoxButtons::OK, MessageBoxIcon::Warning);
+				check_pass_box->Focus();
+				return;
+			}
+
+			// Проверяем пароль администратора (хардкод - убираем файлы)
+			String^ adminPassword = "admin123"; // Пароль по умолчанию
+
+			if (password == adminPassword)
+			{
+				_authenticated = true;
+				this->DialogResult = Windows::Forms::DialogResult::OK;
+				this->Close();
+			}
+			else
+			{
+				MessageBox::Show(L"Неверный пароль администратора!", L"Ошибка",
+					MessageBoxButtons::OK, MessageBoxIcon::Error);
+				check_pass_box->Clear();
+				check_pass_box->Focus();
+			}
+		}
+		else
+		{
+			// Режим обычного пользователя - просто закрываем форму
+			_authenticated = true;
+			this->DialogResult = Windows::Forms::DialogResult::OK;
+			this->Close();
+		}
+	}
+
+	System::Void AuthForm::back_from_pass_Click(System::Object^ sender, System::EventArgs^ e)
+	{
 		this->DialogResult = Windows::Forms::DialogResult::Cancel;
 		this->Close();
 	}
 
-	System::Void AuthForm::next_pass_Click(System::Object^ sender, System::EventArgs^ e) {
-		// Проверяем пароль (без учета регистра)
-		if (currentAdminPassword->ToLower() == check_pass_box->Text->Trim()->ToLower()) {
-			_authenticated = true;
-			MessageBox::Show("Авторизация успешна!\nДоступ к функциям администратора разрешен.",
-				"Успех", MessageBoxButtons::OK, MessageBoxIcon::Information);
+	System::Void AuthForm::change_pass_Click(System::Object^ sender, System::EventArgs^ e)
+	{
+		// Проверяем, заполнены ли обязательные поля
+		String^ fio = fio_textbox->Text->Trim();
+		String^ email = email_textbox->Text->Trim();
 
-			// Закрываем форму с результатом OK
-			this->DialogResult = Windows::Forms::DialogResult::OK;
-			this->Close();
-
-			// После закрытия AuthForm, StartForm откроет AdminForm
+		if (String::IsNullOrEmpty(fio) || String::IsNullOrEmpty(email))
+		{
+			MessageBox::Show(L"Заполните ФИО и email перед сменой пароля!", L"Предупреждение",
+				MessageBoxButtons::OK, MessageBoxIcon::Warning);
+			return;
 		}
-		else {
-			MessageBox::Show("Неверный пароль. Повторите попытку.",
-				"Ошибка авторизации", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+
+		// Проверяем текущий пароль перед сменой
+		String^ currentPassword = check_pass_box->Text;
+		String^ adminPassword = "admin123"; // Текущий пароль
+
+		if (String::IsNullOrEmpty(currentPassword))
+		{
+			MessageBox::Show(L"Введите текущий пароль для смены!", L"Предупреждение",
+				MessageBoxButtons::OK, MessageBoxIcon::Warning);
+			return;
+		}
+
+		if (currentPassword != adminPassword)
+		{
+			MessageBox::Show(L"Неверный текущий пароль!", L"Ошибка",
+				MessageBoxButtons::OK, MessageBoxIcon::Error);
 			check_pass_box->Clear();
 			check_pass_box->Focus();
+			return;
+		}
+
+		// Открываем форму смены пароля
+		ChangePasswordForm^ changeForm = gcnew ChangePasswordForm();
+		if (changeForm->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+		{
+			// Получаем новый пароль из формы
+			String^ newPassword = changeForm->NewPassword;
 		}
 	}
 
-	System::Void AuthForm::change_pass_Click(System::Object^ sender, System::EventArgs^ e) {
-		// Создаем диалог для смены пароля
-		Form^ passwordDialog = gcnew Form();
-		passwordDialog->Text = L"Смена пароля администратора";
-		passwordDialog->Size = Drawing::Size(350, 220);
-		passwordDialog->FormBorderStyle = FormBorderStyle::FixedDialog;
-		passwordDialog->StartPosition = FormStartPosition::CenterParent;
-		passwordDialog->MaximizeBox = false;
-		passwordDialog->MinimizeBox = false;
-
-		// Создаем элементы управления
-		Label^ lblCurrent = gcnew Label();
-		lblCurrent->Text = L"Текущий пароль:";
-		lblCurrent->Location = Drawing::Point(30, 30);
-		lblCurrent->Size = Drawing::Size(120, 20);
-
-		TextBox^ txtCurrent = gcnew TextBox();
-		txtCurrent->Location = Drawing::Point(160, 27);
-		txtCurrent->Size = Drawing::Size(150, 22);
-		txtCurrent->PasswordChar = '*';
-
-		Label^ lblNew = gcnew Label();
-		lblNew->Text = L"Новый пароль:";
-		lblNew->Location = Drawing::Point(30, 70);
-		lblNew->Size = Drawing::Size(120, 20);
-
-		TextBox^ txtNew = gcnew TextBox();
-		txtNew->Location = Drawing::Point(160, 67);
-		txtNew->Size = Drawing::Size(150, 22);
-		txtNew->PasswordChar = '*';
-
-		Label^ lblConfirm = gcnew Label();
-		lblConfirm->Text = L"Подтверждение:";
-		lblConfirm->Location = Drawing::Point(30, 110);
-		lblConfirm->Size = Drawing::Size(120, 20);
-
-		TextBox^ txtConfirm = gcnew TextBox();
-		txtConfirm->Location = Drawing::Point(160, 107);
-		txtConfirm->Size = Drawing::Size(150, 22);
-		txtConfirm->PasswordChar = '*';
-
-		Button^ btnOk = gcnew Button();
-		btnOk->Text = L"Сменить";
-		btnOk->Location = Drawing::Point(80, 150);
-		btnOk->Size = Drawing::Size(80, 30);
-		btnOk->BackColor = Drawing::Color::LightGreen;
-		btnOk->FlatStyle = FlatStyle::Flat;
-
-		Button^ btnCancel = gcnew Button();
-		btnCancel->Text = L"Отмена";
-		btnCancel->Location = Drawing::Point(180, 150);
-		btnCancel->Size = Drawing::Size(80, 30);
-		btnCancel->BackColor = Drawing::Color::LightCoral;
-		btnCancel->FlatStyle = FlatStyle::Flat;
-		btnCancel->DialogResult = DialogResult::Cancel;
-
-		// Обработчик для кнопки OK
-		btnOk->Click += gcnew System::EventHandler([=](System::Object^ sender2, System::EventArgs^ e2) {
-			// Проверяем текущий пароль
-			if (txtCurrent->Text->Trim()->ToLower() != currentAdminPassword->ToLower()) {
-				MessageBox::Show("Неверный текущий пароль!", "Ошибка",
-					MessageBoxButtons::OK, MessageBoxIcon::Warning);
-				txtCurrent->Focus();
-				return;
-			}
-
-			if (String::IsNullOrWhiteSpace(txtNew->Text)) {
-				MessageBox::Show("Новый пароль не может быть пустым!", "Ошибка",
-					MessageBoxButtons::OK, MessageBoxIcon::Warning);
-				txtNew->Focus();
-				return;
-			}
-
-			if (txtNew->Text->Length < 6) {
-				MessageBox::Show("Новый пароль должен содержать минимум 6 символов!", "Ошибка",
-					MessageBoxButtons::OK, MessageBoxIcon::Warning);
-				txtNew->Focus();
-				return;
-			}
-
-			if (txtNew->Text != txtConfirm->Text) {
-				MessageBox::Show("Пароли не совпадают!", "Ошибка",
-					MessageBoxButtons::OK, MessageBoxIcon::Warning);
-				txtConfirm->Focus();
-				return;
-			}
-
-			// Меняем пароль
-			currentAdminPassword = txtNew->Text;
-			MessageBox::Show("Пароль успешно изменен!\nНовый пароль: " + currentAdminPassword,
-				"Успех", MessageBoxButtons::OK, MessageBoxIcon::Information);
-
-			passwordDialog->DialogResult = DialogResult::OK;
-			passwordDialog->Close();
-			});
-
-		// Добавляем элементы на форму
-		passwordDialog->Controls->Add(lblCurrent);
-		passwordDialog->Controls->Add(txtCurrent);
-		passwordDialog->Controls->Add(lblNew);
-		passwordDialog->Controls->Add(txtNew);
-		passwordDialog->Controls->Add(lblConfirm);
-		passwordDialog->Controls->Add(txtConfirm);
-		passwordDialog->Controls->Add(btnOk);
-		passwordDialog->Controls->Add(btnCancel);
-
-		// Показываем диалог
-		if (passwordDialog->ShowDialog() == DialogResult::OK) {
-			// Обновляем поле ввода
-			check_pass_box->Clear();
-			check_pass_box->Focus();
-		}
-
-		delete passwordDialog;
-	}
-
-	System::Void AuthForm::ChangePassword(String^ newPassword) {
-		// Просто обновляем статическую переменную
-		currentAdminPassword = newPassword;
-		MessageBox::Show("Пароль успешно изменен!",
-			"Успех", MessageBoxButtons::OK, MessageBoxIcon::Information);
-	}
 }

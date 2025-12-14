@@ -1,58 +1,71 @@
 // BusList.hpp
 #pragma once
+
 #include "Bus.hpp"
-#include "AddBusForm.h"
-#include "DeleteBusForm.h"
-#include "BusListForm.h"
 
 namespace InfSystBusStation {
+    using namespace System;
+    using namespace System::Windows::Forms;
+    using namespace System::Collections::Generic;
 
     public ref class BusList {
     private:
-        System::Collections::Generic::List<Bus^>^ buses;
+        List<Bus^>^ buses;
         Bus^ FindBusByCodeInternal(String^ code);
 
     public:
         BusList();
         ~BusList();
 
+        // === лерндш дкъ бгюхлндеиярбхъ я тнплюлх ===
+        bool InternalAddBus(String^ brand, String^ model, int placeCount,
+            String^ code, String^ techCondition, String^ lastMaintenance);
+        bool InternalRemoveBus(String^ code);
+        List<String^>^ GetAllBusCodes();
+        Bus^ GetBusByFormattedCode(String^ formattedCode);
+        List<String^>^ GetAllBusFormattedCodes();
+        String^ GetBusDetailedInfo(String^ formattedCode);
+        bool RemoveBusByFormattedCode(String^ formattedCode);
+
         // === лерндш дкъ тнпл ===
         bool ShowAddBusForm(Form^ owner);
         bool ShowDeleteBusForm(Form^ owner);
         void ShowBusListForm(Form^ owner);
 
-        // === лерндш дкъ бгюхлндеиярбхъ я тнплюлх ===
-        bool InternalAddBus(String^ brand, String^ model, int placeCount,
-            String^ code, String^ techCondition, String^ lastMaintenance);
-        bool InternalRemoveBus(String^ code);
-        System::Collections::Generic::List<String^>^ GetAllBusCodes();
-        Bus^ GetBusByFormattedCode(String^ formattedCode);
-
         // === онксвемхе дюммшу ===
-        System::Collections::Generic::List<Bus^>^ GetAvailableBuses();
-        System::Collections::Generic::List<Bus^>^ GetBusesNeedingMaintenance();
-        System::Collections::Generic::List<Bus^>^ GetBusesByBrand(String^ brand);
+        List<Bus^>^ GetAvailableBuses();
+        List<Bus^>^ GetBusesNeedingMaintenance();
+        List<Bus^>^ GetBusesByBrand(String^ brand);
         void DisplayAllBuses();
+
+        // === днонкмхрекэмше лерндш ===
+        List<Bus^>^ GetBusesReadyForTrip();
+        bool UpdateBusCondition(String^ code, String^ newCondition);
+        bool UpdateMaintenanceDate(String^ code, String^ newDate);
+        void GetStatistics(int% total, int% available, int% needMaintenance, int% critical);
+        List<Bus^>^ GetBusesInCriticalCondition();
 
         // === опнбепйх ===
         bool HasAvailableBuses();
         String^ GetBusInfo(String^ code);
 
         // === ябниярбю ===
-        property System::Collections::Generic::List<Bus^>^ AllBuses {
-            System::Collections::Generic::List<Bus^>^ get() { return buses; }
+        property List<Bus^>^ AllBuses {
+            List<Bus^>^ get() { return buses; }
         }
 
         property int Count {
-            int get() { return buses->Count; }
+            int get() { return (buses != nullptr) ? buses->Count : 0; }
         }
 
         property int AvailableCount {
             int get() {
                 int count = 0;
-                for each (Bus ^ bus in buses) {
-                    if (bus->GetAvailability() && !bus->IsInCriticalCondition()) {
-                        count++;
+                if (buses != nullptr) {
+                    for each (Bus ^ bus in buses) {
+                        if (bus->GetAvailability() && !bus->IsInCriticalCondition()) {
+                            count++;
+                        }
                     }
                 }
                 return count;

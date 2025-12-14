@@ -1,91 +1,77 @@
-// Admin.hpp
 #pragma once
 
+#include "Workers.hpp"     
 #include "DriversList.hpp"
 #include "BusList.hpp"
 #include "TripList.hpp"
+#include "Search.hpp"
 
 namespace InfSystBusStation {
 
-    public ref class Admin {
+    public ref class Admin : public Workers {
     private:
         DriversList^ driversList;
         BusList^ busList;
         TripList^ tripList;
 
+        // Данные администратора (убираем логин)
+        String^ adminPassword;
+        DateTime hireDate;
+
     public:
-        Admin();
+        // Конструктор Admin (убираем значение по умолчанию)
+        Admin(String^ password, String^ fullName,
+            String^ passportSeries, String^ passportNumber,
+            int salary, String^ email);
+
         ~Admin();
 
-        // === ИНИЦИАЛИЗАЦИЯ ===
-        void Initialize();
+        // === СИСТЕМНЫЕ МЕТОДЫ ===
+        void InitializeSystem();
+        bool Authenticate(String^ email, String^ password); // Используем email вместо логина
+        void ChangePassword(String^ oldPassword, String^ newPassword);
 
-        // === МЕТОДЫ ДЛЯ ВОДИТЕЛЕЙ ===
-        bool AddDriver(String^ fio, String^ gender, String^ passportSeries,
-            String^ passportNumber, int salary, String^ license);
-        bool RemoveDriver(String^ fio);
-        bool EditDriver(String^ oldFio, String^ newFio, String^ newGender,
-            String^ newPassportSeries, String^ newPassportNumber,
-            int newSalary, String^ newLicense);
-        Driver^ FindDriver(String^ fio);
-        bool IsDriverAvailable(String^ fio);
+        // === ДЕЛЕГИРУЮЩИЕ МЕТОДЫ (фасад) ===
 
-        // === МЕТОДЫ ДЛЯ АВТОБУСОВ ===
-        bool AddBus(String^ brand, String^ model, int placeCount,
-            String^ code, String^ techCondition, String^ lastMaintenance);
-        bool RemoveBus(String^ code);
-        bool EditBus(String^ oldCode, String^ newBrand, String^ newModel,
-            int newPlaceCount, String^ newTechCondition, String^ newLastMaintenance);
+        // Автобусы (делегирует BusList)
+        void ShowBusManagementForm(Form^ owner);
+
+        // Водители (делегирует DriversList)
+        void ShowDriverManagementForm(Form^ owner);
+
+        // Поездки (делегирует TripList)
+        void ShowTripManagementForm(Form^ owner);
+
+        // === ПОИСК ЧЕРЕЗ КЛАСС Search ===
         Bus^ FindBus(String^ code);
-        bool IsBusAvailable(String^ code);
-
-        // === МЕТОДЫ ДЛЯ ПОЕЗДОК ===
-        bool AddTrip(String^ startPoint, String^ finishPoint, int price,
-            String^ busCode, String^ driverFio,
-            DateTime depDate, String^ depTime);
-        bool RemoveTrip(String^ route);
-        bool EditTrip(String^ oldRoute, String^ newStartPoint, String^ newFinishPoint,
-            int newPrice, String^ newBusCode, String^ newDriverFio,
-            DateTime newDepDate, String^ newDepTime);
+        Driver^ FindDriver(String^ fio);
         Trip^ FindTrip(String^ route);
-        bool StartTrip(String^ route);
-        bool CompleteTrip(String^ route);
-        bool CancelTrip(String^ route);
-
-        // === ПОЛУЧЕНИЕ ДАННЫХ ===
-        System::Collections::Generic::List<Driver^>^ GetAllDrivers();
-        System::Collections::Generic::List<Bus^>^ GetAllBuses();
-        System::Collections::Generic::List<Trip^>^ GetAllTrips();
-
-        System::Collections::Generic::List<Driver^>^ GetAvailableDrivers();
-        System::Collections::Generic::List<Bus^>^ GetAvailableBuses();
-        System::Collections::Generic::List<Trip^>^ GetPlannedTrips();
-        System::Collections::Generic::List<Trip^>^ GetActiveTrips();
-
-        // === ФОРМЫ ===
-        void ShowDriversListForm(Form^ owner);
-        void ShowAddDriverForm(Form^ owner);
-        void ShowDeleteDriverForm(Form^ owner);
-
-        void ShowBusListForm(Form^ owner);
-        void ShowAddBusForm(Form^ owner);
-        void ShowDeleteBusForm(Form^ owner);
-
-        void ShowTripListForm(Form^ owner);
-        void ShowAddTripForm(Form^ owner);
-        void ShowDeleteTripForm(Form^ owner);
-        void ShowEditTripForm(Form^ owner);
+        List<Bus^>^ FindAvailableBuses();
+        List<Driver^>^ FindAvailableDrivers();
 
         // === СТАТИСТИКА ===
         String^ GetSystemStatistics();
-        int GetTotalDrivers();
-        int GetTotalBuses();
-        int GetTotalTrips();
-        int GetActiveTripsCount();
-        int GetAvailableBusesCount();
-        int GetAvailableDriversCount();
+        void GenerateReport(String^ reportType);
+
+        // === ПЕРЕОПРЕДЕЛЕНИЕ ВИРТУАЛЬНЫХ МЕТОДОВ ===
+        virtual void PrintInfo() override;
+        virtual String^ GetFullInfo() override;
+        virtual double CalculateDiscount() override;
 
         // === СВОЙСТВА ===
+        property DateTime HireDate {
+            DateTime get() { return hireDate; }
+        }
+
+        property bool IsSystemInitialized {
+            bool get() {
+                return driversList != nullptr &&
+                    busList != nullptr &&
+                    tripList != nullptr;
+            }
+        }
+
+        // Свойства для доступа к подсистемам (только для чтения)
         property DriversList^ DriverSystem {
             DriversList^ get() { return driversList; }
         }
@@ -96,6 +82,11 @@ namespace InfSystBusStation {
 
         property TripList^ TripSystem {
             TripList^ get() { return tripList; }
+        }
+
+        // Свойство для пароля (только для чтения)
+        property String^ Password {
+            String^ get() { return adminPassword; }
         }
     };
 }

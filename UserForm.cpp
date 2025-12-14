@@ -1,5 +1,4 @@
 // UserForm.cpp
-#include "pch.h"
 #include "UserForm.h"
 #include "StartForm.h"
 #include "TimingForm.h"

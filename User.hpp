@@ -1,46 +1,80 @@
 #pragma once
+
 #include "People.hpp"
-#include "Order.hpp"
-#include "Search.hpp"
-#include "Timing.hpp"
-#include "TicketChose.hpp"
-#include <memory>
+#include "Order.hpp"        // Только если Order действительно нужен
+#include "Search.hpp"       // Только если Search нужен в классе
 
-class User : public People {
-private:
-    std::shared_ptr<Order> userOrder;    
-    Search search;
-    std::shared_ptr<Timing> timing;    
+namespace InfSystBusStation {
 
-public:
-    // Конструктор
-    User::User(const std::string& surname,
-        const std::string& name,
-        const std::string& fatName,
-        const std::string& psprtSer,
-        const std::string& psprtNum,
-        const std::string& email,
-        std::shared_ptr<Timing> timingPtr)
-        : People(surname, name, fatName, psprtSer, psprtNum, email),
-        timing(timingPtr) {
-    }
+    public ref class User : public People {
+    private:
+        Order^ userOrder;         // Управляемый указатель на заказ
+        String^ phoneNumber;      // Номер телефона
+        DateTime registrationDate; // Дата регистрации
+        // УБИРАЕМ Timing^ timing!
+        // УБИРАЕМ Search^ search! (если не нужен)
 
-    // Конструктор копирования
-    User::User(const User& other)
-        : People(other), search(other.search), timing(other.timing) {
+    public:
+        // === КОНСТРУКТОРЫ ===
 
-        if (other.userOrder) {
-            userOrder = std::make_shared<Order>(*other.userOrder);
+        // Основной конструктор (БЕЗ Timing!)
+        User(String^ fullName, String^ gender,
+            String^ passportSeries, String^ passportNumber,
+            String^ email, String^ phone);
+
+        // Конструктор для формы (ФИО в формате А.А.Рогатин)
+        User(String^ surname, String^ name, String^ patronymic,
+            String^ gender, String^ passportSeries, String^ passportNumber,
+            String^ email, String^ phone);
+
+        // Деструктор
+        ~User();
+
+        // === СТАТИЧЕСКИЕ МЕТОДЫ СОЗДАНИЯ ===
+
+        // Создание User из данных формы
+        static User^ CreateFromFormData(
+            String^ fio,                // В формате "А.А.Рогатин"
+            String^ gender,
+            String^ passportSeries,
+            String^ passportNumber,
+            String^ email,
+            String^ phone);
+
+        // === ОСНОВНЫЕ МЕТОДЫ ===
+
+        // Работа с заказом (если нужна)
+        void CreateOrder(/* параметры заказа */);
+        void ViewMyOrder();
+        void CancelOrder();
+
+        // === ВИРТУАЛЬНЫЕ МЕТОДЫ ===
+        virtual void PrintInfo() override;
+        virtual String^ GetFullInfo() override;
+        virtual double CalculateDiscount() override;
+
+        // === СВОЙСТВА ===
+        property String^ PhoneNumber {
+            String^ get() { return phoneNumber; }
+            void set(String^ value) { phoneNumber = value; }
         }
 
-    }
+        property DateTime RegistrationDate {
+            DateTime get() { return registrationDate; }
+        }
 
-    ~User() = default;
+        property bool HasActiveOrder {
+            bool get() { return userOrder != nullptr && !userOrder->IsEmpty(); }
+        }
 
-    void SearchAndBookTicket();
-    void ViewMyOrder() const;
-    void InitializeOrder(std::shared_ptr<TicketChose> ticketChose);
+        property Order^ CurrentOrder {
+            Order^ get() { return userOrder; }
+        }
 
-    std::shared_ptr<Order> GetOrder() const { return userOrder; }
-    void SetTiming(std::shared_ptr<Timing> timingPtr) { timing = timingPtr; }
-};
+        // === ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ===
+        bool ValidateUserData();
+        String^ GetShortInfo();
+        bool UpdateEmail(String^ newEmail);
+        bool UpdatePhone(String^ newPhone);
+    };
+}

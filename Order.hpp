@@ -1,55 +1,99 @@
 #pragma once
+
+#include "Ticket.hpp"        // Должен быть управляемым
+#include "TicketChose.hpp"   // Должен быть управляемым
+#include "Search.hpp"        // Должен быть управляемым
 #include <vector>
-#include <memory>
-#include <string>
-#include "Ticket.hpp"
-#include "TicketChose.hpp"
 
-class Search;
+namespace InfSystBusStation {
 
-class Order {
-private:
-    std::vector<Ticket> TicketList;
-    std::string PayStatus;
-    double TotalPrice;
-    std::shared_ptr<TicketChose> ticketchose;
-    std::shared_ptr<Search> search;
-    std::string orderId;
+    public ref class Order {
+    private:
+        System::Collections::Generic::List<Ticket^>^ ticketList;  // Управляемая коллекция
+        System::String^ payStatus;
+        double totalPrice;
+        TicketChose^ ticketchose;      // Управляемый указатель
+        Search^ search;                // Управляемый указатель
+        System::String^ orderId;
+        System::DateTime orderDate;
 
-public:
-    //конструктор
-    Order::Order(std::shared_ptr<TicketChose> chose)
-        : ticketchose(chose), PayStatus("Не оплачен"), TotalPrice(0.0) {
-    }
+    public:
+        // === КОНСТРУКТОРЫ ===
 
-    //конструктор копирования
-    Order::Order(const Order& other)
-        : TicketList(other.TicketList), PayStatus(other.PayStatus),
-        TotalPrice(other.TotalPrice), ticketchose(other.ticketchose),
-        search(other.search), orderId(other.orderId + "_copy") {
-    }
+        // Основной конструктор
+        Order(TicketChose^ chose);
 
-    ~Order() = default;
+        // Конструктор с дополнительными параметрами
+        Order(TicketChose^ chose, System::String^ id);
 
-    void PrintOrderInfo() const;
-    void AddTicket(const Ticket& ticket);
-    bool RemoveTicket(const Ticket& ticket);
-    void PayOrder();
-    void CancelOrder();
-    void CalculateTotalPrice();
+        // Конструктор копирования
+        Order(Order^ other);
 
-    //перегрузка оператора (добавляем новый билет)
-    Order& operator+=(const Ticket& ticket);
+        // Деструктор
+        ~Order();
 
-    // дружественная функция 
-    friend std::string GenerateOrderReceipt(const Order& order);
+        // === ОСНОВНЫЕ МЕТОДЫ ===
+        void PrintOrderInfo();
+        void AddTicket(Ticket^ ticket);
+        bool RemoveTicket(Ticket^ ticket);
+        void PayOrder();
+        void CancelOrder();
+        void CalculateTotalPrice();
+        void ClearOrder();
 
-    // Геттеры
-    const std::vector<Ticket>& GetTicketList() const { return TicketList; }
-    std::string GetPayStatus() const { return PayStatus; }
-    double GetTotalPrice() const { return TotalPrice; }
-    bool IsEmpty() const { return TicketList.empty(); }
-    std::string GetOrderId() const { return orderId; }
+        // === ПЕРЕГРУЗКА ОПЕРАТОРОВ ===
+        // В C++/CLI перегрузка операторов работает иначе
+        // Вместо оператора += используем метод Add
+        // Но можно перегрузить если нужно:
+        static Order^ operator+(Order^ order, Ticket^ ticket);
 
-    void SetSearch(std::shared_ptr<Search> searchPtr) { search = searchPtr; }
-};
+        // === СВОЙСТВА ===
+        property System::Collections::Generic::List<Ticket^>^ TicketList {
+            System::Collections::Generic::List<Ticket^>^ get() { return ticketList; }
+        }
+
+        property System::String^ PayStatus {
+            System::String^ get() { return payStatus; }
+        }
+
+        property double TotalPrice {
+            double get() { return totalPrice; }
+        }
+
+        property bool IsEmpty {
+            bool get() { return ticketList->Count == 0; }
+        }
+
+        property System::String^ OrderId {
+            System::String^ get() { return orderId; }
+        }
+
+        property System::DateTime OrderDate {
+            System::DateTime get() { return orderDate; }
+        }
+
+        property TicketChose^ TicketChooser {
+            TicketChose^ get() { return ticketchose; }
+            void set(TicketChose^ value) { ticketchose = value; }
+        }
+
+        property Search^ OrderSearch {
+            Search^ get() { return search; }
+            void set(Search^ value) { search = value; }
+        }
+
+        property int TicketCount {
+            int get() { return ticketList->Count; }
+        }
+
+        // === ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ===
+        System::String^ GetOrderSummary();
+        bool ContainsTicket(Ticket^ ticket);
+        double CalculateDiscount();
+        void ApplyDiscount(double discountPercent);
+
+        // === СТАТИЧЕСКИЕ МЕТОДЫ ===
+        static System::String^ GenerateOrderId();
+        static System::String^ GenerateReceipt(Order^ order);
+    };
+}

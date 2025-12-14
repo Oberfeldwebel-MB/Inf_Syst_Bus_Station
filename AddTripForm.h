@@ -4,6 +4,7 @@
 #include "TripList.hpp"
 #include "BusList.hpp"
 #include "DriversList.hpp"
+#include "Search.hpp"
 
 namespace InfSystBusStation {
 
@@ -86,7 +87,7 @@ namespace InfSystBusStation {
         System::Windows::Forms::TextBox^ StartPointBox;
         System::Windows::Forms::TextBox^ FinishPointBox;
 
-        // Новые элементы для выбора водителя и автобуса
+        // элементы для выбора водителя и автобуса
         System::Windows::Forms::Label^ driverLabel;
         System::Windows::Forms::ComboBox^ driverComboBox;
         System::Windows::Forms::Label^ busLabel;

@@ -3,6 +3,7 @@
 
 #include "BusList.hpp"
 
+
 namespace InfSystBusStation {
 
     using namespace System;
@@ -18,18 +19,8 @@ namespace InfSystBusStation {
     public ref class DeleteBusForm : public System::Windows::Forms::Form
     {
     public:
-        DeleteBusForm(BusList^ busList) {
-            InitializeComponent();
-            this->busList = busList;
-            LoadBusCodes();
-        }
-
-    protected:
-        ~DeleteBusForm() {
-            if (components) {
-                delete components;
-            }
-        }
+        DeleteBusForm(BusList^ busList);  // Только объявление
+        ~DeleteBusForm();
 
     private:
         BusList^ busList;
@@ -244,6 +235,9 @@ namespace InfSystBusStation {
 
         // Метод для обновления информации о выбранном автобусе
         void UpdateBusInfo(Bus^ bus);
+
+        // Метод для очистки информации об автобусе
+        void ClearBusInfo();
 
     private:
         // Обработчики событий

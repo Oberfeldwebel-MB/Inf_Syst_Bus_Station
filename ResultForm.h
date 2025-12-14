@@ -59,13 +59,6 @@ namespace InfSystBusStation {
            // Колонка для выбора одной поездки
 
 
-
-
-
-
-
-
-
            System::Windows::Forms::Button^ btnBuyTicket;
 
 #pragma region Windows Form Designer generated code
@@ -77,7 +70,6 @@ namespace InfSystBusStation {
                this->searchMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
                this->backMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
                this->tripsDataGridView = (gcnew System::Windows::Forms::DataGridView());
-               this->btnBuyTicket = (gcnew System::Windows::Forms::Button());
                this->selectColumn = (gcnew System::Windows::Forms::DataGridViewCheckBoxColumn());
                this->numColumn = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
                this->startPointColumn = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
@@ -87,6 +79,7 @@ namespace InfSystBusStation {
                this->arrDateColumn = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
                this->priceColumn = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
                this->driverColumn = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+               this->btnBuyTicket = (gcnew System::Windows::Forms::Button());
                this->menuStrip->SuspendLayout();
                (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->tripsDataGridView))->BeginInit();
                this->SuspendLayout();
@@ -157,18 +150,6 @@ namespace InfSystBusStation {
                this->tripsDataGridView->TabIndex = 1;
                this->tripsDataGridView->CellContentClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &TimingForm::tripsDataGridView_CellContentClick);
                // 
-               // btnBuyTicket
-               // 
-               this->btnBuyTicket->BackColor = System::Drawing::Color::LightGreen;
-               this->btnBuyTicket->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Bold));
-               this->btnBuyTicket->Location = System::Drawing::Point(1062, 500);
-               this->btnBuyTicket->Name = L"btnBuyTicket";
-               this->btnBuyTicket->Size = System::Drawing::Size(226, 40);
-               this->btnBuyTicket->TabIndex = 2;
-               this->btnBuyTicket->Text = L"Купить билет";
-               this->btnBuyTicket->UseVisualStyleBackColor = false;
-               this->btnBuyTicket->Click += gcnew System::EventHandler(this, &TimingForm::BuyTicket_Click);
-               // 
                // selectColumn
                // 
                this->selectColumn->HeaderText = L"Выбрать";
@@ -232,7 +213,19 @@ namespace InfSystBusStation {
                this->driverColumn->Name = L"driverColumn";
                this->driverColumn->Width = 150;
                // 
-               // TripListForm
+               // btnBuyTicket
+               // 
+               this->btnBuyTicket->BackColor = System::Drawing::Color::LightGreen;
+               this->btnBuyTicket->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Bold));
+               this->btnBuyTicket->Location = System::Drawing::Point(1062, 500);
+               this->btnBuyTicket->Name = L"btnBuyTicket";
+               this->btnBuyTicket->Size = System::Drawing::Size(226, 40);
+               this->btnBuyTicket->TabIndex = 2;
+               this->btnBuyTicket->Text = L"Купить билет";
+               this->btnBuyTicket->UseVisualStyleBackColor = false;
+               this->btnBuyTicket->Click += gcnew System::EventHandler(this, &TimingForm::BuyTicket_Click);
+               // 
+               // TimingForm
                // 
                this->AutoScaleDimensions = System::Drawing::SizeF(8, 16);
                this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
@@ -242,7 +235,7 @@ namespace InfSystBusStation {
                this->Controls->Add(this->tripsDataGridView);
                this->Controls->Add(this->menuStrip);
                this->MainMenuStrip = this->menuStrip;
-               this->Name = L"TripListForm";
+               this->Name = L"TimingForm";
                this->StartPosition = System::Windows::Forms::FormStartPosition::CenterScreen;
                this->Text = L"Расписание поездок";
                this->menuStrip->ResumeLayout(false);

@@ -1,5 +1,4 @@
-﻿// Workers.cpp
-#include "Workers.hpp"
+﻿#include "Workers.hpp"
 
 using namespace InfSystBusStation;
 using namespace System;
@@ -12,14 +11,16 @@ void Workers::SetSalary(int value) {
 }
 
 void Workers::PrintInfo() {
-    People::PrintInfo(); // Вызов метода базового класса
+    People::PrintInfo(); // Вызов метода базового класса People
     Console::WriteLine("Должность: Сотрудник");
     Console::WriteLine("Зарплата: {0} руб.", salary);
+    Console::WriteLine("Email: {0}", GetEmail()); // Добавляем email
     Console::WriteLine("Статус: {0}", isAvailable ? "Доступен" : "Не доступен");
 }
 
 String^ Workers::GetFullInfo() {
     return "Сотрудник: " + GetFullName() +
+        " | Email: " + GetEmail() + // Добавляем email
         " | Зарплата: " + salary +
         " руб. | Статус: " + (isAvailable ? "Доступен" : "Занят");
 }

@@ -86,7 +86,8 @@ System::Void DeleteTripForm::tripComboBox_SelectedIndexChanged(System::Object^ s
 System::Void DeleteTripForm::deleteButton_Click(System::Object^ sender, System::EventArgs^ e) {
     if (tripComboBox->SelectedIndex < 0) {
         MessageBox::Show("Выберите поездку для удаления!", "Ошибка",
-            MessageBoxButtons::OK, MessageBoxIcon::Error);
+            System::Windows::Forms::MessageBoxButtons::OK,
+            System::Windows::Forms::MessageBoxIcon::Error);
         return;
     }
 
@@ -95,82 +96,57 @@ System::Void DeleteTripForm::deleteButton_Click(System::Object^ sender, System::
 
     if (selectedTrip == nullptr) {
         MessageBox::Show("Выбранная поездка не найдена в системе!", "Ошибка",
-            MessageBoxButtons::OK, MessageBoxIcon::Error);
+            System::Windows::Forms::MessageBoxButtons::OK,
+            System::Windows::Forms::MessageBoxIcon::Error);
         return;
     }
 
-    // Предупреждение если поездка в процессе
-    if (selectedTrip->IsInProgress()) {
-        DialogResult warningResult = MessageBox::Show(
-            "Внимание! Вы пытаетесь удалить поездку, которая находится в процессе.\n" +
-            "Это может привести к сбоям в системе. Продолжить?",
-            "Предупреждение",
-            MessageBoxButtons::YesNo,
-            MessageBoxIcon::Warning);
+    try {
+        // Удаляем поездку без подтверждения
+        bool success = tripList->InternalRemoveTrip(selectedRoute);
 
-        if (warningResult != DialogResult::Yes) {
-            return;
-        }
-    }
+        if (success) {
+            // Показываем информацию об удаленной поездке
+            String^ infoMessage = String::Format(
+                "Поездка успешно удалена!\n\n"
+                "Маршрут: {0}\n"
+                "Дата: {1:dd.MM.yyyy}\n"
+                "Время: {2}",
+                selectedTrip->GetRoute(),
+                selectedTrip->GetTripDate(),
+                selectedTrip->GetTripTime());
 
-    // Подтверждение удаления
-    String^ message = String::Format(
-        "Вы действительно хотите удалить поездку?\n\n"
-        "Маршрут: {0}\n"
-        "Дата: {1:dd.MM.yyyy}\n"
-        "Время: {2}\n"
-        "Цена: {3} руб.\n"
-        "Автобус: {4}\n"
-        "Водитель: {5}\n\n"
-        "Данное действие нельзя отменить!",
-        selectedTrip->GetRoute(),
-        selectedTrip->GetTripDate(),
-        selectedTrip->GetTripTime(),
-        selectedTrip->GetPrice(),
-        selectedTrip->GetBus() != nullptr ? selectedTrip->GetBus()->GetFormattedCode() : "Не назначен",
-        selectedTrip->GetDriver() != nullptr ? selectedTrip->GetDriver()->GetFullName() : "Не назначен");
+            MessageBox::Show(infoMessage, "Успешное удаление",
+                System::Windows::Forms::MessageBoxButtons::OK,
+                System::Windows::Forms::MessageBoxIcon::Information);
 
-    DialogResult result = MessageBox::Show(
-        message,
-        "Подтверждение удаления",
-        MessageBoxButtons::YesNo,
-        MessageBoxIcon::Warning);
+            // Обновляем список в ComboBox
+            LoadTripRoutes();
 
-    if (result == DialogResult::Yes) {
-        try {
-            // Удаляем поездку через TripList
-            bool success = tripList->InternalRemoveTrip(selectedRoute);
-
-            if (success) {
-                MessageBox::Show("Поездка успешно удалена!", "Успех",
-                    MessageBoxButtons::OK, MessageBoxIcon::Information);
-
-                // Обновляем список в ComboBox
-                LoadTripRoutes();
-
-                // Если еще есть поездки, выбираем первую
-                if (tripComboBox->Items->Count > 0) {
-                    tripComboBox->SelectedIndex = 0;
-                }
-                else {
-                    // Если поездок не осталось, закрываем форму
-                    this->DialogResult = DialogResult::OK;
-                    this->Close();
-                }
+            // Если еще есть поездки, выбираем первую
+            if (tripComboBox->Items->Count > 0) {
+                tripComboBox->SelectedIndex = 0;
             }
             else {
-                MessageBox::Show("Не удалось удалить поездку!", "Ошибка",
-                    MessageBoxButtons::OK, MessageBoxIcon::Error);
+                // Если поездок не осталось, закрываем форму
+                this->DialogResult = System::Windows::Forms::DialogResult::OK;
+                this->Close();
             }
         }
-        catch (Exception^ ex) {
-            MessageBox::Show("Ошибка при удалении: " + ex->Message, "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Error);
+        else {
+            MessageBox::Show("Не удалось удалить поездку!", "Ошибка",
+                System::Windows::Forms::MessageBoxButtons::OK,
+                System::Windows::Forms::MessageBoxIcon::Error);
         }
+    }
+    catch (Exception^ ex) {
+        MessageBox::Show("Ошибка при удалении: " + ex->Message, "Ошибка",
+            System::Windows::Forms::MessageBoxButtons::OK,
+            System::Windows::Forms::MessageBoxIcon::Error);
     }
 }
 
 System::Void DeleteTripForm::cancelButton_Click(System::Object^ sender, System::EventArgs^ e) {
-    this->DialogResult = DialogResult::Cancel;
+    this->DialogResult = System::Windows::Forms::DialogResult::Cancel;
     this->Close();
 }

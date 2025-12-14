@@ -1,46 +1,76 @@
+// Search.hpp
 #pragma once
-#include <string>
-#include <vector>
-#include <memory>
+
+#include "Bus.hpp"
+#include "BusList.hpp"
 #include "Trip.hpp"
-#include "Ticket.hpp"
-#include "Order.hpp"
-#include "Timing.hpp"
+#include "TripList.hpp"
+#include "Driver.hpp"
+#include "DriversList.hpp"
+#include "BusValidator.h"
 
-class Search {
-private:
-    std::string SearchOtp;
-    std::string SearchPr;
-    std::string SearchDate;
+namespace InfSystBusStation {
 
-public:
-    // конструктор
-    Search(const std::string& otp = "",
-        const std::string& pr = "",
-        const std::string& date = "")
-        : SearchOtp(otp), SearchPr(pr), SearchDate(date) {
-    }
+    using namespace System;
+    using namespace System::Collections::Generic;
 
-    // Поиск в расписании (Timing) 
-    std::vector<std::shared_ptr<Trip>> SearchTripsByDate(const Timing& timing, const std::string& date);
-    std::vector<std::shared_ptr<Trip>> SearchTripsByRoute(const Timing& timing, const std::string& start, const std::string& finish);
-    std::vector<std::shared_ptr<Trip>> SearchTripsByDriver(const Timing& timing, const std::string& driverName);
-    std::vector<std::shared_ptr<Trip>> SearchTripsByBus(const Timing& timing, const std::string& busCode);
-    std::vector<std::shared_ptr<Trip>> SearchTripsCombined(const Timing& timing,
-        const std::string& start = "",
-        const std::string& finish = "",
-        const std::string& date = "");
+    public ref class Search {
+    public:
+        // === ПОИСК АВТОБУСОВ ===
 
-    // Поиск в заказах (Order)
-    std::vector<std::shared_ptr<Ticket>> SearchTickets(const Order& order,
-        const std::string& passengerName,
-        const std::string& route,
-        int seatNumber,
-        Ticket::TicketType ticketType);
-    std::vector<std::shared_ptr<Ticket>> SearchTicketsByRoute(const Order& order, const std::string& route);
-    std::vector<std::shared_ptr<Ticket>> SearchTicketsByType(const Order& order, Ticket::TicketType ticketType);
-    std::vector<std::shared_ptr<Ticket>> SearchTicketsBySeat(const Order& order, int seatNumber);
+        // Поиск автобуса по коду (с использованием BusValidator)
+        static Bus^ FindBusByCode(BusList^ busList, String^ code);
 
-    //перегрузка оператора вывода
-    friend std::ostream& operator<<(std::ostream& os, const Search& search);
-};
+        // Поиск автобусов по марке (с валидацией через BusValidator)
+        static List<Bus^>^ FindBusesByBrand(BusList^ busList, String^ brand);
+
+        // Поиск автобусов по модели (с валидацией через BusValidator)
+        static List<Bus^>^ FindBusesByModel(BusList^ busList, String^ model);
+
+        // Поиск доступных автобусов
+        static List<Bus^>^ FindAvailableBuses(BusList^ busList);
+
+        // Поиск автобусов, требующих ТО
+        static List<Bus^>^ FindBusesNeedingMaintenance(BusList^ busList);
+
+        // Поиск автобусов по техническому состоянию (с валидацией через BusValidator)
+        static List<Bus^>^ FindBusesByCondition(BusList^ busList, String^ condition);
+
+        // Поиск автобусов с количеством мест больше указанного
+        static List<Bus^>^ FindBusesWithMinSeats(BusList^ busList, int minSeats);
+
+        // === ПОИСК ПОЕЗДОК ===
+
+        // Поиск поездок по дате
+        static List<Trip^>^ FindTripsByDate(TripList^ tripList, DateTime date);
+
+        // Поиск поездок по маршруту
+        static List<Trip^>^ FindTripsByRoute(TripList^ tripList, String^ route);
+
+        // Поиск поездок по автобусу
+        static List<Trip^>^ FindTripsByBus(TripList^ tripList, String^ busCode);
+
+        // Поиск поездок по водителю
+        static List<Trip^>^ FindTripsByDriver(TripList^ tripList, String^ driverName);
+
+        // Поиск активных поездок
+        static List<Trip^>^ FindActiveTrips(TripList^ tripList);
+
+        // Поиск запланированных поездок
+        static List<Trip^>^ FindPlannedTrips(TripList^ tripList);
+
+        // Комбинированный поиск поездок
+        static List<Trip^>^ FindTripsCombined(TripList^ tripList,
+            String^ routeFilter, DateTime^ dateFilter, String^ statusFilter);
+
+        // === УНИВЕРСАЛЬНЫЙ ПОИСК ===
+
+        // Универсальный поиск с предикатом
+        generic<typename T>
+        static List<T>^ FindAll(List<T>^ list, Predicate<T>^ predicate);
+
+    private:
+        // Вспомогательный метод для сравнения строк без учета регистра
+        static bool CompareStringsIgnoreCase(String^ str1, String^ str2);
+    };
+}

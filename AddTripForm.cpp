@@ -2,6 +2,7 @@
 #include "AddTripForm.h"
 
 using namespace InfSystBusStation;
+using namespace System;
 using namespace System::Windows::Forms;
 
 // Загрузка списка водителей в ComboBox
@@ -39,8 +40,8 @@ void AddTripForm::LoadBusComboBox() {
         return;
     }
 
-    // Загружаем только доступные автобусы
-    auto availableBuses = busList->GetAvailableBuses();
+    // Загружаем только доступные автобусы, используя Search класс
+    auto availableBuses = Search::FindAvailableBuses(busList);
     for each (Bus ^ bus in availableBuses) {
         String^ busInfo = String::Format("{0} {1} [{2}]",
             bus->GetBrand(),
@@ -57,6 +58,18 @@ void AddTripForm::LoadBusComboBox() {
         busComboBox->SelectedIndex = 0;
         busComboBox->Enabled = false;
     }
+}
+
+// Вспомогательная функция для извлечения кода автобуса из строки
+String^ ExtractBusCodeFromInfo(String^ busInfo) {
+    int startBracket = busInfo->IndexOf('[');
+    int endBracket = busInfo->IndexOf(']');
+
+    if (startBracket != -1 && endBracket != -1 && endBracket > startBracket) {
+        return busInfo->Substring(startBracket + 1, endBracket - startBracket - 1);
+    }
+
+    return String::Empty;
 }
 
 System::Void AddTripForm::add_button_Click(System::Object^ sender, System::EventArgs^ e) {
@@ -159,6 +172,7 @@ System::Void AddTripForm::add_button_Click(System::Object^ sender, System::Event
             return;
         }
 
+        // Поиск водителя по имени (здесь можно было бы добавить метод в Search)
         Driver^ selectedDriver = nullptr;
         for each (Driver ^ driver in driverList->AllDrivers) {
             if (driver->GetFullName() == selectedDriverName && driver->GetAvailability()) {
@@ -188,15 +202,16 @@ System::Void AddTripForm::add_button_Click(System::Object^ sender, System::Event
             return;
         }
 
-        // Извлекаем код автобуса из строки (формат: "Марка Модель [A/888/AA]")
-        String^ busCode = "";
-        int startBracket = selectedBusInfo->IndexOf('[');
-        int endBracket = selectedBusInfo->IndexOf(']');
-        if (startBracket != -1 && endBracket != -1) {
-            busCode = selectedBusInfo->Substring(startBracket + 1, endBracket - startBracket - 1);
+        // Извлекаем код автобуса из строки
+        String^ busCode = ExtractBusCodeFromInfo(selectedBusInfo);
+        if (String::IsNullOrEmpty(busCode)) {
+            MessageBox::Show("Не удалось определить код автобуса!", "Ошибка",
+                MessageBoxButtons::OK, MessageBoxIcon::Warning);
+            return;
         }
 
-        Bus^ selectedBus = busList->FindBusByCode(busCode);
+        // ИСПРАВЛЕНИЕ: Используем Search класс для поиска автобуса
+        Bus^ selectedBus = Search::FindBusByCode(busList, busCode);
         if (selectedBus == nullptr || !selectedBus->GetAvailability()) {
             MessageBox::Show("Выбранный автобус недоступен!", "Ошибка",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
@@ -229,9 +244,12 @@ System::Void AddTripForm::add_button_Click(System::Object^ sender, System::Event
         }
 
         // === 4. Вызов метода TripList для добавления ===
+        // Извлекаем время из строки даты (последние 5 символов "HH:mm")
+        String^ departureTime = depDateStr->Substring(11, 5);
+
         if (tripList->InternalAddTrip(startPoint, finishPoint, price,
-            selectedBus, selectedDriver,
-            depDate, depDateStr->Substring(11))) { // Время отправления
+            selectedBus, selectedDriver, depDate, departureTime)) {
+
             // Успешно добавлено
             MessageBox::Show("Поездка успешно добавлена в расписание!", "Успех",
                 MessageBoxButtons::OK, MessageBoxIcon::Information);
@@ -254,7 +272,8 @@ System::Void AddTripForm::add_button_Click(System::Object^ sender, System::Event
             DataAdded(this, EventArgs::Empty);
 
             // Закрываем форму с результатом OK
-            this->DialogResult = DialogResult::OK;
+            this->DialogResult = System::Windows::Forms::DialogResult::OK;
+            this->Close();
         }
     }
     catch (Exception^ ex) {

@@ -123,7 +123,6 @@
     <ClCompile Include="AddTripForm.cpp" />
     <ClCompile Include="Admin.cpp" />
     <ClCompile Include="AdminForm.cpp" />
-    <ClCompile Include="AppFormBase.cpp" />
     <ClCompile Include="Bus.cpp" />
     <ClCompile Include="BusList.cpp" />
     <ClCompile Include="BusListForm.cpp" />
@@ -139,6 +138,7 @@
     <ClCompile Include="EditTripForm.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Order.cpp" />
+    <ClCompile Include="OrdersForm.cpp" />
     <ClCompile Include="Passenger.cpp" />
     <ClCompile Include="AuthForm.cpp" />
     <ClCompile Include="PassengerForm.cpp" />
@@ -149,6 +149,7 @@
     <ClCompile Include="StartForm.cpp" />
     <ClCompile Include="Ticket.cpp" />
     <ClCompile Include="TicketChose.cpp" />
+    <ClCompile Include="TicketForm.cpp" />
     <ClCompile Include="TripList.cpp" />
     <ClCompile Include="TimingForm.cpp" />
     <ClCompile Include="Trip.cpp" />
@@ -170,9 +171,6 @@
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="AdminForm.h">
-      <FileType>CppForm</FileType>
-    </ClInclude>
-    <ClInclude Include="AppFormBase.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="BusListForm.h">
@@ -201,9 +199,6 @@
     <ClInclude Include="EditTripForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="IAppForm.h">
-      <FileType>CppForm</FileType>
-    </ClInclude>
     <ClInclude Include="Bus.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
@@ -220,6 +215,9 @@
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="Order.hpp">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="OrdersForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="Passenger.hpp">
@@ -250,6 +248,9 @@
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="TicketChose.hpp">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="TicketForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="TripList.hpp">
@@ -293,14 +294,14 @@
     <EmbeddedResource Include="EditTripForm.resx">
       <DependentUpon>EditTripForm.h</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="IAppForm.resx">
-      <DependentUpon>IAppForm.h</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="AuthForm.resx">
       <DependentUpon>AuthForm.h</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PassengerForm.resx">
       <DependentUpon>PassengerForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ResultForm.resx">
+      <DependentUpon>ResultForm.h</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="StartForm.resx">
       <DependentUpon>StartForm.h</DependentUpon>

@@ -1,4 +1,4 @@
-// People.h (управляемый)
+// People.hpp (управляемый)
 #pragma once
 
 using namespace System;

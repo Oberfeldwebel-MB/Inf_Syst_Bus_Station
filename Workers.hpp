@@ -1,4 +1,3 @@
-// Workers.h
 #pragma once
 #include "People.hpp"
 
@@ -11,12 +10,12 @@ namespace InfSystBusStation {
         String^ status;
 
     public:
-        // Конструктор с доступностью по умолчанию (true)
+        // Конструктор с email
         Workers(String^ fullName, String^ gender,
             String^ passportSeries, String^ passportNumber,
-            int salary)
+            int salary, String^ email)
             : People(fullName, gender, passportSeries,
-                passportNumber, ""),  // Пустая строка для email
+                passportNumber, email),
             salary(salary), isAvailable(true), status("") {
 
             if (salary < 0) {
@@ -24,7 +23,14 @@ namespace InfSystBusStation {
             }
         }
 
-        
+        // Конструктор без email (для обратной совместимости)
+        Workers(String^ fullName, String^ gender,
+            String^ passportSeries, String^ passportNumber,
+            int salary)
+            : Workers(fullName, gender, passportSeries,
+                passportNumber, salary, "") // Вызываем конструктор с email
+        {
+        }
 
         virtual ~Workers() {}
 

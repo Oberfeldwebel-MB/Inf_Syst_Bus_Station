@@ -1,395 +1,124 @@
-﻿// Admin.cpp
-#include "Admin.hpp"
-#include "DriversListForm.h"
-#include "AddDriverForm.h"
-#include "DeleteDriverForm.h"
-#include "BusListForm.h"
-#include "AddBusForm.h"
-#include "DeleteBusForm.h"
-#include "TimingForm.h"
-#include "AddTripForm.h"
-#include "DeleteTripForm.h"
-#include "EditTripForm.h"
+﻿#include "Admin.hpp"
+#include "Search.hpp"
 
 using namespace InfSystBusStation;
 using namespace System;
 using namespace System::Collections::Generic;
+using namespace System::Windows::Forms;
 
-// Конструктор
-Admin::Admin() {
+// Конструктор Admin (без значения по умолчанию)
+Admin::Admin(String^ password, String^ fullName,
+    String^ passportSeries, String^ passportNumber, int salary, String^ email)
+    : Workers(fullName, "Мужской", passportSeries, passportNumber, salary, email) {
+
+    adminPassword = password;
+    hireDate = DateTime::Now;
+
+    // Инициализируем подсистемы
     driversList = gcnew DriversList();
     busList = gcnew BusList();
     tripList = gcnew TripList();
+
+    // Устанавливаем статус администратора
+    SetStatus("Администратор системы");
 }
 
 // Деструктор
 Admin::~Admin() {
-    // Автоматическое управление памятью в C++/CLI
+    // Управление памятью автоматическое
 }
 
-// Инициализация
-void Admin::Initialize() {
-    // Можно добавить загрузку начальных данных из файла/БД
-    Console::WriteLine("[Admin] Система инициализирована");
+// Инициализация системы
+void Admin::InitializeSystem() {
+    Console::WriteLine("[Admin] Система инициализирована администратором: " + GetFullName());
 }
 
-// === МЕТОДЫ ДЛЯ ВОДИТЕЛЕЙ ===
+// Аутентификация через email
+bool Admin::Authenticate(String^ email, String^ password) {
+    return (email == GetEmail() && password == adminPassword);
+}
 
-bool Admin::AddDriver(String^ fio, String^ gender, String^ passportSeries,
-    String^ passportNumber, int salary, String^ license) {
-    try {
-        // Валидация
-        if (String::IsNullOrEmpty(fio)) {
-            throw gcnew ArgumentException("ФИО не может быть пустым!");
-        }
-
-        if (salary <= 0) {
-            throw gcnew ArgumentException("Зарплата должна быть положительной!");
-        }
-
-        if (String::IsNullOrEmpty(license)) {
-            throw gcnew ArgumentException("Номер прав не может быть пустым!");
-        }
-
-        // Создание водителя
-        Driver^ newDriver = gcnew Driver(fio, gender, passportSeries,
-            passportNumber, salary, license);
-
-        // Добавление через DriversList
-        driversList->AddDriver(newDriver);
-        return true;
+// Смена пароля
+void Admin::ChangePassword(String^ oldPassword, String^ newPassword) {
+    // Используем email для проверки старого пароля
+    if (Authenticate(GetEmail(), oldPassword)) {
+        adminPassword = newPassword;
     }
-    catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при добавлении водителя: " + ex->Message,
-            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return false;
+    else {
+        throw gcnew UnauthorizedAccessException("Неверный старый пароль или email!");
     }
 }
 
-bool Admin::RemoveDriver(String^ fio) {
-    try {
-        return driversList->RemoveDriver(fio);
-    }
-    catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при удалении водителя: " + ex->Message,
-            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return false;
-    }
+// === ПЕРЕОПРЕДЕЛЕНИЕ ВИРТУАЛЬНЫХ МЕТОДОВ ===
+
+void Admin::PrintInfo() {
+    Workers::PrintInfo(); // Вызов метода базового класса
+    Console::WriteLine("Должность: Администратор");
+    Console::WriteLine("Email: {0}", GetEmail());
+    Console::WriteLine("Дата найма: {0:dd.MM.yyyy}", hireDate);
 }
 
-bool Admin::EditDriver(String^ oldFio, String^ newFio, String^ newGender,
-    String^ newPassportSeries, String^ newPassportNumber,
-    int newSalary, String^ newLicense) {
-    try {
-        // Находим водителя
-        Driver^ driver = driversList->FindDriverByName(oldFio);
-        if (driver == nullptr) {
-            MessageBox::Show("Водитель не найден!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Error);
-            return false;
-        }
+String^ Admin::GetFullInfo() {
+    return "Администратор: " + GetFullName() +
+        " | Email: " + GetEmail() +
+        " | Найм: " + hireDate.ToString("dd.MM.yyyy");
+}
 
-        // Обновляем данные
-        if (!String::IsNullOrEmpty(newFio)) {
-            driver->SetFullName(newFio);
-        }
+double Admin::CalculateDiscount() {
+    return 0.2; // 20% скидка для администратора
+}
 
-        if (!String::IsNullOrEmpty(newGender)) {
-            driver->SetGender(newGender);
-        }
+// === ДЕЛЕГИРУЮЩИЕ МЕТОДЫ ===
 
-        if (!String::IsNullOrEmpty(newPassportSeries) && !String::IsNullOrEmpty(newPassportNumber)) {
-            driver->SetPassportSeries(newPassportSeries);
-            driver->SetPassportNumber(newPassportNumber);
-        }
-
-        if (newSalary > 0) {
-            driver->SetSalary(newSalary);
-        }
-
-        if (!String::IsNullOrEmpty(newLicense)) {
-            driver->SetLicense(newLicense);
-        }
-
-        return true;
+void Admin::ShowBusManagementForm(Form^ owner) {
+    if (!IsSystemInitialized) {
+        MessageBox::Show("Система не инициализирована!", "Ошибка",
+            MessageBoxButtons::OK, MessageBoxIcon::Error);
+        return;
     }
-    catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при редактировании водителя: " + ex->Message,
-            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return false;
+
+    busList->ShowBusListForm(owner);
+}
+
+void Admin::ShowDriverManagementForm(Form^ owner) {
+    if (!IsSystemInitialized) {
+        MessageBox::Show("Система не инициализирована!", "Ошибка",
+            MessageBoxButtons::OK, MessageBoxIcon::Error);
+        return;
     }
+
+    //driversList->ShowDriversListForm(owner);
+}
+
+void Admin::ShowTripManagementForm(Form^ owner) {
+    if (!IsSystemInitialized) {
+        MessageBox::Show("Система не инициализирована!", "Ошибка",
+            MessageBoxButtons::OK, MessageBoxIcon::Error);
+        return;
+    }
+
+    tripList->ShowTripListForm(owner);
+}
+
+// === ПОИСК ЧЕРЕЗ КЛАСС Search ===
+
+Bus^ Admin::FindBus(String^ code) {
+    return Search::FindBusByCode(busList, code);
 }
 
 Driver^ Admin::FindDriver(String^ fio) {
     return driversList->FindDriverByName(fio);
 }
 
-bool Admin::IsDriverAvailable(String^ fio) {
-    Driver^ driver = FindDriver(fio);
-    return driver != nullptr && driver->GetAvailability();
-}
-
-// === МЕТОДЫ ДЛЯ АВТОБУСОВ ===
-
-bool Admin::AddBus(String^ brand, String^ model, int placeCount,
-    String^ code, String^ techCondition, String^ lastMaintenance) {
-    try {
-        return busList->InternalAddBus(brand, model, placeCount, code,
-            techCondition, lastMaintenance);
-    }
-    catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при добавлении автобуса: " + ex->Message,
-            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return false;
-    }
-}
-
-bool Admin::RemoveBus(String^ code) {
-    try {
-        return busList->InternalRemoveBus(code);
-    }
-    catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при удалении автобуса: " + ex->Message,
-            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return false;
-    }
-}
-
-bool Admin::EditBus(String^ oldCode, String^ newBrand, String^ newModel,
-    int newPlaceCount, String^ newTechCondition, String^ newLastMaintenance) {
-    try {
-        Bus^ bus = busList->FindBusByCode(oldCode);
-        if (bus == nullptr) {
-            MessageBox::Show("Автобус не найден!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Error);
-            return false;
-        }
-
-        // Обновляем данные
-        if (!String::IsNullOrEmpty(newBrand)) {
-            bus->SetBrand(newBrand);
-        }
-
-        if (!String::IsNullOrEmpty(newModel)) {
-            bus->SetModel(newModel);
-        }
-
-        if (newPlaceCount > 0) {
-            bus->SetPlaceCount(newPlaceCount);
-        }
-
-        if (!String::IsNullOrEmpty(newTechCondition)) {
-            bus->SetTechCondition(newTechCondition);
-        }
-
-        if (!String::IsNullOrEmpty(newLastMaintenance)) {
-            bus->SetLastMaintenance(newLastMaintenance);
-        }
-
-        return true;
-    }
-    catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при редактировании автобуса: " + ex->Message,
-            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return false;
-    }
-}
-
-Bus^ Admin::FindBus(String^ code) {
-    return busList->FindBusByCode(code);
-}
-
-bool Admin::IsBusAvailable(String^ code) {
-    Bus^ bus = FindBus(code);
-    return bus != nullptr && bus->GetAvailability() && !bus->IsInCriticalCondition();
-}
-
-// === МЕТОДЫ ДЛЯ ПОЕЗДОК ===
-
-bool Admin::AddTrip(String^ startPoint, String^ finishPoint, int price,
-    String^ busCode, String^ driverFio,
-    DateTime depDate, String^ depTime) {
-    try {
-        // Находим автобус и водителя
-        Bus^ bus = FindBus(busCode);
-        Driver^ driver = FindDriver(driverFio);
-
-        if (bus == nullptr) {
-            MessageBox::Show("Автобус не найден!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            return false;
-        }
-
-        if (driver == nullptr) {
-            MessageBox::Show("Водитель не найден!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            return false;
-        }
-
-        // Проверяем доступность
-        if (!bus->GetAvailability()) {
-            MessageBox::Show("Выбранный автобус недоступен!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            return false;
-        }
-
-        if (!driver->GetAvailability()) {
-            MessageBox::Show("Выбранный водитель недоступен!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            return false;
-        }
-
-        // Создаем и добавляем поездку
-        return tripList->InternalAddTrip(startPoint, finishPoint, price,
-            bus, driver, depDate, depTime);
-    }
-    catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при добавлении поездки: " + ex->Message,
-            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return false;
-    }
-}
-
-bool Admin::RemoveTrip(String^ route) {
-    try {
-        return tripList->InternalRemoveTrip(route);
-    }
-    catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при удалении поездки: " + ex->Message,
-            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return false;
-    }
-}
-
-bool Admin::EditTrip(String^ oldRoute, String^ newStartPoint, String^ newFinishPoint,
-    int newPrice, String^ newBusCode, String^ newDriverFio,
-    DateTime newDepDate, String^ newDepTime) {
-    try {
-        // TODO: Реализовать редактирование поездки
-        // Пока используем удаление + добавление
-        Trip^ trip = tripList->FindTripByRoute(oldRoute);
-        if (trip == nullptr) {
-            MessageBox::Show("Поездка не найдена!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Error);
-            return false;
-        }
-
-        // Получаем текущие значения или новые
-        String^ startPoint = String::IsNullOrEmpty(newStartPoint) ?
-            trip->GetStartPoint() : newStartPoint;
-
-        String^ finishPoint = String::IsNullOrEmpty(newFinishPoint) ?
-            trip->GetFinishPoint() : newFinishPoint;
-
-        int price = (newPrice > 0) ? newPrice : trip->GetPrice();
-
-        Bus^ bus = trip->GetBus();
-        if (!String::IsNullOrEmpty(newBusCode)) {
-            Bus^ newBus = FindBus(newBusCode);
-            if (newBus != nullptr) bus = newBus;
-        }
-
-        Driver^ driver = trip->GetDriver();
-        if (!String::IsNullOrEmpty(newDriverFio)) {
-            Driver^ newDriver = FindDriver(newDriverFio);
-            if (newDriver != nullptr) driver = newDriver;
-        }
-
-        DateTime depDate = (newDepDate != DateTime::MinValue) ?
-            newDepDate : trip->GetTripDate();
-
-        String^ depTime = String::IsNullOrEmpty(newDepTime) ?
-            trip->GetTripTime() : newDepTime;
-
-        // Удаляем старую и добавляем новую
-        RemoveTrip(oldRoute);
-        return AddTrip(startPoint, finishPoint, price,
-            bus->GetCode(), driver->GetFullName(),
-            depDate, depTime);
-    }
-    catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при редактировании поездки: " + ex->Message,
-            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return false;
-    }
-}
-
 Trip^ Admin::FindTrip(String^ route) {
     return tripList->FindTripByRoute(route);
 }
 
-bool Admin::StartTrip(String^ route) {
-    try {
-        Trip^ trip = FindTrip(route);
-        if (trip == nullptr) {
-            MessageBox::Show("Поездка не найдена!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Error);
-            return false;
-        }
-
-        trip->StartTrip();
-        return true;
-    }
-    catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при начале поездки: " + ex->Message,
-            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return false;
-    }
+List<Bus^>^ Admin::FindAvailableBuses() {
+    return Search::FindAvailableBuses(busList);
 }
 
-bool Admin::CompleteTrip(String^ route) {
-    try {
-        Trip^ trip = FindTrip(route);
-        if (trip == nullptr) {
-            MessageBox::Show("Поездка не найдена!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Error);
-            return false;
-        }
-
-        trip->CompleteTrip();
-        return true;
-    }
-    catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при завершении поездки: " + ex->Message,
-            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return false;
-    }
-}
-
-bool Admin::CancelTrip(String^ route) {
-    try {
-        Trip^ trip = FindTrip(route);
-        if (trip == nullptr) {
-            MessageBox::Show("Поездка не найдена!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Error);
-            return false;
-        }
-
-        trip->CancelTrip();
-        return true;
-    }
-    catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при отмене поездки: " + ex->Message,
-            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return false;
-    }
-}
-
-// === ПОЛУЧЕНИЕ ДАННЫХ ===
-
-List<Driver^>^ Admin::GetAllDrivers() {
-    return driversList->AllDrivers;
-}
-
-List<Bus^>^ Admin::GetAllBuses() {
-    return busList->AllBuses;
-}
-
-List<Trip^>^ Admin::GetAllTrips() {
-    return tripList->AllTrips;
-}
-
-List<Driver^>^ Admin::GetAvailableDrivers() {
+List<Driver^>^ Admin::FindAvailableDrivers() {
     List<Driver^>^ result = gcnew List<Driver^>();
     for each (Driver ^ driver in driversList->AllDrivers) {
         if (driver->GetAvailability()) {
@@ -399,103 +128,85 @@ List<Driver^>^ Admin::GetAvailableDrivers() {
     return result;
 }
 
-List<Bus^>^ Admin::GetAvailableBuses() {
-    return busList->GetAvailableBuses();
-}
-
-List<Trip^>^ Admin::GetPlannedTrips() {
-    return tripList->GetPlannedTrips();
-}
-
-List<Trip^>^ Admin::GetActiveTrips() {
-    return tripList->GetActiveTrips();
-}
-
-// === ФОРМЫ ===
-
-void Admin::ShowDriversListForm(Form^ owner) {
-    driversList->ShowDriversListForm(owner);
-}
-
-void Admin::ShowAddDriverForm(Form^ owner) {
-    driversList->ShowAddDriverForm(owner);
-}
-
-void Admin::ShowDeleteDriverForm(Form^ owner) {
-    driversList->ShowDeleteDriverForm(owner);
-}
-
-void Admin::ShowBusListForm(Form^ owner) {
-    busList->ShowBusListForm(owner);
-}
-
-void Admin::ShowAddBusForm(Form^ owner) {
-    busList->ShowAddBusForm(owner);
-}
-
-void Admin::ShowDeleteBusForm(Form^ owner) {
-    busList->ShowDeleteBusForm(owner);
-}
-
-void Admin::ShowTripListForm(Form^ owner) {
-    tripList->ShowTripListForm(owner, busList, driversList);
-}
-
-void Admin::ShowAddTripForm(Form^ owner) {
-    tripList->ShowAddTripForm(owner, busList, driversList);
-}
-
-void Admin::ShowDeleteTripForm(Form^ owner) {
-    tripList->ShowDeleteTripForm(owner);
-}
-
-void Admin::ShowEditTripForm(Form^ owner) {
-    // TODO: Реализовать форму редактирования
-    MessageBox::Show("Форма редактирования поездки в разработке", "Информация",
-        MessageBoxButtons::OK, MessageBoxIcon::Information);
-}
-
 // === СТАТИСТИКА ===
 
 String^ Admin::GetSystemStatistics() {
+    if (!IsSystemInitialized) {
+        return "Система не инициализирована";
+    }
+
+    int driverCount = driversList->Count;
+    int busCount = busList->Count;
+    int tripCount = tripList->Count;
+
+    int availableDrivers = 0;
+    for each (Driver ^ driver in driversList->AllDrivers) {
+        if (driver->GetAvailability()) availableDrivers++;
+    }
+
+    int availableBuses = busList->AvailableCount;
+    int activeTrips = tripList->ActiveCount;
+
     return String::Format(
         "=== СТАТИСТИКА СИСТЕМЫ ===\n"
-        "Водителей: {0} (доступно: {1})\n"
-        "Автобусов: {2} (доступно: {3})\n"
-        "Поездок: {4} (активно: {5})\n"
+        "Администратор: {0}\n"
+        "Email: {1}\n"
+        "Дата найма: {2:dd.MM.yyyy}\n\n"
+        "Водители: {3} (доступно: {4})\n"
+        "Автобусы: {5} (доступно: {6})\n"
+        "Поездки: {7} (активно: {8})\n"
         "===========================",
-        GetTotalDrivers(), GetAvailableDriversCount(),
-        GetTotalBuses(), GetAvailableBusesCount(),
-        GetTotalTrips(), GetActiveTripsCount()
+        GetFullName(),
+        GetEmail(),
+        hireDate,
+        driverCount, availableDrivers,
+        busCount, availableBuses,
+        tripCount, activeTrips
     );
 }
 
-int Admin::GetTotalDrivers() {
-    return driversList->Count;
-}
+void Admin::GenerateReport(String^ reportType) {
+    if (!IsSystemInitialized) {
+        MessageBox::Show("Система не инициализирована!", "Ошибка",
+            MessageBoxButtons::OK, MessageBoxIcon::Error);
+        return;
+    }
 
-int Admin::GetTotalBuses() {
-    return busList->Count;
-}
+    String^ report = "";
+    String^ timestamp = DateTime::Now.ToString("dd.MM.yyyy HH:mm:ss");
+    String^ adminInfo = String::Format("Отчет сгенерирован: {0}\nАдминистратор: {1} ({2})\n\n",
+        timestamp, GetFullName(), GetEmail());
 
-int Admin::GetTotalTrips() {
-    return tripList->Count;
-}
-
-int Admin::GetActiveTripsCount() {
-    return tripList->ActiveCount;
-}
-
-int Admin::GetAvailableBusesCount() {
-    return busList->AvailableCount;
-}
-
-int Admin::GetAvailableDriversCount() {
-    int count = 0;
-    for each (Driver ^ driver in driversList->AllDrivers) {
-        if (driver->GetAvailability()) {
-            count++;
+    if (reportType == "drivers") {
+        report = "=== ОТЧЕТ ПО ВОДИТЕЛЯМ ===\n" + adminInfo;
+        for each (Driver ^ driver in driversList->AllDrivers) {
+            report += String::Format("{0} - {1} руб. (Доступен: {2})\n",
+                driver->GetFullName(), driver->GetSalary(),
+                driver->GetAvailability() ? "Да" : "Нет");
         }
     }
-    return count;
+    else if (reportType == "buses") {
+        report = "=== ОТЧЕТ ПО АВТОБУСАМ ===\n" + adminInfo;
+        for each (Bus ^ bus in busList->AllBuses) {
+            report += String::Format("{0} - {1} (Состояние: {2}, Доступен: {3})\n",
+                bus->GetFormattedCode(), bus->GetFullName(),
+                bus->GetTechCondition(),
+                bus->GetAvailability() ? "Да" : "Нет");
+        }
+    }
+    else if (reportType == "trips") {
+        report = "=== ОТЧЕТ ПО ПОЕЗДКАМ ===\n" + adminInfo;
+        for each (Trip ^ trip in tripList->AllTrips) {
+            report += String::Format("{0} - {1} руб. (Статус: {2})\n",
+                trip->GetRoute(), trip->GetPrice());
+                //trip->GetTripStatus());
+        }
+    }
+    else if (reportType == "system") {
+        report = GetSystemStatistics();
+    }
+
+    // Показываем отчет
+    MessageBox::Show(report, "Отчет: " + reportType,
+        MessageBoxButtons::OK, MessageBoxIcon::Information);
 }

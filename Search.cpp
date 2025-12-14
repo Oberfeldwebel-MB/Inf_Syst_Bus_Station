@@ -1,274 +1,194 @@
+// Search.cpp - ПРОСТАЯ ВЕРСИЯ БЕЗ ЛЯМБД
 #include "Search.hpp"
-#include <iostream>
-#include <stdexcept>
-#include <algorithm>
 
-// Поиск в расписании по дате
-std::vector<std::shared_ptr<Trip>> Search::SearchTripsByDate(const Timing& timing, const std::string& date) {
-    try {
-        if (date.empty()) {
-            throw std::invalid_argument("Дата для поиска не может быть пустой!");
-        }
+using namespace InfSystBusStation;
+using namespace System;
+using namespace System::Collections::Generic;
 
-        const auto& trips = timing.GetTripList();
-        std::vector<std::shared_ptr<Trip>> result;
-
-        for (const auto& trip : trips) {
-            if (trip && trip->GetRoute().find(date) != std::string::npos) { 
-                result.push_back(trip); 
-            }
-        }
-        return result;
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка поиска по дате: " << e.what() << "\n";
-        return {};
-    }
+bool Search::CompareStringsIgnoreCase(String^ str1, String^ str2) {
+    return String::Compare(str1, str2, StringComparison::OrdinalIgnoreCase) == 0;
 }
 
-// Поиск в расписании по маршруту
-std::vector<std::shared_ptr<Trip>> Search::SearchTripsByRoute(const Timing& timing, const std::string& start, const std::string& finish) {
-    try {
-        if (start.empty() || finish.empty()) {
-            throw std::invalid_argument("Пункты отправления и назначения не могут быть пустыми!");
-        }
-
-        const auto& trips = timing.GetTripList();
-        std::vector<std::shared_ptr<Trip>> result;
-        std::string target_route = start + " - " + finish;
-
-        for (const auto& trip : trips) {
-            if (trip && trip->GetRoute() == target_route) { 
-                result.push_back(trip); 
-            }
-        }
-        return result;
+Bus^ Search::FindBusByCode(BusList^ busList, String^ code) {
+    if (busList == nullptr || String::IsNullOrEmpty(code)) {
+        return nullptr;
     }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка поиска по маршруту: " << e.what() << "\n";
-        return {};
+
+    // Используем BusValidator для проверки кода
+    auto validationResult = BusValidator::ValidateCode(code);
+    if (!validationResult.isValid) {
+        return nullptr;
     }
+
+    return busList->GetBusByFormattedCode(code);
 }
 
-// Поиск в расписании по водителю
-std::vector<std::shared_ptr<Trip>> Search::SearchTripsByDriver(const Timing& timing, const std::string& driverName) {
-    try {
-        if (driverName.empty()) {
-            throw std::invalid_argument("Имя водителя не может быть пустым!");
-        }
-
-        const auto& trips = timing.GetTripList();
-        std::vector<std::shared_ptr<Trip>> result;
-
-        for (const auto& trip : trips) {
-            if (trip && trip->GetDriver() && trip->GetDriver()->GetFullName().find(driverName) != std::string::npos) { // Исправлено на ->
-                result.push_back(trip); 
-            }
-        }
-        return result;
+List<Bus^>^ Search::FindBusesByBrand(BusList^ busList, String^ brand) {
+    if (busList == nullptr) {
+        return gcnew List<Bus^>();
     }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка поиска по водителю: " << e.what() << "\n";
-        return {};
+
+    auto validationResult = BusValidator::ValidateBrand(brand);
+    if (!validationResult.isValid) {
+        throw gcnew ArgumentException(validationResult.errorMessage);
     }
+
+    List<Bus^>^ result = gcnew List<Bus^>();
+    auto allBuses = busList->AllBuses;
+
+    for each (Bus ^ bus in allBuses) {
+        if (CompareStringsIgnoreCase(bus->GetBrand(), brand)) {
+            result->Add(bus);
+        }
+    }
+
+    return result;
 }
 
-// Поиск в расписании по автобусу
-std::vector<std::shared_ptr<Trip>> Search::SearchTripsByBus(const Timing& timing, const std::string& busCode) {
-    try {
-        if (busCode.empty()) {
-            throw std::invalid_argument("Код автобуса не может быть пустым!");
-        }
-
-        const auto& trips = timing.GetTripList();
-        std::vector<std::shared_ptr<Trip>> result;
-
-        for (const auto& trip : trips) {
-            if (trip && trip->GetBus() && trip->GetBus()->GetCode() == busCode) { 
-                result.push_back(trip); 
-            }
-        }
-        return result;
+List<Bus^>^ Search::FindBusesByModel(BusList^ busList, String^ model) {
+    if (busList == nullptr) {
+        return gcnew List<Bus^>();
     }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка поиска по автобусу: " << e.what() << "\n";
-        return {};
+
+    auto validationResult = BusValidator::ValidateModel(model);
+    if (!validationResult.isValid) {
+        throw gcnew ArgumentException(validationResult.errorMessage);
     }
+
+    List<Bus^>^ result = gcnew List<Bus^>();
+    auto allBuses = busList->AllBuses;
+
+    for each (Bus ^ bus in allBuses) {
+        if (CompareStringsIgnoreCase(bus->GetModel(), model)) {
+            result->Add(bus);
+        }
+    }
+
+    return result;
 }
 
-// Комбинированный поиск в расписании
-std::vector<std::shared_ptr<Trip>> Search::SearchTripsCombined(const Timing& timing,
-    const std::string& start,
-    const std::string& finish,
-    const std::string& date) {
-    try {
-        const auto& trips = timing.GetTripList();
-        std::vector<std::shared_ptr<Trip>> result;
+List<Bus^>^ Search::FindAvailableBuses(BusList^ busList) {
+    if (busList == nullptr) {
+        return gcnew List<Bus^>();
+    }
 
-        for (const auto& trip : trips) {
-            if (!trip) continue; 
+    List<Bus^>^ result = gcnew List<Bus^>();
+    auto allBuses = busList->AllBuses;
 
-            bool matches = true;
-
-            if (!start.empty() && trip->GetRoute().find(start) == std::string::npos) { 
-                matches = false;
-            }
-            if (!finish.empty() && trip->GetRoute().find(finish) == std::string::npos) { 
-                matches = false;
-            }
-            if (!date.empty() && trip->GetRoute().find(date) == std::string::npos) { 
-                matches = false;
-            }
-
-            if (matches) {
-                result.push_back(trip); 
-            }
+    for each (Bus ^ bus in allBuses) {
+        if (bus->CheckAvailability()) {
+            result->Add(bus);
         }
-        return result;
     }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка комбинированного поиска: " << e.what() << "\n";
-        return {};
-    }
+
+    return result;
 }
 
-// Поиск билетов в заказе
-std::vector<std::shared_ptr<Ticket>> Search::SearchTickets(const Order& order,
-    const std::string& passengerName,
-    const std::string& route,
-    int seatNumber,
-    Ticket::TicketType ticketType) {
-    try {
-        const auto& tickets = order.GetTicketList();
-        std::vector<std::shared_ptr<Ticket>> result;
-
-        if (tickets.empty()) {
-            return result;
-        }
-
-        for (const auto& ticket : tickets) {
-            bool matches = true;
-
-            if (!passengerName.empty()) {
-                std::string ticketPassenger = ticket.GetPassenger().GetFullName();
-                if (ticketPassenger.find(passengerName) == std::string::npos) {
-                    matches = false;
-                }
-            }
-
-            if (matches && !route.empty()) {
-                if (ticket.GetTrip().GetRoute().find(route) == std::string::npos) {
-                    matches = false;
-                }
-            }
-
-            if (matches && seatNumber != -1) {
-                if (ticket.GetPlaceNumber() != seatNumber) {
-                    matches = false;
-                }
-            }
-
-            if (matches) {
-                if (ticket.GetTicketType() != ticketType) {
-                    matches = false;
-                }
-            }
-
-            if (matches) {
-                result.push_back(std::shared_ptr<Ticket>(const_cast<Ticket*>(&ticket), [](Ticket*) {}));
-            }
-        }
-
-        return result;
+List<Bus^>^ Search::FindBusesNeedingMaintenance(BusList^ busList) {
+    if (busList == nullptr) {
+        return gcnew List<Bus^>();
     }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка поиска билетов: " << e.what() << "\n";
-        return {};
+
+    List<Bus^>^ result = gcnew List<Bus^>();
+    auto allBuses = busList->AllBuses;
+
+    for each (Bus ^ bus in allBuses) {
+        if (bus->NeedsMaintenance()) {
+            result->Add(bus);
+        }
     }
+
+    return result;
 }
 
-// Поиск билетов по маршруту
-std::vector<std::shared_ptr<Ticket>> Search::SearchTicketsByRoute(const Order& order, const std::string& route) {
-    try {
-        if (route.empty()) {
-            throw std::invalid_argument("Маршрут для поиска не может быть пустым!");
-        }
-
-        const auto& tickets = order.GetTicketList();
-        std::vector<std::shared_ptr<Ticket>> result;
-
-        for (const auto& ticket : tickets) {
-            if (ticket.GetTrip().GetRoute().find(route) != std::string::npos) {
-                result.push_back(std::shared_ptr<Ticket>(const_cast<Ticket*>(&ticket), [](Ticket*) {}));
-            }
-        }
-        return result;
+List<Bus^>^ Search::FindBusesByCondition(BusList^ busList, String^ condition) {
+    if (busList == nullptr) {
+        return gcnew List<Bus^>();
     }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка поиска билетов по маршруту: " << e.what() << "\n";
-        return {};
+
+    auto validationResult = BusValidator::ValidateTechCondition(condition);
+    if (!validationResult.isValid) {
+        throw gcnew ArgumentException(validationResult.errorMessage);
     }
+
+    List<Bus^>^ result = gcnew List<Bus^>();
+    auto allBuses = busList->AllBuses;
+
+    for each (Bus ^ bus in allBuses) {
+        if (bus->GetTechCondition() == condition) {
+            result->Add(bus);
+        }
+    }
+
+    return result;
 }
 
-// Поиск билетов по типу
-std::vector<std::shared_ptr<Ticket>> Search::SearchTicketsByType(const Order& order, Ticket::TicketType ticketType) {
-    try {
-        const auto& tickets = order.GetTicketList();
-        std::vector<std::shared_ptr<Ticket>> result;
+List<Bus^>^ Search::FindBusesWithMinSeats(BusList^ busList, int minSeats) {
+    if (busList == nullptr || minSeats <= 0) {
+        return gcnew List<Bus^>();
+    }
 
-        for (const auto& ticket : tickets) {
-            if (ticket.GetTicketType() == ticketType) {
-                result.push_back(std::shared_ptr<Ticket>(const_cast<Ticket*>(&ticket), [](Ticket*) {}));
-            }
+    List<Bus^>^ result = gcnew List<Bus^>();
+    auto allBuses = busList->AllBuses;
+
+    for each (Bus ^ bus in allBuses) {
+        if (bus->GetPlaceCount() >= minSeats) {
+            result->Add(bus);
         }
-        return result;
     }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка поиска билетов по типу: " << e.what() << "\n";
-        return {};
-    }
+
+    return result;
 }
 
-// Поиск билетов по месту
-std::vector<std::shared_ptr<Ticket>> Search::SearchTicketsBySeat(const Order& order, int seatNumber) {
-    try {
-        if (seatNumber <= 0) {
-            throw std::invalid_argument("Номер места должен быть положительным!");
-        }
-
-        const auto& tickets = order.GetTicketList();
-        std::vector<std::shared_ptr<Ticket>> result;
-
-        for (const auto& ticket : tickets) {
-            if (ticket.GetPlaceNumber() == seatNumber) {
-                result.push_back(std::shared_ptr<Ticket>(const_cast<Ticket*>(&ticket), [](Ticket*) {}));
-            }
-        }
-        return result;
+List<Trip^>^ Search::FindTripsByDate(TripList^ tripList, DateTime date) {
+    if (tripList == nullptr) {
+        return gcnew List<Trip^>();
     }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка поиска билетов по месту: " << e.what() << "\n";
-        return {};
+
+    List<Trip^>^ result = gcnew List<Trip^>();
+    auto allTrips = tripList->AllTrips;
+
+    for each (Trip ^ trip in allTrips) {
+        if (trip->GetTripDate().Date == date.Date) {
+            result->Add(trip);
+        }
     }
+
+    return result;
 }
 
-// перегрузка оператора вывода
-std::ostream& operator<<(std::ostream& os, const Search& search) {
-    os << "Поиск: ";
-
-    if (!search.SearchOtp.empty()) {
-        os << "от " << search.SearchOtp;
-    }
-    if (!search.SearchPr.empty()) {
-        os << " до " << search.SearchPr;
-    }
-    if (!search.SearchDate.empty()) {
-        os << " (" << search.SearchDate << ")";
+List<Trip^>^ Search::FindTripsByRoute(TripList^ tripList, String^ route) {
+    if (tripList == nullptr || String::IsNullOrEmpty(route)) {
+        return gcnew List<Trip^>();
     }
 
-    if (search.SearchOtp.empty() && search.SearchPr.empty() && search.SearchDate.empty()) {
-        os << "общий поиск";
+    List<Trip^>^ result = gcnew List<Trip^>();
+    auto allTrips = tripList->AllTrips;
+    String^ routeLower = route->ToLower();
+
+    for each (Trip ^ trip in allTrips) {
+        if (trip->GetRoute()->ToLower()->Contains(routeLower)) {
+            result->Add(trip);
+        }
     }
 
-    return os;
+    return result;
+}
+
+// Упрощенный FindAll без предиката (можно удалить, если не используется)
+generic<typename T>
+List<T>^ Search::FindAll(List<T>^ list, Predicate<T>^ predicate) {
+    if (list == nullptr || predicate == nullptr) {
+        return gcnew List<T>();
+    }
+
+    List<T>^ result = gcnew List<T>();
+
+    for each (T item in list) {
+        if (predicate(item)) {
+            result->Add(item);
+        }
+    }
+
+    return result;
 }

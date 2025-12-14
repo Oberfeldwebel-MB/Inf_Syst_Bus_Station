@@ -1,93 +1,397 @@
-﻿// BusListForm.cpp
+﻿// BusList.cpp
+#include "BusList.hpp"
+#include "AddBusForm.h"
+#include "DeleteBusForm.h"
 #include "BusListForm.h"
+#include "BusValidator.h"
+#include "Search.hpp"
 
 using namespace InfSystBusStation;
+using namespace System;
+using namespace System::Windows::Forms;
+using namespace System::Collections::Generic;
 
-void BusListForm::UpdateDataGridView() {
-    busesDataGridView->Rows->Clear();
-
-    if (busList == nullptr || busList->Count == 0) {
-        busesCountLabel->Text = "Всего автобусов: 0";
-        availableLabel->Text = "Доступно: 0";
-        return;
-    }
-
-    int rowIndex = 0;
-    for each (Bus ^ bus in busList->AllBuses) {
-        busesDataGridView->Rows->Add();
-
-        // Заполняем данные в колонки
-        busesDataGridView->Rows[rowIndex]->Cells[0]->Value = (rowIndex + 1).ToString();
-        busesDataGridView->Rows[rowIndex]->Cells[1]->Value = bus->GetFormattedCode();
-        busesDataGridView->Rows[rowIndex]->Cells[2]->Value = bus->GetBrand();
-        busesDataGridView->Rows[rowIndex]->Cells[3]->Value = bus->GetModel();
-        busesDataGridView->Rows[rowIndex]->Cells[4]->Value = bus->GetPlaceCount().ToString();
-        busesDataGridView->Rows[rowIndex]->Cells[5]->Value = bus->GetTechCondition();
-        busesDataGridView->Rows[rowIndex]->Cells[6]->Value = bus->GetLastMaintenance();
-
-        // Статус с цветовой индикацией
-        if (bus->GetAvailability() && !bus->IsInCriticalCondition()) {
-            busesDataGridView->Rows[rowIndex]->Cells[7]->Value = "Доступен";
-            busesDataGridView->Rows[rowIndex]->DefaultCellStyle->BackColor = Drawing::Color::LightGreen;
-        }
-        else if (bus->IsInCriticalCondition()) {
-            busesDataGridView->Rows[rowIndex]->Cells[7]->Value = "Требует ремонта";
-            busesDataGridView->Rows[rowIndex]->DefaultCellStyle->BackColor = Drawing::Color::LightCoral;
-        }
-        else {
-            busesDataGridView->Rows[rowIndex]->Cells[7]->Value = "Не доступен";
-            busesDataGridView->Rows[rowIndex]->DefaultCellStyle->BackColor = Drawing::Color::LightGray;
-        }
-
-        rowIndex++;
-    }
-
-    busesCountLabel->Text = "Всего автобусов: " + busList->Count.ToString();
-    availableLabel->Text = "Доступно: " + busList->AvailableCount.ToString();
+// Конструктор
+BusList::BusList() {
+    buses = gcnew List<Bus^>();
 }
 
-System::Void BusListForm::AddBus_Click(System::Object^ sender, System::EventArgs^ e) {
-    if (busList == nullptr) {
-        MessageBox::Show("Ошибка: список автобусов не инициализирован!",
+// Деструктор
+BusList::~BusList() {
+    if (buses != nullptr) {
+        buses->Clear();
+    }
+}
+
+// Внутренний поиск автобуса по коду
+Bus^ BusList::FindBusByCodeInternal(String^ code) {
+    if (buses == nullptr || String::IsNullOrEmpty(code)) {
+        return nullptr;
+    }
+
+    for each (Bus ^ bus in buses) {
+        if (bus->GetCode() == code) {
+            return bus;
+        }
+    }
+    return nullptr;
+}
+
+// === ОСНОВНЫЕ МЕТОДЫ ДЛЯ ФОРМ ===
+
+// Добавление автобуса
+bool BusList::InternalAddBus(String^ brand, String^ model, int placeCount,
+    String^ code, String^ techCondition, String^ lastMaintenance) {
+
+    try {
+        // Проверка на уникальность кода
+        if (FindBusByCodeInternal(code) != nullptr) {
+            throw gcnew ArgumentException("Автобус с кодом '" + code + "' уже существует!");
+        }
+
+        // Создание нового автобуса
+        // Конструктор Bus выполнит базовые проверки (placeCount > 0)
+        Bus^ newBus = gcnew Bus(brand, model, placeCount, code, techCondition, lastMaintenance);
+
+        // Дополнительная валидация через BusValidator
+        auto validationResult = BusValidator::ValidateBus(newBus);
+        if (!validationResult.isValid) {
+            throw gcnew ArgumentException(validationResult.errorMessage);
+        }
+
+        buses->Add(newBus);
+
+        return true;
+    }
+    catch (ArgumentException^ ex) {
+        // Это наши проверки - показываем сообщение как есть
+        MessageBox::Show("Ошибка при добавлении автобуса: " + ex->Message,
             "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return;
+        return false;
     }
-
-    // Используем метод BusList для открытия формы добавления
-    if (busList->ShowAddBusForm(this)) {
-        UpdateDataGridView();
-        MessageBox::Show("Автобус успешно добавлен!", "Успех",
-            MessageBoxButtons::OK, MessageBoxIcon::Information);
-    }
-}
-
-System::Void BusListForm::DeleteBus_Click(System::Object^ sender, System::EventArgs^ e) {
-    if (busList == nullptr) {
-        MessageBox::Show("Ошибка: список автобусов не инициализирован!",
+    catch (Exception^ ex) {
+        // Другие исключения (например, из конструктора Bus)
+        MessageBox::Show("Ошибка при добавлении автобуса: " + ex->Message,
             "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return;
-    }
-
-    if (busList->Count == 0) {
-        MessageBox::Show("Список автобусов пуст!", "Информация",
-            MessageBoxButtons::OK, MessageBoxIcon::Information);
-        return;
-    }
-
-    // Используем метод BusList для открытия формы удаления
-    if (busList->ShowDeleteBusForm(this)) {
-        UpdateDataGridView();
-        MessageBox::Show("Автобус успешно удален!", "Успех",
-            MessageBoxButtons::OK, MessageBoxIcon::Information);
+        return false;
     }
 }
 
-System::Void BusListForm::Back_Click(System::Object^ sender, System::EventArgs^ e) {
-    this->Close();
+// Удаление автобуса
+bool BusList::InternalRemoveBus(String^ code) {
+    try {
+        if (buses == nullptr || buses->Count == 0) {
+            throw gcnew InvalidOperationException("Список автобусов пуст!");
+        }
+
+        Bus^ busToRemove = FindBusByCodeInternal(code);
+        if (busToRemove == nullptr) {
+            throw gcnew ArgumentException("Автобус с кодом '" + code + "' не найден!");
+        }
+
+        // Проверяем, не используется ли автобус в поездках
+        // (здесь можно добавить проверку, если есть интеграция с TripList)
+
+        return buses->Remove(busToRemove);
+    }
+    catch (Exception^ ex) {
+        MessageBox::Show("Ошибка при удалении автобуса: " + ex->Message,
+            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        return false;
+    }
 }
 
-System::Void BusListForm::Refresh_Click(System::Object^ sender, System::EventArgs^ e) {
-    UpdateDataGridView();
-    MessageBox::Show("Список автобусов обновлен!", "Обновление",
-        MessageBoxButtons::OK, MessageBoxIcon::Information);
+// Удаление автобуса по отформатированному коду
+bool BusList::RemoveBusByFormattedCode(String^ formattedCode) {
+    try {
+        // Убираем форматирование для поиска
+        String^ code = formattedCode->Replace("/", "");
+        return InternalRemoveBus(code);
+    }
+    catch (Exception^ ex) {
+        MessageBox::Show("Ошибка при удалении автобуса: " + ex->Message,
+            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        return false;
+    }
+}
+
+// Получение всех отформатированных кодов автобусов
+List<String^>^ BusList::GetAllBusFormattedCodes() {
+    List<String^>^ codes = gcnew List<String^>();
+    if (buses != nullptr) {
+        for each (Bus ^ bus in buses) {
+            codes->Add(bus->GetFormattedCode());
+        }
+    }
+    return codes;
+}
+
+// Получение автобуса по отформатированному коду
+Bus^ BusList::GetBusByFormattedCode(String^ formattedCode) {
+    // Убираем форматирование для поиска
+    String^ code = formattedCode->Replace("/", "");
+    return FindBusByCodeInternal(code);
+}
+
+// Получение детальной информации об автобусе
+String^ BusList::GetBusDetailedInfo(String^ formattedCode) {
+    Bus^ bus = GetBusByFormattedCode(formattedCode);
+    if (bus == nullptr) {
+        return "Автобус с кодом '" + formattedCode + "' не найден.";
+    }
+
+    return String::Format(
+        "Код: {0}\n"
+        "Марка: {1}\n"
+        "Модель: {2}\n"
+        "Количество мест: {3}\n"
+        "Техническое состояние: {4}\n"
+        "Последнее ТО: {5}\n"
+        "Статус: {6}",
+        bus->GetFormattedCode(),
+        bus->GetBrand(),
+        bus->GetModel(),
+        bus->GetPlaceCount(),
+        bus->GetTechCondition(),
+        bus->GetLastMaintenance(),
+        bus->GetAvailability() ? "Доступен" : "Не доступен"
+    );
+}
+
+// === МЕТОДЫ ДЛЯ РАБОТЫ С ФОРМАМИ ===
+
+// Показать форму добавления автобуса
+bool BusList::ShowAddBusForm(Form^ owner) {
+    try {
+        // Создаем форму без параметров
+        AddBusForm^ form = gcnew AddBusForm();
+
+        // Устанавливаем BusList через метод SetBusList
+        form->SetBusList(this);
+
+        if (form->ShowDialog(owner) == DialogResult::OK) {
+            return true;
+        }
+        return false;
+    }
+    catch (Exception^ ex) {
+        MessageBox::Show("Ошибка при открытии формы добавления: " + ex->Message,
+            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        return false;
+    }
+}
+
+// Показать форму удаления автобуса
+bool BusList::ShowDeleteBusForm(Form^ owner) {
+    try {
+        if (Count == 0) {
+            MessageBox::Show("Список автобусов пуст!", "Информация",
+                MessageBoxButtons::OK, MessageBoxIcon::Information);
+            return false;
+        }
+
+        DeleteBusForm^ form = gcnew DeleteBusForm(this);
+
+        if (form->ShowDialog(owner) == DialogResult::OK) {
+            return true;
+        }
+        return false;
+    }
+    catch (Exception^ ex) {
+        MessageBox::Show("Ошибка при открытии формы удаления: " + ex->Message,
+            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        return false;
+    }
+}
+
+// Показать форму списка автобусов
+void BusList::ShowBusListForm(Form^ owner) {
+    try {
+        BusListForm^ form = gcnew BusListForm(this);
+        form->ShowDialog(owner);
+    }
+    catch (Exception^ ex) {
+        MessageBox::Show("Ошибка при открытии списка автобусов: " + ex->Message,
+            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+    }
+}
+
+// === МЕТОДЫ ПОЛУЧЕНИЯ ДАННЫХ ===
+
+// Получить доступные автобусы
+List<Bus^>^ BusList::GetAvailableBuses() {
+    List<Bus^>^ result = gcnew List<Bus^>();
+    if (buses != nullptr) {
+        for each (Bus ^ bus in buses) {
+            if (bus->CheckAvailability()) {
+                result->Add(bus);
+            }
+        }
+    }
+    return result;
+}
+
+// Получить автобусы, требующие ТО
+List<Bus^>^ BusList::GetBusesNeedingMaintenance() {
+    List<Bus^>^ result = gcnew List<Bus^>();
+    if (buses != nullptr) {
+        for each (Bus ^ bus in buses) {
+            if (bus->NeedsMaintenance()) {
+                result->Add(bus);
+            }
+        }
+    }
+    return result;
+}
+
+// Получить автобусы по марке
+List<Bus^>^ BusList::GetBusesByBrand(String^ brand) {
+    List<Bus^>^ result = gcnew List<Bus^>();
+    if (buses != nullptr && !String::IsNullOrEmpty(brand)) {
+        for each (Bus ^ bus in buses) {
+            if (bus->GetBrand() == brand) {
+                result->Add(bus);
+            }
+        }
+    }
+    return result;
+}
+
+// Вывести все автобусы в консоль
+void BusList::DisplayAllBuses() {
+    if (buses == nullptr || buses->Count == 0) {
+        Console::WriteLine("Список автобусов пуст.");
+        return;
+    }
+
+    Console::WriteLine("=== Список всех автобусов ({0}) ===", Count);
+    int index = 1;
+    for each (Bus ^ bus in buses) {
+        Console::WriteLine("{0}. {1} - {2} мест, состояние: {3}, статус: {4}",
+            index++,
+            bus->GetFullName(),
+            bus->GetPlaceCount(),
+            bus->GetTechCondition(),
+            bus->GetAvailability() ? "Доступен" : "Не доступен");
+    }
+    Console::WriteLine("==================================");
+}
+
+// Проверить, есть ли доступные автобусы
+bool BusList::HasAvailableBuses() {
+    if (buses == nullptr) return false;
+
+    for each (Bus ^ bus in buses) {
+        if (bus->CheckAvailability()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Получить информацию об автобусе по коду
+String^ BusList::GetBusInfo(String^ code) {
+    Bus^ bus = FindBusByCodeInternal(code);
+    if (bus == nullptr) {
+        return "Автобус с кодом '" + code + "' не найден.";
+    }
+
+    return GetBusDetailedInfo(bus->GetFormattedCode());
+}
+
+// === ДОПОЛНИТЕЛЬНЫЕ МЕТОДЫ ===
+
+// Получить автобусы в критическом состоянии
+List<Bus^>^ BusList::GetBusesInCriticalCondition() {
+    List<Bus^>^ result = gcnew List<Bus^>();
+    if (buses != nullptr) {
+        for each (Bus ^ bus in buses) {
+            if (bus->IsInCriticalCondition()) {
+                result->Add(bus);
+            }
+        }
+    }
+    return result;
+}
+
+// Получить автобусы, доступные для поездки
+List<Bus^>^ BusList::GetBusesReadyForTrip() {
+    List<Bus^>^ result = gcnew List<Bus^>();
+    if (buses != nullptr) {
+        for each (Bus ^ bus in buses) {
+            if (bus->CheckAvailability() &&
+                !bus->IsInCriticalCondition() &&
+                !bus->NeedsMaintenance()) {
+                result->Add(bus);
+            }
+        }
+    }
+    return result;
+}
+
+// Обновить техническое состояние автобуса
+bool BusList::UpdateBusCondition(String^ code, String^ newCondition) {
+    try {
+        Bus^ bus = FindBusByCodeInternal(code);
+        if (bus == nullptr) {
+            throw gcnew ArgumentException("Автобус с кодом '" + code + "' не найден!");
+        }
+
+        // Используем BusValidator вместо отдельной проверки
+        auto validationResult = BusValidator::ValidateTechCondition(newCondition);
+        if (!validationResult.isValid) {
+            throw gcnew ArgumentException(validationResult.errorMessage);
+        }
+
+        bus->ChangeTechCondition(newCondition);
+        return true;
+    }
+    catch (Exception^ ex) {
+        MessageBox::Show("Ошибка при обновлении состояния автобуса: " + ex->Message,
+            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        return false;
+    }
+}
+
+// Обновить дату последнего ТО
+bool BusList::UpdateMaintenanceDate(String^ code, String^ newDate) {
+    try {
+        Bus^ bus = FindBusByCodeInternal(code);
+        if (bus == nullptr) {
+            throw gcnew ArgumentException("Автобус с кодом '" + code + "' не найден!");
+        }
+
+        // Используем BusValidator
+        auto validationResult = BusValidator::ValidateMaintenanceDate(newDate);
+        if (!validationResult.isValid) {
+            throw gcnew ArgumentException(validationResult.errorMessage);
+        }
+
+        bus->SetLastMaintenance(newDate);
+        return true;
+    }
+    catch (Exception^ ex) {
+        MessageBox::Show("Ошибка при обновлении даты ТО: " + ex->Message,
+            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        return false;
+    }
+}
+
+// Получить статистику
+void BusList::GetStatistics(int% total, int% available, int% needMaintenance, int% critical) {
+    total = Count;
+    available = AvailableCount;
+    needMaintenance = 0;
+    critical = 0;
+
+    if (buses != nullptr) {
+        for each (Bus ^ bus in buses) {
+            if (bus->NeedsMaintenance()) {
+                needMaintenance++;
+            }
+            if (bus->IsInCriticalCondition()) {
+                critical++;
+            }
+        }
+    }
 }
