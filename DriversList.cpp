@@ -86,3 +86,23 @@ List<Driver^>^ DriversList::AllDrivers::get() {
 int DriversList::Count::get() {
     return drivers->Count;
 }
+
+List<Driver^>^ DriversList::GetAvailableDrivers() {
+    List<Driver^>^ result = gcnew List<Driver^>();
+    for each (Driver ^ driver in drivers) {
+        if (driver->IsAvailable()) { // Этот метод нужно добавить в Driver!
+            result->Add(driver);
+        }
+    }
+    return result;
+}
+
+List<String^>^ DriversList::GetAvailableDriverNames() {
+    List<String^>^ result = gcnew List<String^>();
+    for each (Driver ^ driver in drivers) {
+        if (driver->IsAvailable()) {
+            result->Add(driver->GetFullName());
+        }
+    }
+    return result;
+}

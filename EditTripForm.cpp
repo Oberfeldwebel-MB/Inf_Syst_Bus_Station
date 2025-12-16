@@ -1,5 +1,6 @@
 // EditTripForm.cpp
 #include "EditTripForm.h"
+#include "Search.hpp"
 
 using namespace InfSystBusStation;
 using namespace System::Windows::Forms;
@@ -228,7 +229,7 @@ System::Void EditTripForm::btnEdit_Click(System::Object^ sender, System::EventAr
                 busCode = busInfo->Substring(startBracket + 1, endBracket - startBracket - 1);
             }
 
-            Bus^ newBus = busList->FindBusByCode(busCode);
+            Bus^ newBus = Search::FindBusByCode(busList, busCode);
             if (newBus == nullptr) {
                 MessageBox::Show("Выбранный автобус не найден!", "Ошибка",
                     MessageBoxButtons::OK, MessageBoxIcon::Warning);
@@ -249,7 +250,7 @@ System::Void EditTripForm::btnEdit_Click(System::Object^ sender, System::EventAr
         tripIndex = Int32::Parse(tripIndexBox->Text) - 1;
 
         // Закрываем форму с результатом OK
-        this->DialogResult = DialogResult::OK;
+        this->DialogResult = System::Windows::Forms::DialogResult::OK;
         this->Close();
 
     }
@@ -260,7 +261,7 @@ System::Void EditTripForm::btnEdit_Click(System::Object^ sender, System::EventAr
 }
 
 System::Void EditTripForm::btnCancel_Click(System::Object^ sender, System::EventArgs^ e) {
-    this->DialogResult = DialogResult::Cancel;
+    this->DialogResult = System::Windows::Forms::DialogResult::Cancel;
     this->Close();
 }
 

@@ -1,470 +1,448 @@
 #pragma once
 
-namespace Деканат {
+#include "TripList.hpp"
+#include "BusList.hpp"
+#include "DriversList.hpp"
 
-	using namespace System;
-	using namespace System::ComponentModel;
-	using namespace System::Collections;
-	using namespace System::Windows::Forms;
-	using namespace System::Data;
-	using namespace System::Drawing;
+namespace InfSystBusStation {
 
-	/// <summary>
-	/// Сводка для zapros_form
-	/// </summary>
-	public ref class zapros_form : public System::Windows::Forms::Form
-	{
-	public:
-		zapros_form(void)
-		{
-			InitializeComponent();
-			//
-			//TODO: добавьте код конструктора
-			//
-		}
+    using namespace System;
+    using namespace System::ComponentModel;
+    using namespace System::Collections;
+    using namespace System::Windows::Forms;
+    using namespace System::Data;
+    using namespace System::Drawing;
+    using namespace System::Collections::Generic;
 
-	protected:
-		/// <summary>
-		/// Освободить все используемые ресурсы.
-		/// </summary>
-		~zapros_form()
-		{
-			if (components)
-			{
-				delete components;
-			}
-		}
-	private: System::Windows::Forms::Label^ label1;
-	private: System::Windows::Forms::MaskedTextBox^ search_FIO_box;
+    public ref class SearchForm : public System::Windows::Forms::Form {
+    public:
+        SearchForm(void) {
+            InitializeComponent();
+            tripList = nullptr;
+            busList = nullptr;
+            driverList = nullptr;
+            searchResults = nullptr;
+            InitializeForm();
+        }
 
-	private: System::Windows::Forms::CheckBox^ FIO_checkBox;
-	public: System::Windows::Forms::CheckedListBox^ search_pol_box;
-	private:
+        property List<Trip^>^ SearchResults {
+            List<Trip^>^ get() { return searchResults; }
+        }
 
-	private:
+    protected:
+        ~SearchForm() {
+            if (components) {
+                delete components;
+            }
+        }
 
-	private: System::Windows::Forms::Label^ label2;
-	private: System::Windows::Forms::CheckBox^ pol_checkBox;
-	public: System::Windows::Forms::MaskedTextBox^ search_data;
-	private:
+    private:
+        TripList^ tripList;
+        BusList^ busList;
+        DriversList^ driverList;
+        List<Trip^>^ searchResults;
 
-	private: System::Windows::Forms::Label^ label3;
-	private: System::Windows::Forms::CheckBox^ search_data_checkBox;
-	public: System::Windows::Forms::TextBox^ search_faculty_box;
-	private:
+    private:
+        System::Windows::Forms::CheckBox^ checkStartBox;
+    private: System::Windows::Forms::CheckBox^ checkFinishBox;
+    private: System::Windows::Forms::CheckBox^ checkDateStartBox;
+    private: System::Windows::Forms::CheckBox^ checkDateFinishBox;
+    private: System::Windows::Forms::CheckBox^ checkPriceBox;
+    private: System::Windows::Forms::CheckBox^ checkDriverBox;
+    private: System::Windows::Forms::CheckBox^ checkBusBox;
 
-	private:
+           System::ComponentModel::Container^ components;
 
+           void InitializeForm() {
+               // Очищаем поля
+               StartPointBox->Clear();
+               FinishPointBox->Clear();
+               DepDateBox->Clear();
+               ArrDateBox->Clear();
+               PriceBox->Clear();
+               driverComboBox->SelectedIndex = -1;
+               busComboBox->SelectedIndex = -1;
 
-	private: System::Windows::Forms::Label^ label4;
-	private: System::Windows::Forms::CheckBox^ faculty_checkBox;
-	public: System::Windows::Forms::TextBox^ search_grupp_box;
-	private:
+               // Отключаем поля по умолчанию
+               StartPointBox->Enabled = false;
+               FinishPointBox->Enabled = false;
+               DepDateBox->Enabled = false;
+               ArrDateBox->Enabled = false;
+               PriceBox->Enabled = false;
+               driverComboBox->Enabled = false;
+               busComboBox->Enabled = false;
 
-	private: System::Windows::Forms::CheckBox^ grupp_checkBox;
-	private: System::Windows::Forms::CheckBox^ rate_checkBox;
-	private: System::Windows::Forms::CheckBox^ soz_act_checkBox;
+               // Устанавливаем фокус
+               checkStartBox->Focus();
+           }
 
-	public:
+    public:
+        // Методы для установки списков
+        void SetTripList(TripList^ list) {
+            tripList = list;
+        }
 
+        void SetBusList(BusList^ list) {
+            busList = list;
+            LoadBusComboBox();
+        }
 
-	private: System::Windows::Forms::NumericUpDown^ new_rating_box;
-	public: System::Windows::Forms::CheckedListBox^ search_soz_act_box;
-	private:
+        void SetDriverList(DriversList^ list) {
+            driverList = list;
+            LoadDriverComboBox();
+        }
 
-	private: System::Windows::Forms::Label^ label5;
-	private: System::Windows::Forms::Label^ Рейтинг;
-	private: System::Windows::Forms::Label^ label6;
-	private: System::Windows::Forms::Button^ back_from_ch_str;
-	private: System::Windows::Forms::Button^ search_button;
-	private: System::Windows::Forms::Label^ label7;
+        // Элементы формы
+    public:
+        System::Windows::Forms::MaskedTextBox^ DepDateBox;
+        System::Windows::Forms::Label^ fio_add_label;
+        System::Windows::Forms::Label^ label1;
+        System::Windows::Forms::Label^ pol_add_label;
+        System::Windows::Forms::Label^ faculty_add_label;
+        System::Windows::Forms::Label^ label2;
+        System::Windows::Forms::Button^ SearchFormButton;
+        System::Windows::Forms::Button^ back_add;
+        System::Windows::Forms::Label^ label4;
+        System::Windows::Forms::TextBox^ PriceBox;
+        System::Windows::Forms::Label^ label5;
+        System::Windows::Forms::MaskedTextBox^ ArrDateBox;
+        System::Windows::Forms::TextBox^ StartPointBox;
+        System::Windows::Forms::TextBox^ FinishPointBox;
 
-	public:
-		// Данные для поиска
-		String^ SearchFIO;
-		String^ SearchPol;
-		String^ SearchDate;
-		String^ SearchFaculty;
-		String^ SearchGrupp;
-		Decimal SearchRating;
-		String^ SearchSozAct;
+        // элементы для выбора водителя и автобуса
+        System::Windows::Forms::Label^ driverLabel;
+        System::Windows::Forms::ComboBox^ driverComboBox;
+        System::Windows::Forms::Label^ busLabel;
+        System::Windows::Forms::ComboBox^ busComboBox;
 
-		// Флаги, указывающие, какие поля участвуют в поиске
-		bool UseFIO = false;
-		bool UsePol = false;
-		bool UseDate = false;
-		bool UseFaculty = false;
-		bool UseGrupp = false;
-		bool UseRating = false;
-		bool UseSozAct = false;
-
-
-	public: System::Windows::Forms::RadioButton^ rate_bol_zad;
-	public: System::Windows::Forms::RadioButton^ rate_rav_zad;
-	public: System::Windows::Forms::RadioButton^ rate_men_zad;
-	public: System::Windows::Forms::GroupBox^ rate_grupp_box;
-	public: System::Windows::Forms::GroupBox^ soz_grupp_box;
-	public: System::Windows::Forms::RadioButton^ soz_men_zad;
-	public: System::Windows::Forms::RadioButton^ soz_rav_zad;
-	public: System::Windows::Forms::RadioButton^ soz_bol_zad;
-	public: System::Windows::Forms::GroupBox^ date_grupp;
-
-	public: System::Windows::Forms::RadioButton^ date_bol_zad;
-	public: System::Windows::Forms::RadioButton^ date_men_zad;
-
-	public: System::Windows::Forms::RadioButton^ date_rav_zad;
-
-
-
-	private:
-		/// <summary>
-		/// Обязательная переменная конструктора.
-		/// </summary>
-		System::ComponentModel::Container^ components;
+    private:
+        // Методы загрузки ComboBox
+        void LoadDriverComboBox();
+        void LoadBusComboBox();
 
 #pragma region Windows Form Designer generated code
-		/// <summary>
-		/// Требуемый метод для поддержки конструктора — не изменяйте 
-		/// содержимое этого метода с помощью редактора кода.
-		/// </summary>
-		void InitializeComponent(void)
-		{
-			System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(zapros_form::typeid));
-			this->label1 = (gcnew System::Windows::Forms::Label());
-			this->search_FIO_box = (gcnew System::Windows::Forms::MaskedTextBox());
-			this->FIO_checkBox = (gcnew System::Windows::Forms::CheckBox());
-			this->search_pol_box = (gcnew System::Windows::Forms::CheckedListBox());
-			this->label2 = (gcnew System::Windows::Forms::Label());
-			this->pol_checkBox = (gcnew System::Windows::Forms::CheckBox());
-			this->search_data = (gcnew System::Windows::Forms::MaskedTextBox());
-			this->label3 = (gcnew System::Windows::Forms::Label());
-			this->search_data_checkBox = (gcnew System::Windows::Forms::CheckBox());
-			this->search_faculty_box = (gcnew System::Windows::Forms::TextBox());
-			this->label4 = (gcnew System::Windows::Forms::Label());
-			this->faculty_checkBox = (gcnew System::Windows::Forms::CheckBox());
-			this->search_grupp_box = (gcnew System::Windows::Forms::TextBox());
-			this->grupp_checkBox = (gcnew System::Windows::Forms::CheckBox());
-			this->rate_checkBox = (gcnew System::Windows::Forms::CheckBox());
-			this->soz_act_checkBox = (gcnew System::Windows::Forms::CheckBox());
-			this->new_rating_box = (gcnew System::Windows::Forms::NumericUpDown());
-			this->search_soz_act_box = (gcnew System::Windows::Forms::CheckedListBox());
-			this->label5 = (gcnew System::Windows::Forms::Label());
-			this->Рейтинг = (gcnew System::Windows::Forms::Label());
-			this->label6 = (gcnew System::Windows::Forms::Label());
-			this->back_from_ch_str = (gcnew System::Windows::Forms::Button());
-			this->search_button = (gcnew System::Windows::Forms::Button());
-			this->label7 = (gcnew System::Windows::Forms::Label());
-			this->rate_bol_zad = (gcnew System::Windows::Forms::RadioButton());
-			this->rate_rav_zad = (gcnew System::Windows::Forms::RadioButton());
-			this->rate_men_zad = (gcnew System::Windows::Forms::RadioButton());
-			this->rate_grupp_box = (gcnew System::Windows::Forms::GroupBox());
-			this->soz_grupp_box = (gcnew System::Windows::Forms::GroupBox());
-			this->soz_men_zad = (gcnew System::Windows::Forms::RadioButton());
-			this->soz_rav_zad = (gcnew System::Windows::Forms::RadioButton());
-			this->soz_bol_zad = (gcnew System::Windows::Forms::RadioButton());
-			this->date_grupp = (gcnew System::Windows::Forms::GroupBox());
-			this->date_bol_zad = (gcnew System::Windows::Forms::RadioButton());
-			this->date_men_zad = (gcnew System::Windows::Forms::RadioButton());
-			this->date_rav_zad = (gcnew System::Windows::Forms::RadioButton());
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->new_rating_box))->BeginInit();
-			this->rate_grupp_box->SuspendLayout();
-			this->soz_grupp_box->SuspendLayout();
-			this->date_grupp->SuspendLayout();
-			this->SuspendLayout();
-			// 
-			// label1
-			// 
-			resources->ApplyResources(this->label1, L"label1");
-			this->label1->ForeColor = System::Drawing::SystemColors::ControlText;
-			this->label1->Name = L"label1";
-			// 
-			// search_FIO_box
-			// 
-			resources->ApplyResources(this->search_FIO_box, L"search_FIO_box");
-			this->search_FIO_box->Name = L"search_FIO_box";
-			// 
-			// FIO_checkBox
-			// 
-			resources->ApplyResources(this->FIO_checkBox, L"FIO_checkBox");
-			this->FIO_checkBox->Name = L"FIO_checkBox";
-			this->FIO_checkBox->UseVisualStyleBackColor = true;
-			// 
-			// search_pol_box
-			// 
-			this->search_pol_box->FormattingEnabled = true;
-			this->search_pol_box->Items->AddRange(gcnew cli::array< System::Object^  >(2) {
-				resources->GetString(L"search_pol_box.Items"),
-					resources->GetString(L"search_pol_box.Items1")
-			});
-			resources->ApplyResources(this->search_pol_box, L"search_pol_box");
-			this->search_pol_box->Name = L"search_pol_box";
-			this->search_pol_box->ItemCheck += gcnew System::Windows::Forms::ItemCheckEventHandler(this, &zapros_form::search_pol_box_ItemCheck);
-			// 
-			// label2
-			// 
-			resources->ApplyResources(this->label2, L"label2");
-			this->label2->ForeColor = System::Drawing::Color::Black;
-			this->label2->Name = L"label2";
-			// 
-			// pol_checkBox
-			// 
-			resources->ApplyResources(this->pol_checkBox, L"pol_checkBox");
-			this->pol_checkBox->Name = L"pol_checkBox";
-			this->pol_checkBox->UseVisualStyleBackColor = true;
-			// 
-			// search_data
-			// 
-			resources->ApplyResources(this->search_data, L"search_data");
-			this->search_data->Name = L"search_data";
-			this->search_data->ValidatingType = System::DateTime::typeid;
-			// 
-			// label3
-			// 
-			resources->ApplyResources(this->label3, L"label3");
-			this->label3->ForeColor = System::Drawing::Color::Black;
-			this->label3->Name = L"label3";
-			// 
-			// search_data_checkBox
-			// 
-			resources->ApplyResources(this->search_data_checkBox, L"search_data_checkBox");
-			this->search_data_checkBox->Name = L"search_data_checkBox";
-			this->search_data_checkBox->UseVisualStyleBackColor = true;
-			// 
-			// search_faculty_box
-			// 
-			resources->ApplyResources(this->search_faculty_box, L"search_faculty_box");
-			this->search_faculty_box->Name = L"search_faculty_box";
-			// 
-			// label4
-			// 
-			resources->ApplyResources(this->label4, L"label4");
-			this->label4->ForeColor = System::Drawing::SystemColors::ActiveCaptionText;
-			this->label4->Name = L"label4";
-			// 
-			// faculty_checkBox
-			// 
-			resources->ApplyResources(this->faculty_checkBox, L"faculty_checkBox");
-			this->faculty_checkBox->Name = L"faculty_checkBox";
-			this->faculty_checkBox->UseVisualStyleBackColor = true;
-			// 
-			// search_grupp_box
-			// 
-			resources->ApplyResources(this->search_grupp_box, L"search_grupp_box");
-			this->search_grupp_box->Name = L"search_grupp_box";
-			// 
-			// grupp_checkBox
-			// 
-			resources->ApplyResources(this->grupp_checkBox, L"grupp_checkBox");
-			this->grupp_checkBox->Name = L"grupp_checkBox";
-			this->grupp_checkBox->UseVisualStyleBackColor = true;
-			// 
-			// rate_checkBox
-			// 
-			resources->ApplyResources(this->rate_checkBox, L"rate_checkBox");
-			this->rate_checkBox->Name = L"rate_checkBox";
-			this->rate_checkBox->UseVisualStyleBackColor = true;
-			// 
-			// soz_act_checkBox
-			// 
-			resources->ApplyResources(this->soz_act_checkBox, L"soz_act_checkBox");
-			this->soz_act_checkBox->Name = L"soz_act_checkBox";
-			this->soz_act_checkBox->UseVisualStyleBackColor = true;
-			// 
-			// new_rating_box
-			// 
-			resources->ApplyResources(this->new_rating_box, L"new_rating_box");
-			this->new_rating_box->Name = L"new_rating_box";
-			// 
-			// search_soz_act_box
-			// 
-			this->search_soz_act_box->FormattingEnabled = true;
-			this->search_soz_act_box->Items->AddRange(gcnew cli::array< System::Object^  >(3) {
-				resources->GetString(L"search_soz_act_box.Items"),
-					resources->GetString(L"search_soz_act_box.Items1"), resources->GetString(L"search_soz_act_box.Items2")
-			});
-			resources->ApplyResources(this->search_soz_act_box, L"search_soz_act_box");
-			this->search_soz_act_box->Name = L"search_soz_act_box";
-			this->search_soz_act_box->ItemCheck += gcnew System::Windows::Forms::ItemCheckEventHandler(this, &zapros_form::search_soz_act_box_ItemCheck);
-			// 
-			// label5
-			// 
-			resources->ApplyResources(this->label5, L"label5");
-			this->label5->Name = L"label5";
-			// 
-			// Рейтинг
-			// 
-			resources->ApplyResources(this->Рейтинг, L"Рейтинг");
-			this->Рейтинг->Name = L"Рейтинг";
-			// 
-			// label6
-			// 
-			resources->ApplyResources(this->label6, L"label6");
-			this->label6->Name = L"label6";
-			// 
-			// back_from_ch_str
-			// 
-			this->back_from_ch_str->BackColor = System::Drawing::SystemColors::InactiveCaption;
-			resources->ApplyResources(this->back_from_ch_str, L"back_from_ch_str");
-			this->back_from_ch_str->Name = L"back_from_ch_str";
-			this->back_from_ch_str->UseVisualStyleBackColor = false;
-			this->back_from_ch_str->Click += gcnew System::EventHandler(this, &zapros_form::back_from_ch_str_Click);
-			// 
-			// search_button
-			// 
-			this->search_button->BackColor = System::Drawing::SystemColors::InactiveCaption;
-			resources->ApplyResources(this->search_button, L"search_button");
-			this->search_button->Name = L"search_button";
-			this->search_button->UseVisualStyleBackColor = false;
-			this->search_button->Click += gcnew System::EventHandler(this, &zapros_form::search_button_Click);
-			// 
-			// label7
-			// 
-			resources->ApplyResources(this->label7, L"label7");
-			this->label7->Name = L"label7";
-			// 
-			// rate_bol_zad
-			// 
-			resources->ApplyResources(this->rate_bol_zad, L"rate_bol_zad");
-			this->rate_bol_zad->Name = L"rate_bol_zad";
-			this->rate_bol_zad->TabStop = true;
-			this->rate_bol_zad->UseVisualStyleBackColor = true;
-			// 
-			// rate_rav_zad
-			// 
-			resources->ApplyResources(this->rate_rav_zad, L"rate_rav_zad");
-			this->rate_rav_zad->Name = L"rate_rav_zad";
-			this->rate_rav_zad->TabStop = true;
-			this->rate_rav_zad->UseVisualStyleBackColor = true;
-			// 
-			// rate_men_zad
-			// 
-			resources->ApplyResources(this->rate_men_zad, L"rate_men_zad");
-			this->rate_men_zad->Name = L"rate_men_zad";
-			this->rate_men_zad->TabStop = true;
-			this->rate_men_zad->UseVisualStyleBackColor = true;
-			// 
-			// rate_grupp_box
-			// 
-			this->rate_grupp_box->Controls->Add(this->rate_bol_zad);
-			this->rate_grupp_box->Controls->Add(this->rate_men_zad);
-			this->rate_grupp_box->Controls->Add(this->rate_rav_zad);
-			resources->ApplyResources(this->rate_grupp_box, L"rate_grupp_box");
-			this->rate_grupp_box->Name = L"rate_grupp_box";
-			this->rate_grupp_box->TabStop = false;
-			// 
-			// soz_grupp_box
-			// 
-			this->soz_grupp_box->Controls->Add(this->soz_men_zad);
-			this->soz_grupp_box->Controls->Add(this->soz_rav_zad);
-			this->soz_grupp_box->Controls->Add(this->soz_bol_zad);
-			resources->ApplyResources(this->soz_grupp_box, L"soz_grupp_box");
-			this->soz_grupp_box->Name = L"soz_grupp_box";
-			this->soz_grupp_box->TabStop = false;
-			// 
-			// soz_men_zad
-			// 
-			resources->ApplyResources(this->soz_men_zad, L"soz_men_zad");
-			this->soz_men_zad->Name = L"soz_men_zad";
-			this->soz_men_zad->TabStop = true;
-			this->soz_men_zad->UseVisualStyleBackColor = true;
-			// 
-			// soz_rav_zad
-			// 
-			resources->ApplyResources(this->soz_rav_zad, L"soz_rav_zad");
-			this->soz_rav_zad->Name = L"soz_rav_zad";
-			this->soz_rav_zad->TabStop = true;
-			this->soz_rav_zad->UseVisualStyleBackColor = true;
-			// 
-			// soz_bol_zad
-			// 
-			resources->ApplyResources(this->soz_bol_zad, L"soz_bol_zad");
-			this->soz_bol_zad->Name = L"soz_bol_zad";
-			this->soz_bol_zad->TabStop = true;
-			this->soz_bol_zad->UseVisualStyleBackColor = true;
-			// 
-			// date_grupp
-			// 
-			this->date_grupp->Controls->Add(this->date_bol_zad);
-			this->date_grupp->Controls->Add(this->date_men_zad);
-			this->date_grupp->Controls->Add(this->date_rav_zad);
-			resources->ApplyResources(this->date_grupp, L"date_grupp");
-			this->date_grupp->Name = L"date_grupp";
-			this->date_grupp->TabStop = false;
-			// 
-			// date_bol_zad
-			// 
-			resources->ApplyResources(this->date_bol_zad, L"date_bol_zad");
-			this->date_bol_zad->Name = L"date_bol_zad";
-			this->date_bol_zad->TabStop = true;
-			this->date_bol_zad->UseVisualStyleBackColor = true;
-			// 
-			// date_men_zad
-			// 
-			resources->ApplyResources(this->date_men_zad, L"date_men_zad");
-			this->date_men_zad->Name = L"date_men_zad";
-			this->date_men_zad->TabStop = true;
-			this->date_men_zad->UseVisualStyleBackColor = true;
-			// 
-			// date_rav_zad
-			// 
-			resources->ApplyResources(this->date_rav_zad, L"date_rav_zad");
-			this->date_rav_zad->Name = L"date_rav_zad";
-			this->date_rav_zad->TabStop = true;
-			this->date_rav_zad->UseVisualStyleBackColor = true;
-			// 
-			// zapros_form
-			// 
-			resources->ApplyResources(this, L"$this");
-			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->BackColor = System::Drawing::Color::Silver;
-			this->Controls->Add(this->date_grupp);
-			this->Controls->Add(this->soz_grupp_box);
-			this->Controls->Add(this->rate_grupp_box);
-			this->Controls->Add(this->label7);
-			this->Controls->Add(this->search_button);
-			this->Controls->Add(this->back_from_ch_str);
-			this->Controls->Add(this->label6);
-			this->Controls->Add(this->Рейтинг);
-			this->Controls->Add(this->label5);
-			this->Controls->Add(this->search_soz_act_box);
-			this->Controls->Add(this->new_rating_box);
-			this->Controls->Add(this->soz_act_checkBox);
-			this->Controls->Add(this->rate_checkBox);
-			this->Controls->Add(this->grupp_checkBox);
-			this->Controls->Add(this->search_grupp_box);
-			this->Controls->Add(this->faculty_checkBox);
-			this->Controls->Add(this->label4);
-			this->Controls->Add(this->search_faculty_box);
-			this->Controls->Add(this->search_data_checkBox);
-			this->Controls->Add(this->label3);
-			this->Controls->Add(this->search_data);
-			this->Controls->Add(this->pol_checkBox);
-			this->Controls->Add(this->label2);
-			this->Controls->Add(this->search_pol_box);
-			this->Controls->Add(this->FIO_checkBox);
-			this->Controls->Add(this->search_FIO_box);
-			this->Controls->Add(this->label1);
-			this->Name = L"zapros_form";
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->new_rating_box))->EndInit();
-			this->rate_grupp_box->ResumeLayout(false);
-			this->rate_grupp_box->PerformLayout();
-			this->soz_grupp_box->ResumeLayout(false);
-			this->soz_grupp_box->PerformLayout();
-			this->date_grupp->ResumeLayout(false);
-			this->date_grupp->PerformLayout();
-			this->ResumeLayout(false);
-			this->PerformLayout();
+        void InitializeComponent(void) {
+            this->DepDateBox = (gcnew System::Windows::Forms::MaskedTextBox());
+            this->fio_add_label = (gcnew System::Windows::Forms::Label());
+            this->label1 = (gcnew System::Windows::Forms::Label());
+            this->pol_add_label = (gcnew System::Windows::Forms::Label());
+            this->faculty_add_label = (gcnew System::Windows::Forms::Label());
+            this->label2 = (gcnew System::Windows::Forms::Label());
+            this->SearchFormButton = (gcnew System::Windows::Forms::Button());
+            this->back_add = (gcnew System::Windows::Forms::Button());
+            this->label4 = (gcnew System::Windows::Forms::Label());
+            this->PriceBox = (gcnew System::Windows::Forms::TextBox());
+            this->label5 = (gcnew System::Windows::Forms::Label());
+            this->ArrDateBox = (gcnew System::Windows::Forms::MaskedTextBox());
+            this->StartPointBox = (gcnew System::Windows::Forms::TextBox());
+            this->FinishPointBox = (gcnew System::Windows::Forms::TextBox());
+            this->driverLabel = (gcnew System::Windows::Forms::Label());
+            this->driverComboBox = (gcnew System::Windows::Forms::ComboBox());
+            this->busLabel = (gcnew System::Windows::Forms::Label());
+            this->busComboBox = (gcnew System::Windows::Forms::ComboBox());
+            this->checkStartBox = (gcnew System::Windows::Forms::CheckBox());
+            this->checkFinishBox = (gcnew System::Windows::Forms::CheckBox());
+            this->checkDateStartBox = (gcnew System::Windows::Forms::CheckBox());
+            this->checkDateFinishBox = (gcnew System::Windows::Forms::CheckBox());
+            this->checkPriceBox = (gcnew System::Windows::Forms::CheckBox());
+            this->checkDriverBox = (gcnew System::Windows::Forms::CheckBox());
+            this->checkBusBox = (gcnew System::Windows::Forms::CheckBox());
+            this->SuspendLayout();
+            // 
+            // DepDateBox
+            // 
+            this->DepDateBox->Location = System::Drawing::Point(84, 293);
+            this->DepDateBox->Mask = L"00/00/0000 90:00";
+            this->DepDateBox->Name = L"DepDateBox";
+            this->DepDateBox->Size = System::Drawing::Size(150, 22);
+            this->DepDateBox->TabIndex = 3;
+            this->DepDateBox->ValidatingType = System::DateTime::typeid;
+            this->DepDateBox->Enabled = false;
+            // 
+            // fio_add_label
+            // 
+            this->fio_add_label->AutoSize = true;
+            this->fio_add_label->Location = System::Drawing::Point(81, 84);
+            this->fio_add_label->Name = L"fio_add_label";
+            this->fio_add_label->Size = System::Drawing::Size(136, 16);
+            this->fio_add_label->TabIndex = 2;
+            this->fio_add_label->Text = L"Пункт отправления";
+            // 
+            // label1
+            // 
+            this->label1->AutoSize = true;
+            this->label1->Location = System::Drawing::Point(84, 255);
+            this->label1->Name = L"label1";
+            this->label1->Size = System::Drawing::Size(182, 16);
+            this->label1->TabIndex = 3;
+            this->label1->Text = L"Дата и время отправления";
+            // 
+            // pol_add_label
+            // 
+            this->pol_add_label->AutoSize = true;
+            this->pol_add_label->Location = System::Drawing::Point(87, 164);
+            this->pol_add_label->Name = L"pol_add_label";
+            this->pol_add_label->Size = System::Drawing::Size(113, 16);
+            this->pol_add_label->TabIndex = 4;
+            this->pol_add_label->Text = L"Пункт прибытия";
+            // 
+            // faculty_add_label
+            // 
+            this->faculty_add_label->AutoSize = true;
+            this->faculty_add_label->Location = System::Drawing::Point(81, 342);
+            this->faculty_add_label->Name = L"faculty_add_label";
+            this->faculty_add_label->Size = System::Drawing::Size(159, 16);
+            this->faculty_add_label->TabIndex = 7;
+            this->faculty_add_label->Text = L"Дата и время прибытия";
+            // 
+            // label2
+            // 
+            this->label2->AutoSize = true;
+            this->label2->Location = System::Drawing::Point(415, 84);
+            this->label2->Name = L"label2";
+            this->label2->Size = System::Drawing::Size(0, 16);
+            this->label2->TabIndex = 10;
+            // 
+            // SearchFormButton
+            // 
+            this->SearchFormButton->BackColor = System::Drawing::SystemColors::InactiveCaption;
+            this->SearchFormButton->Location = System::Drawing::Point(604, 396);
+            this->SearchFormButton->Name = L"SearchFormButton";
+            this->SearchFormButton->Size = System::Drawing::Size(95, 32);
+            this->SearchFormButton->TabIndex = 8;
+            this->SearchFormButton->Text = L"Найти";
+            this->SearchFormButton->UseVisualStyleBackColor = false;
+            this->SearchFormButton->Click += gcnew System::EventHandler(this, &SearchForm::SearchButton_Click);
+            // 
+            // back_add
+            // 
+            this->back_add->BackColor = System::Drawing::SystemColors::InactiveCaption;
+            this->back_add->Location = System::Drawing::Point(604, 446);
+            this->back_add->Name = L"back_add";
+            this->back_add->Size = System::Drawing::Size(95, 33);
+            this->back_add->TabIndex = 9;
+            this->back_add->Text = L"Назад";
+            this->back_add->UseVisualStyleBackColor = false;
+            this->back_add->Click += gcnew System::EventHandler(this, &SearchForm::back_add_Click);
+            // 
+            // label4
+            // 
+            this->label4->AutoSize = true;
+            this->label4->Location = System::Drawing::Point(421, 91);
+            this->label4->Name = L"label4";
+            this->label4->Size = System::Drawing::Size(40, 16);
+            this->label4->TabIndex = 15;
+            this->label4->Text = L"Цена";
+            // 
+            // PriceBox
+            // 
+            this->PriceBox->Location = System::Drawing::Point(423, 128);
+            this->PriceBox->Name = L"PriceBox";
+            this->PriceBox->Size = System::Drawing::Size(120, 22);
+            this->PriceBox->TabIndex = 4;
+            this->PriceBox->Enabled = false;
+            // 
+            // label5
+            // 
+            this->label5->AutoSize = true;
+            this->label5->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+                static_cast<System::Byte>(204)));
+            this->label5->Location = System::Drawing::Point(87, 23);
+            this->label5->Name = L"label5";
+            this->label5->Size = System::Drawing::Size(428, 20);
+            this->label5->TabIndex = 17;
+            this->label5->Text = L"Введите критерии поиска поездок";
+            // 
+            // ArrDateBox
+            // 
+            this->ArrDateBox->Location = System::Drawing::Point(84, 384);
+            this->ArrDateBox->Mask = L"00/00/0000 90:00";
+            this->ArrDateBox->Name = L"ArrDateBox";
+            this->ArrDateBox->Size = System::Drawing::Size(150, 22);
+            this->ArrDateBox->TabIndex = 5;
+            this->ArrDateBox->ValidatingType = System::DateTime::typeid;
+            this->ArrDateBox->Enabled = false;
+            // 
+            // StartPointBox
+            // 
+            this->StartPointBox->Location = System::Drawing::Point(84, 127);
+            this->StartPointBox->Name = L"StartPointBox";
+            this->StartPointBox->Size = System::Drawing::Size(150, 22);
+            this->StartPointBox->TabIndex = 0;
+            this->StartPointBox->Enabled = false;
+            // 
+            // FinishPointBox
+            // 
+            this->FinishPointBox->Location = System::Drawing::Point(84, 206);
+            this->FinishPointBox->Name = L"FinishPointBox";
+            this->FinishPointBox->Size = System::Drawing::Size(150, 22);
+            this->FinishPointBox->TabIndex = 1;
+            this->FinishPointBox->Enabled = false;
+            // 
+            // driverLabel
+            // 
+            this->driverLabel->AutoSize = true;
+            this->driverLabel->Location = System::Drawing::Point(421, 164);
+            this->driverLabel->Name = L"driverLabel";
+            this->driverLabel->Size = System::Drawing::Size(70, 16);
+            this->driverLabel->TabIndex = 24;
+            this->driverLabel->Text = L"Водитель";
+            // 
+            // driverComboBox
+            // 
+            this->driverComboBox->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
+            this->driverComboBox->FormattingEnabled = true;
+            this->driverComboBox->Location = System::Drawing::Point(423, 206);
+            this->driverComboBox->Name = L"driverComboBox";
+            this->driverComboBox->Size = System::Drawing::Size(200, 24);
+            this->driverComboBox->TabIndex = 6;
+            this->driverComboBox->Enabled = false;
+            // 
+            // busLabel
+            // 
+            this->busLabel->AutoSize = true;
+            this->busLabel->Location = System::Drawing::Point(421, 255);
+            this->busLabel->Name = L"busLabel";
+            this->busLabel->Size = System::Drawing::Size(62, 16);
+            this->busLabel->TabIndex = 26;
+            this->busLabel->Text = L"Автобус";
+            // 
+            // busComboBox
+            // 
+            this->busComboBox->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
+            this->busComboBox->FormattingEnabled = true;
+            this->busComboBox->Location = System::Drawing::Point(423, 293);
+            this->busComboBox->Name = L"busComboBox";
+            this->busComboBox->Size = System::Drawing::Size(200, 24);
+            this->busComboBox->TabIndex = 7;
+            this->busComboBox->Enabled = false;
+            // 
+            // checkStartBox
+            // 
+            this->checkStartBox->AutoSize = true;
+            this->checkStartBox->Location = System::Drawing::Point(32, 83);
+            this->checkStartBox->Name = L"checkStartBox";
+            this->checkStartBox->Size = System::Drawing::Size(18, 17);
+            this->checkStartBox->TabIndex = 27;
+            this->checkStartBox->UseVisualStyleBackColor = true;
+            this->checkStartBox->CheckedChanged += gcnew System::EventHandler(this, &SearchForm::checkStartBox_CheckedChanged);
+            // 
+            // checkFinishBox
+            // 
+            this->checkFinishBox->AutoSize = true;
+            this->checkFinishBox->Location = System::Drawing::Point(32, 163);
+            this->checkFinishBox->Name = L"checkFinishBox";
+            this->checkFinishBox->Size = System::Drawing::Size(18, 17);
+            this->checkFinishBox->TabIndex = 28;
+            this->checkFinishBox->UseVisualStyleBackColor = true;
+            this->checkFinishBox->CheckedChanged += gcnew System::EventHandler(this, &SearchForm::checkFinishBox_CheckedChanged);
+            // 
+            // checkDateStartBox
+            // 
+            this->checkDateStartBox->AutoSize = true;
+            this->checkDateStartBox->Location = System::Drawing::Point(32, 256);
+            this->checkDateStartBox->Name = L"checkDateStartBox";
+            this->checkDateStartBox->Size = System::Drawing::Size(18, 17);
+            this->checkDateStartBox->TabIndex = 29;
+            this->checkDateStartBox->UseVisualStyleBackColor = true;
+            this->checkDateStartBox->CheckedChanged += gcnew System::EventHandler(this, &SearchForm::checkDateStartBox_CheckedChanged);
+            // 
+            // checkDateFinishBox
+            // 
+            this->checkDateFinishBox->AutoSize = true;
+            this->checkDateFinishBox->Location = System::Drawing::Point(32, 341);
+            this->checkDateFinishBox->Name = L"checkDateFinishBox";
+            this->checkDateFinishBox->Size = System::Drawing::Size(18, 17);
+            this->checkDateFinishBox->TabIndex = 30;
+            this->checkDateFinishBox->UseVisualStyleBackColor = true;
+            this->checkDateFinishBox->CheckedChanged += gcnew System::EventHandler(this, &SearchForm::checkDateFinishBox_CheckedChanged);
+            // 
+            // checkPriceBox
+            // 
+            this->checkPriceBox->AutoSize = true;
+            this->checkPriceBox->Location = System::Drawing::Point(380, 90);
+            this->checkPriceBox->Name = L"checkPriceBox";
+            this->checkPriceBox->Size = System::Drawing::Size(18, 17);
+            this->checkPriceBox->TabIndex = 31;
+            this->checkPriceBox->UseVisualStyleBackColor = true;
+            this->checkPriceBox->CheckedChanged += gcnew System::EventHandler(this, &SearchForm::checkPriceBox_CheckedChanged);
+            // 
+            // checkDriverBox
+            // 
+            this->checkDriverBox->AutoSize = true;
+            this->checkDriverBox->Location = System::Drawing::Point(380, 163);
+            this->checkDriverBox->Name = L"checkDriverBox";
+            this->checkDriverBox->Size = System::Drawing::Size(18, 17);
+            this->checkDriverBox->TabIndex = 32;
+            this->checkDriverBox->UseVisualStyleBackColor = true;
+            this->checkDriverBox->CheckedChanged += gcnew System::EventHandler(this, &SearchForm::checkDriverBox_CheckedChanged);
+            // 
+            // checkBusBox
+            // 
+            this->checkBusBox->AutoSize = true;
+            this->checkBusBox->Location = System::Drawing::Point(380, 254);
+            this->checkBusBox->Name = L"checkBusBox";
+            this->checkBusBox->Size = System::Drawing::Size(18, 17);
+            this->checkBusBox->TabIndex = 33;
+            this->checkBusBox->UseVisualStyleBackColor = true;
+            this->checkBusBox->CheckedChanged += gcnew System::EventHandler(this, &SearchForm::checkBusBox_CheckedChanged);
+            // 
+            // SearchForm
+            // 
+            this->AutoScaleDimensions = System::Drawing::SizeF(8, 16);
+            this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
+            this->BackColor = System::Drawing::SystemColors::AppWorkspace;
+            this->ClientSize = System::Drawing::Size(754, 506);
+            this->Controls->Add(this->checkBusBox);
+            this->Controls->Add(this->checkDriverBox);
+            this->Controls->Add(this->checkPriceBox);
+            this->Controls->Add(this->checkDateFinishBox);
+            this->Controls->Add(this->checkDateStartBox);
+            this->Controls->Add(this->checkFinishBox);
+            this->Controls->Add(this->checkStartBox);
+            this->Controls->Add(this->busComboBox);
+            this->Controls->Add(this->busLabel);
+            this->Controls->Add(this->driverComboBox);
+            this->Controls->Add(this->driverLabel);
+            this->Controls->Add(this->FinishPointBox);
+            this->Controls->Add(this->StartPointBox);
+            this->Controls->Add(this->ArrDateBox);
+            this->Controls->Add(this->label5);
+            this->Controls->Add(this->PriceBox);
+            this->Controls->Add(this->label4);
+            this->Controls->Add(this->back_add);
+            this->Controls->Add(this->SearchFormButton);
+            this->Controls->Add(this->label2);
+            this->Controls->Add(this->faculty_add_label);
+            this->Controls->Add(this->pol_add_label);
+            this->Controls->Add(this->label1);
+            this->Controls->Add(this->fio_add_label);
+            this->Controls->Add(this->DepDateBox);
+            this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
+            this->MaximizeBox = false;
+            this->MinimizeBox = false;
+            this->Name = L"SearchForm";
+            this->StartPosition = System::Windows::Forms::FormStartPosition::CenterParent;
+            this->Text = L"Поиск поездок";
+            this->ResumeLayout(false);
+            this->PerformLayout();
 
-		}
+        }
 #pragma endregion
-	private: System::Void search_button_Click(System::Object^ sender, System::EventArgs^ e);
-	private: System::Void back_from_ch_str_Click(System::Object^ sender, System::EventArgs^ e) {
-		this->Close();
-	}
-	private: System::Void rate_bol_zad_CheckedChanged(System::Object^ sender, System::EventArgs^ e) {
-	}
-	private: System::Void search_pol_box_ItemCheck(System::Object^ sender, System::Windows::Forms::ItemCheckEventArgs^ e);
 
-	private: System::Void search_soz_act_box_ItemCheck(System::Object^ sender, System::Windows::Forms::ItemCheckEventArgs^ e);
-	};
+    public:
+        System::Void SearchButton_Click(System::Object^ sender, System::EventArgs^ e);
+
+    private:
+        System::Void back_add_Click(System::Object^ sender, System::EventArgs^ e);
+
+        // Обработчики чекбоксов
+        System::Void checkStartBox_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
+        System::Void checkFinishBox_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
+        System::Void checkDateStartBox_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
+        System::Void checkDateFinishBox_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
+        System::Void checkPriceBox_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
+        System::Void checkDriverBox_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
+        System::Void checkBusBox_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
+    };
 }

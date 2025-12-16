@@ -14,9 +14,9 @@ namespace InfSystBusStation {
     using namespace System::Drawing;
     using namespace System::Collections::Generic;
 
-    public ref class TimingForm : public System::Windows::Forms::Form {
+    public ref class ResultForm : public System::Windows::Forms::Form {
     public:
-        TimingForm(TripList^ tripList, BusList^ busList, DriversList^ driverList) {
+        ResultForm(TripList^ tripList, BusList^ busList, DriversList^ driverList) {
             InitializeComponent();
             this->tripList = tripList;
             this->busList = busList;
@@ -25,7 +25,7 @@ namespace InfSystBusStation {
         }
 
     protected:
-        ~TimingForm() {
+        ~ResultForm() {
             if (components) {
                 delete components;
             }
@@ -102,35 +102,35 @@ namespace InfSystBusStation {
                this->addTripMenuItem->Name = L"addTripMenuItem";
                this->addTripMenuItem->Size = System::Drawing::Size(149, 24);
                this->addTripMenuItem->Text = L"Добавить поездку";
-               this->addTripMenuItem->Click += gcnew System::EventHandler(this, &TimingForm::AddTrip_Click);
+               this->addTripMenuItem->Click += gcnew System::EventHandler(this, &ResultForm::AddTrip_Click);
                // 
                // deleteTripMenuItem
                // 
                this->deleteTripMenuItem->Name = L"deleteTripMenuItem";
                this->deleteTripMenuItem->Size = System::Drawing::Size(138, 24);
                this->deleteTripMenuItem->Text = L"Удалить поездку";
-               this->deleteTripMenuItem->Click += gcnew System::EventHandler(this, &TimingForm::DeleteTrip_Click);
+               this->deleteTripMenuItem->Click += gcnew System::EventHandler(this, &ResultForm::DeleteTrip_Click);
                // 
                // editTripMenuItem
                // 
                this->editTripMenuItem->Name = L"editTripMenuItem";
                this->editTripMenuItem->Size = System::Drawing::Size(184, 24);
                this->editTripMenuItem->Text = L"Редактировать поездку";
-               this->editTripMenuItem->Click += gcnew System::EventHandler(this, &TimingForm::EditTrip_Click);
+               this->editTripMenuItem->Click += gcnew System::EventHandler(this, &ResultForm::EditTrip_Click);
                // 
                // searchMenuItem
                // 
                this->searchMenuItem->Name = L"searchMenuItem";
                this->searchMenuItem->Size = System::Drawing::Size(66, 24);
                this->searchMenuItem->Text = L"Поиск";
-               this->searchMenuItem->Click += gcnew System::EventHandler(this, &TimingForm::Search_Click);
+               this->searchMenuItem->Click += gcnew System::EventHandler(this, &ResultForm::Search_Click);
                // 
                // backMenuItem
                // 
                this->backMenuItem->Name = L"backMenuItem";
                this->backMenuItem->Size = System::Drawing::Size(65, 24);
                this->backMenuItem->Text = L"Назад";
-               this->backMenuItem->Click += gcnew System::EventHandler(this, &TimingForm::Back_Click);
+               this->backMenuItem->Click += gcnew System::EventHandler(this, &ResultForm::Back_Click);
                // 
                // tripsDataGridView
                // 
@@ -148,7 +148,7 @@ namespace InfSystBusStation {
                this->tripsDataGridView->RowTemplate->Height = 24;
                this->tripsDataGridView->Size = System::Drawing::Size(1276, 450);
                this->tripsDataGridView->TabIndex = 1;
-               this->tripsDataGridView->CellContentClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &TimingForm::tripsDataGridView_CellContentClick);
+               this->tripsDataGridView->CellContentClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &ResultForm::tripsDataGridView_CellContentClick);
                // 
                // selectColumn
                // 
@@ -223,7 +223,7 @@ namespace InfSystBusStation {
                this->btnBuyTicket->TabIndex = 2;
                this->btnBuyTicket->Text = L"Купить билет";
                this->btnBuyTicket->UseVisualStyleBackColor = false;
-               this->btnBuyTicket->Click += gcnew System::EventHandler(this, &TimingForm::BuyTicket_Click);
+               this->btnBuyTicket->Click += gcnew System::EventHandler(this, &ResultForm::BuyTicket_Click);
                // 
                // TimingForm
                // 

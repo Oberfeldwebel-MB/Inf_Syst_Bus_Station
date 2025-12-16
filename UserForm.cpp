@@ -1,40 +1,63 @@
-// UserForm.cpp
-#include "UserForm.h"
-#include "StartForm.h"
+ï»¿#include "UserForm.h"
+#include "TripList.hpp"
 #include "TimingForm.h"
+#include "OrdersForm.h"
 
-namespace InfSystBusStation {
+using namespace InfSystBusStation;
+using namespace System;
+using namespace System::Windows::Forms;
 
-    // Îáðàáîò÷èê êíîïêè "Âûáðàòü áèëåò"
-    System::Void UserForm::ChoseButton_Click(System::Object^ sender, System::EventArgs^ e) {
-        try {
-            // Ñîçäàåì è îòêðûâàåì ôîðìó ðàñïèñàíèÿ
-            TimingForm^ timingForm = gcnew TimingForm();
-            timingForm->Show();
-        }
-        catch (Exception^ ex) {
-            MessageBox::Show("Îøèáêà: " + ex->Message);
-        }
+void UserForm::UpdateOrderInfo() {
+    if (currentOrder != nullptr) {
+        lblOrderInfo->Text = String::Format("Ð’ Ð²Ð°ÑˆÐµÐ¼ Ð·Ð°ÐºÐ°Ð·Ðµ: {0} Ð±Ð¸Ð»ÐµÑ‚Ð¾Ð² Ð½Ð° ÑÑƒÐ¼Ð¼Ñƒ {1:F2} Ñ€ÑƒÐ±.",
+            currentOrder->TicketCount,
+            currentOrder->TotalPrice);
+
+        // Ð’ÐºÐ»ÑŽÑ‡Ð°ÐµÐ¼/Ð²Ñ‹ÐºÐ»ÑŽÑ‡Ð°ÐµÐ¼ ÐºÐ½Ð¾Ð¿ÐºÑƒ "ÐœÐ¾Ð¸ Ð±Ð¸Ð»ÐµÑ‚Ñ‹" Ð² Ð·Ð°Ð²Ð¸ÑÐ¸Ð¼Ð¾ÑÑ‚Ð¸ Ð¾Ñ‚ Ð½Ð°Ð»Ð¸Ñ‡Ð¸Ñ Ð±Ð¸Ð»ÐµÑ‚Ð¾Ð²
+        btnMyTickets->Enabled = (currentOrder->TicketCount > 0);
     }
+}
 
-    // Îáðàáîò÷èê êíîïêè "Ìîè áèëåòû"
-    System::Void UserForm::TicketListButton_Click(System::Object^ sender, System::EventArgs^ e) {
-        MessageBox::Show("Ôîðìà ñî ñïèñêîì áèëåòîâ");
-        // TODO: Îòêðûòü ôîðìó TicketsListForm
-        // TicketsListForm^ ticketsForm = gcnew TicketsListForm();
-        // ticketsForm->Show();
-    }
+System::Void UserForm::btnSelectTrip_Click(System::Object^ sender, System::EventArgs^ e) {
+    try {
+        // Ð¡Ð¾Ð·Ð´Ð°ÐµÐ¼ TripList
+        TripList^ tripList = gcnew TripList();
 
-    // Îáðàáîò÷èê êíîïêè "Íàçàä"
-    System::Void UserForm::BackButton_Click(System::Object^ sender, System::EventArgs^ e) {
-        try {
-            // Çàêðûâàåì òåêóùóþ ôîðìó è ïîêàçûâàåì ñòàðòîâóþ
-            StartForm^ startForm = gcnew StartForm();
-            startForm->Show();
-            this->Close();
-        }
-        catch (Exception^ ex) {
-            MessageBox::Show("Îøèáêà: " + ex->Message);
-        }
+        // ÐžÑ‚ÐºÑ€Ñ‹Ð²Ð°ÐµÐ¼ TimingForm
+        TimingForm^ timingForm = gcnew TimingForm(tripList);
+
+        // ÐŸÐµÑ€ÐµÐ´Ð°ÐµÐ¼ Order Ð² TimingForm
+        timingForm->SetCurrentOrder(currentOrder);
+
+        this->Hide(); // Ð¡ÐºÑ€Ñ‹Ð²Ð°ÐµÐ¼ UserForm
+        timingForm->ShowDialog();
+        this->Show(); // ÐŸÐ¾ÐºÐ°Ð·Ñ‹Ð²Ð°ÐµÐ¼ ÑÐ½Ð¾Ð²Ð°
+
+        // ÐžÐ±Ð½Ð¾Ð²Ð»ÑÐµÐ¼ Ð¸Ð½Ñ„Ð¾Ñ€Ð¼Ð°Ñ†Ð¸ÑŽ Ð¾ Ð·Ð°ÐºÐ°Ð·Ðµ
+        UpdateOrderInfo();
     }
+    catch (Exception^ ex) {
+        MessageBox::Show("ÐžÑˆÐ¸Ð±ÐºÐ°: " + ex->Message,
+            "ÐžÑˆÐ¸Ð±ÐºÐ°", MessageBoxButtons::OK, MessageBoxIcon::Error);
+    }
+}
+
+System::Void UserForm::btnMyTickets_Click(System::Object^ sender, System::EventArgs^ e) {
+    try {
+        // ÐžÑ‚ÐºÑ€Ñ‹Ð²Ð°ÐµÐ¼ OrderForm Ð¸ Ð¿ÐµÑ€ÐµÐ´Ð°ÐµÐ¼ Order
+        OrderForm^ orderForm = gcnew OrderForm(currentOrder);
+        orderForm->ShowDialog();
+
+        // ÐžÐ±Ð½Ð¾Ð²Ð»ÑÐµÐ¼ Ð¸Ð½Ñ„Ð¾Ñ€Ð¼Ð°Ñ†Ð¸ÑŽ Ð¾ Ð·Ð°ÐºÐ°Ð·Ðµ
+        UpdateOrderInfo();
+    }
+    catch (Exception^ ex) {
+        MessageBox::Show("ÐžÑˆÐ¸Ð±ÐºÐ°: " + ex->Message,
+            "ÐžÑˆÐ¸Ð±ÐºÐ°", MessageBoxButtons::OK, MessageBoxIcon::Error);
+    }
+}
+
+System::Void UserForm::btnBack_Click(System::Object^ sender, System::EventArgs^ e) {
+    this->DialogResult = System::Windows::Forms::DialogResult::OK;
+    this->Close();
 }

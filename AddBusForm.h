@@ -3,7 +3,7 @@
 
 #include "Bus.hpp"
 #include "BusList.hpp"
-#include "BusValidator.h"
+#include "BusValidator.hpp"
 
 namespace InfSystBusStation {
 

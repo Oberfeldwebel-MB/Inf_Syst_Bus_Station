@@ -3,7 +3,7 @@
 #include "AddBusForm.h"
 #include "DeleteBusForm.h"
 #include "BusListForm.h"
-#include "BusValidator.h"
+#include "BusValidator.hpp"
 #include "Search.hpp"
 
 using namespace InfSystBusStation;
@@ -151,7 +151,7 @@ String^ BusList::GetBusDetailedInfo(String^ formattedCode) {
         bus->GetFormattedCode(),
         bus->GetBrand(),
         bus->GetModel(),
-        bus->GetPlaceCount(),
+        bus->GetSeatCount(),
         bus->GetTechCondition(),
         bus->GetLastMaintenance(),
         bus->GetAvailability() ? "Доступен" : "Не доступен"
@@ -270,7 +270,7 @@ void BusList::DisplayAllBuses() {
         Console::WriteLine("{0}. {1} - {2} мест, состояние: {3}, статус: {4}",
             index++,
             bus->GetFullName(),
-            bus->GetPlaceCount(),
+            bus->GetSeatCount(),
             bus->GetTechCondition(),
             bus->GetAvailability() ? "Доступен" : "Не доступен");
     }

@@ -1,73 +1,93 @@
 #pragma once
 #include "Trip.hpp"
 #include "Passenger.hpp"
-#include <iostream>
-#include <map>
-#include <string>
 
-class Ticket {
-public:
-    enum class TicketType {
+namespace InfSystBusStation {
+
+    public enum class TicketType {
         ADULT,      // Взрослый
         CHILD,      // Детский  
         LUGGAGE     // Багажный
     };
 
-private:
-    static const std::map<TicketType, double> DISCOUNT_COEFFICIENTS; // статическое поле
+    public ref class Ticket {
+    private:
+        int placeNumber;
+        Trip^ tripData;
+        Passenger^ passengerData;
+        bool ticketAvail;
+        System::String^ ticketStatus;
+        double finalPrice;
+        TicketType type;
 
-private:
-    int PlaceNumber;
-    Trip TripData;
-    Passenger PassengerData;
-    bool TicketAvail;
-    std::string TicketStatus;
-    double FinalPrice;
-    TicketType Type;
+    public:
+        // Конструктор
+        Ticket(int placeNumber, Trip^ trip, Passenger^ passenger, TicketType type);
 
-public:
-    // Конструктор
-    Ticket::Ticket(int placeNumber, const Trip& trip, const Passenger& passenger, TicketType type)
-        : PlaceNumber(placeNumber), TripData(trip), PassengerData(passenger),
-        Type(type), TicketAvail(true), TicketStatus("Забронирован") {
+        // Деструктор
+        ~Ticket() {}
 
-        if (placeNumber <= 0) {
-            throw std::invalid_argument("Номер места должен быть положительным!");
+        void PrintTicketInfo();
+        void CalculateFinalPrice();
+        void MarkAsPaid() {
+            ticketStatus = "Оплачен";
+            System::Console::WriteLine("Билет оплачен");
         }
 
-        CalculateFinalPrice();
-    }
+        // Статический метод расчета цены
+        static double CalculatePrice(double basePrice, TicketType type) {
+            switch (type) {
+            case TicketType::ADULT:
+                return basePrice * 1.0;
+            case TicketType::CHILD:
+                return basePrice * 0.5;
+            case TicketType::LUGGAGE:
+                return basePrice * 0.3;
+            default:
+                return basePrice;
+            }
+        }
 
-    // Конструктор копирования
-    Ticket::Ticket(const Ticket& other)
-        : PlaceNumber(other.PlaceNumber), TripData(other.TripData),
-        PassengerData(other.PassengerData), TicketAvail(other.TicketAvail),
-        TicketStatus(other.TicketStatus), FinalPrice(other.FinalPrice),
-        Type(other.Type) {
-    }
+        // Свойство для имени типа билета
+        property System::String^ TicketTypeName {
+            System::String^ get() {
+                switch (type) {
+                case TicketType::ADULT: return "Взрослый";
+                case TicketType::CHILD: return "Детский";
+                case TicketType::LUGGAGE: return "Багажный";
+                default: return "Неизвестный";
+                }
+            }
+        }
 
-    ~Ticket() = default;
+        // Геттеры (свойства)
+        property int PlaceNumber {
+            int get() { return placeNumber; }
+        }
 
-    void PrintTicketInfo() const;
-    void CalculateFinalPrice();
-    void Ticked_paid() {
-        TicketStatus = "Оплачен";
-        std::cout << "Билет оплачен\n";
-    }
+        property Trip^ TripData {
+            Trip^ get() { return tripData; }
+        }
 
-    // статическая функция
-    static double CalculatePrice(double basePrice, TicketType type) {
-        return basePrice * DISCOUNT_COEFFICIENTS.at(type);
-    }
+        property Passenger^ PassengerData {
+            Passenger^ get() { return passengerData; }
+        }
 
+        property TicketType Type {
+            TicketType get() { return type; }
+        }
 
-    // Геттеры
-    int GetPlaceNumber() const { return PlaceNumber; }
-    const Trip& GetTrip() const { return TripData; }
-    const Passenger& GetPassenger() const { return PassengerData; }
-    TicketType GetTicketType() const { return Type; }
-    std::string GetTicketTypeName() const;
-    bool IsAvailable() const { return TicketAvail; }
-    std::string GetStatus() const { return TicketStatus; }
-    double GetFinalPrice() const { return FinalPrice; }
-};
+        property bool IsAvailable {
+            bool get() { return ticketAvail; }
+        }
+
+        property System::String^ Status {
+            System::String^ get() { return ticketStatus; }
+        }
+
+        property double FinalPrice {
+            double get() { return finalPrice; }
+            void set(double value) { finalPrice = value; }
+        }
+    };
+}

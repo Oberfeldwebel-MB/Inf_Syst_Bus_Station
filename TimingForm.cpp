@@ -1,28 +1,55 @@
-﻿// TripListForm.cpp
-#include "TimingForm.h"
+﻿#include "TimingForm.h"
+#include "TicketSelectionForm.h"
+#include "SearchForm.h"
+#include "ResultForm.h"
 
 using namespace InfSystBusStation;
+using namespace System;
+using namespace System::Windows::Forms;
+using namespace System::Drawing;
+
+void TimingForm::UpdateButtonsVisibility() {
+    bool isUserMode = !isAdminMode;
+
+    // В пользовательском режиме скрываем кнопки админа
+    addTripMenuItem->Visible = isAdminMode;
+    deleteTripMenuItem->Visible = isAdminMode;
+    editTripMenuItem->Visible = isAdminMode;
+
+    // В админском режиме скрываем кнопку покупки
+    btnBuyTicket->Visible = isUserMode;
+    selectColumn->Visible = isUserMode;
+
+    if (isAdminMode) {
+        this->Text = L"Расписание поездок (Администратор)";
+    }
+    else {
+        this->Text = L"Расписание поездок (Пользователь)";
+        btnBuyTicket->Enabled = false; // Включается при выборе поездки
+    }
+}
 
 void TimingForm::UpdateDataGridView() {
     tripsDataGridView->Rows->Clear();
 
     if (tripList == nullptr || tripList->Count == 0) {
-        btnBuyTicket->Enabled = false;
         return;
     }
 
     int rowIndex = 0;
+    int tripNumber = 1;
 
     for each (Trip ^ trip in tripList->AllTrips) {
         tripsDataGridView->Rows->Add();
 
-        // Галочка выбора (только для запланированных поездок)
-        bool isPlanned = trip->IsPlanned();
-        tripsDataGridView->Rows[rowIndex]->Cells[0]->Value = false;
-        tripsDataGridView->Rows[rowIndex]->Cells[0]->ReadOnly = !isPlanned;
+        // Галочка выбора (только для пользовательского режима)
+        bool canSelect = !isAdminMode && trip->IsPlanned() && trip->GetAvailableSeatsCount() > 0;
 
-        // Номер маршрута
-        tripsDataGridView->Rows[rowIndex]->Cells[1]->Value = (rowIndex + 1).ToString();
+        tripsDataGridView->Rows[rowIndex]->Cells[0]->Value = false;
+        tripsDataGridView->Rows[rowIndex]->Cells[0]->ReadOnly = !canSelect;
+
+        // Номер
+        tripsDataGridView->Rows[rowIndex]->Cells[1]->Value = tripNumber.ToString();
 
         // Начальный пункт
         tripsDataGridView->Rows[rowIndex]->Cells[2]->Value = trip->GetStartPoint();
@@ -30,111 +57,120 @@ void TimingForm::UpdateDataGridView() {
         // Конечный пункт
         tripsDataGridView->Rows[rowIndex]->Cells[3]->Value = trip->GetFinishPoint();
 
-        // Данные об автобусе
+        // Автобус
         String^ busInfo = "Не назначен";
         if (trip->GetBus() != nullptr) {
-            busInfo = trip->GetBus()->GetBrand() + " " + trip->GetBus()->GetModel() +
-                " [" + trip->GetBus()->GetFormattedCode() + "]";
+            busInfo = trip->GetBus()->GetBrand() + " " + trip->GetBus()->GetModel();
         }
         tripsDataGridView->Rows[rowIndex]->Cells[4]->Value = busInfo;
 
         // Дата отправления
-        tripsDataGridView->Rows[rowIndex]->Cells[5]->Value = trip->GetTripDate().ToString("dd.MM.yyyy");
+        tripsDataGridView->Rows[rowIndex]->Cells[5]->Value =
+            trip->GetTripDate().ToString("dd.MM.yyyy HH:mm");
 
-        // Дата прибытия (можно добавить время в пути)
-        DateTime arrivalDate = trip->GetTripDate().AddHours(2); // Пример: +2 часа
-        tripsDataGridView->Rows[rowIndex]->Cells[6]->Value = arrivalDate.ToString("dd.MM.yyyy HH:mm");
+        // Дата прибытия
+        DateTime arrivalDate = trip->GetTripDate().AddHours(2);
+        tripsDataGridView->Rows[rowIndex]->Cells[6]->Value =
+            arrivalDate.ToString("dd.MM.yyyy HH:mm");
 
-        // Цена билета
-        tripsDataGridView->Rows[rowIndex]->Cells[7]->Value = trip->GetPrice().ToString("N0") + " руб.";
+        // Цена
+        tripsDataGridView->Rows[rowIndex]->Cells[7]->Value =
+            trip->GetPrice().ToString("N0") + " руб.";
 
-        // Данные о водителе
+        // Водитель
         String^ driverInfo = "Не назначен";
         if (trip->GetDriver() != nullptr) {
             driverInfo = trip->GetDriver()->GetFullName();
         }
         tripsDataGridView->Rows[rowIndex]->Cells[8]->Value = driverInfo;
 
-        // Цветовая индикация
-        if (!isPlanned) {
-            tripsDataGridView->Rows[rowIndex]->DefaultCellStyle->BackColor = Drawing::Color::LightGray;
-            tripsDataGridView->Rows[rowIndex]->DefaultCellStyle->ForeColor = Drawing::Color::Gray;
+        // Цвет строки
+        if (!trip->IsPlanned()) {
+            // Неактивные поездки
+            tripsDataGridView->Rows[rowIndex]->DefaultCellStyle->BackColor = Color::LightGray;
         }
-        else {
-            tripsDataGridView->Rows[rowIndex]->DefaultCellStyle->BackColor = Drawing::Color::White;
+        else if (trip->GetAvailableSeatsCount() <= 0) {
+            // Нет мест
+            tripsDataGridView->Rows[rowIndex]->DefaultCellStyle->BackColor = Color::LightPink;
         }
 
         rowIndex++;
+        tripNumber++;
     }
 }
 
+// === ОБРАБОТЧИКИ СОБЫТИЙ ===
+
 System::Void TimingForm::AddTrip_Click(System::Object^ sender, System::EventArgs^ e) {
-    if (tripList == nullptr) {
-        MessageBox::Show("Ошибка: список поездок не инициализирован!", "Ошибка",
-            MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return;
-    }
-
-    if (busList == nullptr || driverList == nullptr) {
-        MessageBox::Show("Ошибка: списки автобусов или водителей не инициализированы!", "Ошибка",
-            MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return;
-    }
-
-    // Используем метод TripList для открытия формы добавления
-    if (tripList->ShowAddTripForm(this, busList, driverList)) {
-        UpdateDataGridView();
-        MessageBox::Show("Поездка успешно добавлена!", "Успех",
-            MessageBoxButtons::OK, MessageBoxIcon::Information);
-    }
+    MessageBox::Show("Функция добавления поездки в разработке", "Информация",
+        MessageBoxButtons::OK, MessageBoxIcon::Information);
 }
 
 System::Void TimingForm::DeleteTrip_Click(System::Object^ sender, System::EventArgs^ e) {
-    if (tripList == nullptr) {
-        MessageBox::Show("Ошибка: список поездок не инициализирован!", "Ошибка",
-            MessageBoxButtons::OK, MessageBoxIcon::Error);
-        return;
-    }
-
-    if (tripList->Count == 0) {
-        MessageBox::Show("Расписание пусто!", "Информация",
-            MessageBoxButtons::OK, MessageBoxIcon::Information);
-        return;
-    }
-
-    // Используем метод TripList для открытия формы удаления
-    if (tripList->ShowDeleteTripForm(this)) {
-        UpdateDataGridView();
-        MessageBox::Show("Поездка успешно удалена!", "Успех",
-            MessageBoxButtons::OK, MessageBoxIcon::Information);
-    }
+    MessageBox::Show("Функция удаления поездки в разработке", "Информация",
+        MessageBoxButtons::OK, MessageBoxIcon::Information);
 }
 
 System::Void TimingForm::EditTrip_Click(System::Object^ sender, System::EventArgs^ e) {
-    // TODO: Реализовать форму редактирования поездки
-    MessageBox::Show("Функция редактирования поездки будет реализована позже", "В разработке",
+    MessageBox::Show("Функция редактирования поездки в разработке", "Информация",
         MessageBoxButtons::OK, MessageBoxIcon::Information);
 }
 
 System::Void TimingForm::Search_Click(System::Object^ sender, System::EventArgs^ e) {
-    // TODO: Реализовать форму поиска поездок
-    MessageBox::Show("Функция поиска поездок будет реализована позже", "В разработке",
-        MessageBoxButtons::OK, MessageBoxIcon::Information);
+    try {
+        // Создаем и показываем форму поиска
+        SearchForm^ searchForm = gcnew SearchForm(tripList);
+
+        if (searchForm->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
+            // Получаем результаты из формы поиска
+            List<Trip^>^ results = searchForm->SearchResults;
+
+            if (results != nullptr && results->Count > 0) {
+                // Сохраняем результаты в TripList
+                tripList->SetSearchResults(results);
+
+                // Открываем форму результатов
+                ResultForm^ resultsForm = gcnew ResultForm(tripList, busList, driverList);
+
+                // Если нужно установить пользовательский режим:
+                // resultsForm->SetUserMode(true);
+
+                this->Hide();
+                resultsForm->ShowDialog();
+                this->Show();
+            }
+            else {
+                MessageBox::Show(L"Поиск не дал результатов. Попробуйте изменить критерии поиска.",
+                    L"Результаты поиска", MessageBoxButtons::OK, MessageBoxIcon::Information);
+            }
+        }
+    }
+    catch (Exception^ ex) {
+        MessageBox::Show(L"Ошибка при поиске: " + ex->Message,
+            L"Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+    }
 }
 
 System::Void TimingForm::Back_Click(System::Object^ sender, System::EventArgs^ e) {
+    this->DialogResult = System::Windows::Forms::DialogResult::OK;
     this->Close();
 }
 
 System::Void TimingForm::BuyTicket_Click(System::Object^ sender, System::EventArgs^ e) {
     try {
-        // Находим выбранную строку
+        if (currentOrder == nullptr) {
+            MessageBox::Show("Ошибка: заказ не инициализирован", "Ошибка",
+                MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return;
+        }
+
+        // Найти выбранную строку
         int selectedRowIndex = -1;
         for (int i = 0; i < tripsDataGridView->Rows->Count; i++) {
             DataGridViewRow^ row = tripsDataGridView->Rows[i];
             if (row->Cells[0]->Value != nullptr && safe_cast<bool>(row->Cells[0]->Value)) {
                 if (selectedRowIndex != -1) {
-                    MessageBox::Show("Пожалуйста, выберите только одну поездку!", "Внимание",
+                    MessageBox::Show("Выберите только одну поездку", "Внимание",
                         MessageBoxButtons::OK, MessageBoxIcon::Warning);
                     return;
                 }
@@ -143,47 +179,46 @@ System::Void TimingForm::BuyTicket_Click(System::Object^ sender, System::EventAr
         }
 
         if (selectedRowIndex == -1) {
-            MessageBox::Show("Выберите поездку для покупки билета!", "Внимание",
+            MessageBox::Show("Выберите поездку", "Внимание",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             return;
         }
 
-        // Получаем информацию о выбранной поездке
+        // Получить данные поездки
         DataGridViewRow^ selectedRow = tripsDataGridView->Rows[selectedRowIndex];
-
         String^ startPoint = safe_cast<String^>(selectedRow->Cells[2]->Value);
         String^ finishPoint = safe_cast<String^>(selectedRow->Cells[3]->Value);
-        String^ busInfo = safe_cast<String^>(selectedRow->Cells[4]->Value);
-        String^ depDate = safe_cast<String^>(selectedRow->Cells[5]->Value);
-        String^ arrDate = safe_cast<String^>(selectedRow->Cells[6]->Value);
-        String^ price = safe_cast<String^>(selectedRow->Cells[7]->Value);
-        String^ driverInfo = safe_cast<String^>(selectedRow->Cells[8]->Value);
+        String^ route = startPoint + " → " + finishPoint;
 
-        // TODO: Открыть форму покупки билета с передачей информации
-        // Например: TicketPurchaseForm^ ticketForm = gcnew TicketPurchaseForm(...);
-        // ticketForm->ShowDialog();
+        // Найти поездку
+        Trip^ selectedTrip = tripList->FindTripByRoute(route);
 
-        MessageBox::Show(
-            "Переход к покупке билета:\n\n" +
-            "Маршрут: " + startPoint + " → " + finishPoint + "\n" +
-            "Дата отправления: " + depDate + "\n" +
-            "Дата прибытия: " + arrDate + "\n" +
-            "Автобус: " + busInfo + "\n" +
-            "Водитель: " + driverInfo + "\n" +
-            "Цена: " + price + "\n\n" +
-            "Форма покупки билета будет открыта.",
-            "Информация о поездке",
-            MessageBoxButtons::OK,
-            MessageBoxIcon::Information
-        );
+        if (selectedTrip == nullptr) {
+            MessageBox::Show("Поездка не найдена", "Ошибка",
+                MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return;
+        }
 
-        // Здесь можно открыть форму покупки билета
-        // TicketPurchaseForm^ ticketForm = gcnew TicketPurchaseForm(selectedTripInfo);
-        // ticketForm->ShowDialog();
+        // Проверить места
+        if (selectedTrip->GetAvailableSeatsCount() <= 0) {
+            MessageBox::Show("Нет свободных мест", "Информация",
+                MessageBoxButtons::OK, MessageBoxIcon::Information);
+            return;
+        }
 
+        // Открыть форму выбора билета
+        TicketSelectionForm^ ticketForm = gcnew TicketSelectionForm(selectedTrip, currentOrder);
+
+        if (ticketForm->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
+            if (ticketForm->TicketAdded) {
+                MessageBox::Show("Билет добавлен в заказ", "Успех",
+                    MessageBoxButtons::OK, MessageBoxIcon::Information);
+                UpdateDataGridView();
+            }
+        }
     }
     catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при выборе поездки: " + ex->Message, "Ошибка",
+        MessageBox::Show("Ошибка: " + ex->Message, "Ошибка",
             MessageBoxButtons::OK, MessageBoxIcon::Error);
     }
 }
@@ -191,18 +226,22 @@ System::Void TimingForm::BuyTicket_Click(System::Object^ sender, System::EventAr
 System::Void TimingForm::tripsDataGridView_CellContentClick(System::Object^ sender,
     System::Windows::Forms::DataGridViewCellEventArgs^ e) {
 
-    // Если кликнули на ячейку с галочкой (первая колонка)
-    if (e->ColumnIndex == 0 && e->RowIndex >= 0) {
-        // Если выбираем эту поездку, снимаем выбор с других
+    if (e->ColumnIndex == 0 && e->RowIndex >= 0 && !isAdminMode) {
         bool isChecked = safe_cast<bool>(tripsDataGridView->Rows[e->RowIndex]->Cells[0]->Value);
 
         if (isChecked) {
-            // Снимаем выбор со всех других строк
+            // Снять выбор с других строк
             for (int i = 0; i < tripsDataGridView->Rows->Count; i++) {
                 if (i != e->RowIndex) {
                     tripsDataGridView->Rows[i]->Cells[0]->Value = false;
                 }
             }
+            // Включить кнопку покупки
+            btnBuyTicket->Enabled = true;
+        }
+        else {
+            // Выключить кнопку покупки если ничего не выбрано
+            btnBuyTicket->Enabled = false;
         }
     }
 }

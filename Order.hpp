@@ -1,99 +1,103 @@
 #pragma once
 
-#include "Ticket.hpp"        // Должен быть управляемым
-#include "TicketChose.hpp"   // Должен быть управляемым
-#include "Search.hpp"        // Должен быть управляемым
-#include <vector>
+#include "Ticket.hpp"
 
 namespace InfSystBusStation {
 
+    using namespace System;
+    using namespace System::Collections::Generic;
+
     public ref class Order {
     private:
-        System::Collections::Generic::List<Ticket^>^ ticketList;  // Управляемая коллекция
-        System::String^ payStatus;
+        List<Ticket^>^ tickets;           // Список билетов в заказе
+        String^ orderId;
+        String^ status;                   // "Создан", "Оплачен", "Отменен"
         double totalPrice;
-        TicketChose^ ticketchose;      // Управляемый указатель
-        Search^ search;                // Управляемый указатель
-        System::String^ orderId;
-        System::DateTime orderDate;
+        DateTime orderDate;
+        String^ passengerName;            // Имя пассажира для заказа
 
     public:
         // === КОНСТРУКТОРЫ ===
-
-        // Основной конструктор
-        Order(TicketChose^ chose);
-
-        // Конструктор с дополнительными параметрами
-        Order(TicketChose^ chose, System::String^ id);
-
-        // Конструктор копирования
-        Order(Order^ other);
-
-        // Деструктор
+        Order();
+        Order(String^ passengerName);
+        Order(String^ orderId, String^ passengerName);
         ~Order();
 
-        // === ОСНОВНЫЕ МЕТОДЫ ===
-        void PrintOrderInfo();
+        // === ОСНОВНЫЕ МЕТОДЫ УПРАВЛЕНИЯ БИЛЕТАМИ ===
         void AddTicket(Ticket^ ticket);
         bool RemoveTicket(Ticket^ ticket);
-        void PayOrder();
+        bool RemoveTicketByIndex(int index);
+        bool RemoveTicketByPlaceNumber(int placeNumber);
+        void Clear();
+
+        // === ПОИСК БИЛЕТОВ В ЗАКАЗЕ ===
+        Ticket^ FindTicketByPlaceNumber(int placeNumber);
+        Ticket^ FindTicketByPassenger(String^ passengerName);
+        List<Ticket^>^ FindTicketsByType(TicketType type);
+
+        // === ОПЕРАЦИИ С ЗАКАЗОМ ===
+        bool PayOrder();  // Изменено на bool для проверки успешности
         void CancelOrder();
         void CalculateTotalPrice();
-        void ClearOrder();
+        bool ApplyDiscount(double discountPercent);  // Изменено на bool
 
-        // === ПЕРЕГРУЗКА ОПЕРАТОРОВ ===
-        // В C++/CLI перегрузка операторов работает иначе
-        // Вместо оператора += используем метод Add
-        // Но можно перегрузить если нужно:
+        // === ОТОБРАЖЕНИЕ ===
+        void PrintOrderInfo();
+        String^ GetOrderSummary();
+        String^ GetReceipt();
+        void DisplayTickets();
+
+        // === СТАТИСТИКА ПО ЗАКАЗУ ===
+        int GetTicketCountByType(TicketType type);
+        double GetTotalPriceByType(TicketType type);
+        Dictionary<TicketType, int>^ GetTicketsStatistics();
+
+        // === ОПЕРАТОРЫ ===
         static Order^ operator+(Order^ order, Ticket^ ticket);
+        static Order^ operator-(Order^ order, Ticket^ ticket);
 
-        // === СВОЙСТВА ===
-        property System::Collections::Generic::List<Ticket^>^ TicketList {
-            System::Collections::Generic::List<Ticket^>^ get() { return ticketList; }
+        // === ГЕТТЕРЫ ===
+        property List<Ticket^>^ Tickets {
+            List<Ticket^>^ get() { return tickets; }
         }
 
-        property System::String^ PayStatus {
-            System::String^ get() { return payStatus; }
+        property String^ OrderId {
+            String^ get() { return orderId; }
+        }
+
+        property String^ Status {
+            String^ get() { return status; }
         }
 
         property double TotalPrice {
-            double get() { return totalPrice; }
+            double get() {
+                CalculateTotalPrice(); // Всегда актуальная сумма
+                return totalPrice;
+            }
         }
 
         property bool IsEmpty {
-            bool get() { return ticketList->Count == 0; }
+            bool get() { return tickets->Count == 0; }
         }
 
-        property System::String^ OrderId {
-            System::String^ get() { return orderId; }
-        }
-
-        property System::DateTime OrderDate {
-            System::DateTime get() { return orderDate; }
-        }
-
-        property TicketChose^ TicketChooser {
-            TicketChose^ get() { return ticketchose; }
-            void set(TicketChose^ value) { ticketchose = value; }
-        }
-
-        property Search^ OrderSearch {
-            Search^ get() { return search; }
-            void set(Search^ value) { search = value; }
+        property DateTime OrderDate {
+            DateTime get() { return orderDate; }
         }
 
         property int TicketCount {
-            int get() { return ticketList->Count; }
+            int get() { return tickets->Count; }
         }
 
-        // === ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ===
-        System::String^ GetOrderSummary();
-        bool ContainsTicket(Ticket^ ticket);
-        double CalculateDiscount();
-        void ApplyDiscount(double discountPercent);
+        property String^ PassengerName {
+            String^ get() { return passengerName; }
+            void set(String^ value) { passengerName = value; }
+        }
+
+        // === ПРОВЕРКИ ===
+        bool CanBePaid();  // Можно ли оплатить заказ
+        bool HasTickets(); // Есть ли билеты в заказе
 
         // === СТАТИЧЕСКИЕ МЕТОДЫ ===
-        static System::String^ GenerateOrderId();
-        static System::String^ GenerateReceipt(Order^ order);
+        static String^ GenerateOrderId();
     };
 }

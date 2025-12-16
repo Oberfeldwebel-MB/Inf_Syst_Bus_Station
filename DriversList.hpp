@@ -12,6 +12,10 @@ namespace InfSystBusStation {
         DriversList();
         ~DriversList();
 
+    public:
+        List<Driver^>^ GetAvailableDrivers();
+        List<String^>^ GetAvailableDriverNames();
+
         // Старые методы
         void AddDriver(Driver^ driver);
         void AddDriver(String^ fullName, int salary, String^ gender,

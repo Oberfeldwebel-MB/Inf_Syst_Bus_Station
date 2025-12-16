@@ -1,4 +1,4 @@
-#pragma once
+п»ї#pragma once
 
 namespace InfSystBusStation {
 
@@ -10,7 +10,7 @@ namespace InfSystBusStation {
 	using namespace System::Drawing;
 
 	/// <summary>
-	/// Форма для смены пароля администратора
+	/// Р¤РѕСЂРјР° РґР»СЏ СЃРјРµРЅС‹ РїР°СЂРѕР»СЏ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
 	/// </summary>
 	public ref class ChangePasswordForm : public System::Windows::Forms::Form
 	{
@@ -18,14 +18,14 @@ namespace InfSystBusStation {
 		ChangePasswordForm(void)
 		{
 			InitializeComponent();
-			this->Text = L"Смена пароля администратора";
-			// Устанавливаем ответ на секретный вопрос
-			secret_answer = L"Мерседес"; // Можно изменить на что-то более подходящее для автопарка
+			this->Text = L"РЎРјРµРЅР° РїР°СЂРѕР»СЏ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°";
+			// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РѕС‚РІРµС‚ РЅР° СЃРµРєСЂРµС‚РЅС‹Р№ РІРѕРїСЂРѕСЃ
+			secret_answer = L"РњРµСЂСЃРµРґРµСЃ"; // РњРѕР¶РЅРѕ РёР·РјРµРЅРёС‚СЊ РЅР° С‡С‚Рѕ-С‚Рѕ Р±РѕР»РµРµ РїРѕРґС…РѕРґСЏС‰РµРµ РґР»СЏ Р°РІС‚РѕРїР°СЂРєР°
 		}
 
 	protected:
 		/// <summary>
-		/// Освободить все используемые ресурсы.
+		/// РћСЃРІРѕР±РѕРґРёС‚СЊ РІСЃРµ РёСЃРїРѕР»СЊР·СѓРµРјС‹Рµ СЂРµСЃСѓСЂСЃС‹.
 		/// </summary>
 		~ChangePasswordForm()
 		{
@@ -35,7 +35,8 @@ namespace InfSystBusStation {
 			}
 		}
 
-		// Свойства
+	public:  // в†ђ Р”РћР‘РђР’Р›Р•РќРћ: СЃРІРѕР№СЃС‚РІР° РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РїСѓР±Р»РёС‡РЅС‹РјРё
+		// РЎРІРѕР№СЃС‚РІР°
 		property String^ NewPassword {
 			String^ get() { return new_pass_box->Text; }
 		}
@@ -58,14 +59,14 @@ namespace InfSystBusStation {
 
 	private:
 		/// <summary>
-		/// Обязательная переменная конструктора.
+		/// РћР±СЏР·Р°С‚РµР»СЊРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂР°.
 		/// </summary>
 		System::ComponentModel::Container^ components;
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
-		/// Требуемый метод для поддержки конструктора — не изменяйте 
-		/// содержимое этого метода с помощью редактора кода.
+		/// РўСЂРµР±СѓРµРјС‹Р№ РјРµС‚РѕРґ РґР»СЏ РїРѕРґРґРµСЂР¶РєРё РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂР° вЂ” РЅРµ РёР·РјРµРЅСЏР№С‚Рµ 
+		/// СЃРѕРґРµСЂР¶РёРјРѕРµ СЌС‚РѕРіРѕ РјРµС‚РѕРґР° СЃ РїРѕРјРѕС‰СЊСЋ СЂРµРґР°РєС‚РѕСЂР° РєРѕРґР°.
 		/// </summary>
 		void InitializeComponent(void)
 		{
@@ -85,7 +86,7 @@ namespace InfSystBusStation {
 			this->label1->Name = L"label1";
 			this->label1->Size = System::Drawing::Size(338, 53);
 			this->label1->TabIndex = 0;
-			this->label1->Text = L"Для смены пароля ответьте на секретный вопрос и введите новый пароль";
+			this->label1->Text = L"Р”Р»СЏ СЃРјРµРЅС‹ РїР°СЂРѕР»СЏ РѕС‚РІРµС‚СЊС‚Рµ РЅР° СЃРµРєСЂРµС‚РЅС‹Р№ РІРѕРїСЂРѕСЃ Рё РІРІРµРґРёС‚Рµ РЅРѕРІС‹Р№ РїР°СЂРѕР»СЊ";
 			this->label1->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
 			// 
 			// label2
@@ -96,7 +97,7 @@ namespace InfSystBusStation {
 			this->label2->Name = L"label2";
 			this->label2->Size = System::Drawing::Size(370, 20);
 			this->label2->TabIndex = 1;
-			this->label2->Text = L"Какая ваша любимая марка автомобилей\?";
+			this->label2->Text = L"РљР°РєР°СЏ РІР°С€Р° Р»СЋР±РёРјР°СЏ РјР°СЂРєР° Р°РІС‚РѕРјРѕР±РёР»РµР№\?";
 			// 
 			// check_quest_box
 			// 
@@ -113,7 +114,7 @@ namespace InfSystBusStation {
 			this->label3->Name = L"label3";
 			this->label3->Size = System::Drawing::Size(210, 20);
 			this->label3->TabIndex = 3;
-			this->label3->Text = L"Введите новый пароль:";
+			this->label3->Text = L"Р’РІРµРґРёС‚Рµ РЅРѕРІС‹Р№ РїР°СЂРѕР»СЊ:";
 			// 
 			// new_pass_box
 			// 
@@ -132,7 +133,7 @@ namespace InfSystBusStation {
 			this->change_pass_but->Name = L"change_pass_but";
 			this->change_pass_but->Size = System::Drawing::Size(150, 35);
 			this->change_pass_but->TabIndex = 4;
-			this->change_pass_but->Text = L"Изменить пароль";
+			this->change_pass_but->Text = L"РР·РјРµРЅРёС‚СЊ РїР°СЂРѕР»СЊ";
 			this->change_pass_but->UseVisualStyleBackColor = false;
 			this->change_pass_but->Click += gcnew System::EventHandler(this, &ChangePasswordForm::change_pass_but_Click);
 			// 
@@ -145,7 +146,7 @@ namespace InfSystBusStation {
 			this->back_from_ch_pass->Name = L"back_from_ch_pass";
 			this->back_from_ch_pass->Size = System::Drawing::Size(100, 35);
 			this->back_from_ch_pass->TabIndex = 5;
-			this->back_from_ch_pass->Text = L"Назад";
+			this->back_from_ch_pass->Text = L"РќР°Р·Р°Рґ";
 			this->back_from_ch_pass->UseVisualStyleBackColor = false;
 			this->back_from_ch_pass->Click += gcnew System::EventHandler(this, &ChangePasswordForm::back_from_ch_pass_Click);
 			// 
@@ -167,7 +168,7 @@ namespace InfSystBusStation {
 			this->MinimizeBox = false;
 			this->Name = L"ChangePasswordForm";
 			this->StartPosition = System::Windows::Forms::FormStartPosition::CenterParent;
-			this->Text = L"Смена пароля администратора";
+			this->Text = L"РЎРјРµРЅР° РїР°СЂРѕР»СЏ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°";
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -175,7 +176,7 @@ namespace InfSystBusStation {
 #pragma endregion
 
 	private:
-		// Обработчики событий
+		// РћР±СЂР°Р±РѕС‚С‡РёРєРё СЃРѕР±С‹С‚РёР№
 		System::Void back_from_ch_pass_Click(System::Object^ sender, System::EventArgs^ e);
 		System::Void change_pass_but_Click(System::Object^ sender, System::EventArgs^ e);
 	};

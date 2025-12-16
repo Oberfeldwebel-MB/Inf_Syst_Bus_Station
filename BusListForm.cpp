@@ -21,7 +21,7 @@ void BusListForm::UpdateDataGridView() {
         busesDataGridView->Rows[rowIndex]->Cells[1]->Value = bus->GetFormattedCode();
         busesDataGridView->Rows[rowIndex]->Cells[2]->Value = bus->GetBrand();
         busesDataGridView->Rows[rowIndex]->Cells[3]->Value = bus->GetModel();
-        busesDataGridView->Rows[rowIndex]->Cells[4]->Value = bus->GetPlaceCount().ToString();
+        busesDataGridView->Rows[rowIndex]->Cells[4]->Value = bus->GetSeatCount().ToString();
         busesDataGridView->Rows[rowIndex]->Cells[5]->Value = bus->GetTechCondition();
         busesDataGridView->Rows[rowIndex]->Cells[6]->Value = bus->GetLastMaintenance();
 

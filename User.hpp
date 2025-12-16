@@ -1,59 +1,52 @@
-#pragma once
+п»ї#pragma once
 
 #include "People.hpp"
-#include "Order.hpp"        // Только если Order действительно нужен
-#include "Search.hpp"       // Только если Search нужен в классе
+#include "Order.hpp"        
 
 namespace InfSystBusStation {
 
     public ref class User : public People {
     private:
-        Order^ userOrder;         // Управляемый указатель на заказ
-        String^ phoneNumber;      // Номер телефона
-        DateTime registrationDate; // Дата регистрации
-        // УБИРАЕМ Timing^ timing!
-        // УБИРАЕМ Search^ search! (если не нужен)
+        String^ phoneNumber;           // РќРѕРјРµСЂ С‚РµР»РµС„РѕРЅР°
+        Order^ shoppingCart;           // РљРѕСЂР·РёРЅР° РїРѕРєСѓРїРѕРє (РµРґРёРЅСЃС‚РІРµРЅРЅС‹Р№ Order)
+        DateTime registrationDate;     // Р”Р°С‚Р° СЂРµРіРёСЃС‚СЂР°С†РёРё
+        bool isRegistered;             // Р—Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅ РІ СЃРёСЃС‚РµРјРµ
 
     public:
-        // === КОНСТРУКТОРЫ ===
+        // === РљРћРќРЎРўР РЈРљРўРћР Р« ===
 
-        // Основной конструктор (БЕЗ Timing!)
-        User(String^ fullName, String^ gender,
-            String^ passportSeries, String^ passportNumber,
-            String^ email, String^ phone);
+        // РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РёР· РґР°РЅРЅС‹С… С„РѕСЂРјС‹ СЂРµРіРёСЃС‚СЂР°С†РёРё
+        User(String^ fioFormatted, String^ email, String^ phone);
 
-        // Конструктор для формы (ФИО в формате А.А.Рогатин)
-        User(String^ surname, String^ name, String^ patronymic,
-            String^ gender, String^ passportSeries, String^ passportNumber,
-            String^ email, String^ phone);
-
-        // Деструктор
+        // Р”РµСЃС‚СЂСѓРєС‚РѕСЂ
         ~User();
 
-        // === СТАТИЧЕСКИЕ МЕТОДЫ СОЗДАНИЯ ===
-
-        // Создание User из данных формы
-        static User^ CreateFromFormData(
-            String^ fio,                // В формате "А.А.Рогатин"
-            String^ gender,
-            String^ passportSeries,
-            String^ passportNumber,
+        // === РЎРўРђРўРР§Р•РЎРљРР• РњР•РўРћР”Р« ===
+        static User^ CreateFromRegistrationForm(
+            String^ fioFormatted,      // Р’ С„РѕСЂРјР°С‚Рµ "Рђ.Рђ.Р РѕРіР°С‚РёРЅ"
             String^ email,
             String^ phone);
 
-        // === ОСНОВНЫЕ МЕТОДЫ ===
+        // === Р РђР‘РћРўРђ РЎ РљРћР Р—РРќРћР™ (Order) ===
+        void AddTicketToCart(Ticket^ ticket);
+        void RemoveTicketFromCart(Ticket^ ticket);
+        void RemoveTicketFromCart(int placeNumber);
+        void ClearCart();
+        void CheckoutCart();           // РћС„РѕСЂРјР»РµРЅРёРµ РїРѕРєСѓРїРєРё
+        bool HasTicketsInCart();
 
-        // Работа с заказом (если нужна)
-        void CreateOrder(/* параметры заказа */);
-        void ViewMyOrder();
-        void CancelOrder();
+        // === РРќР¤РћР РњРђР¦РРЇ Рћ РљРћР Р—РРќР• ===
+        String^ GetCartSummary();
+        int GetCartTicketCount();
+        double GetCartTotalPrice();
+        List<Ticket^>^ GetCartTickets();
 
-        // === ВИРТУАЛЬНЫЕ МЕТОДЫ ===
+        // === Р’РР РўРЈРђР›Р¬РќР«Р• РњР•РўРћР”Р« ===
         virtual void PrintInfo() override;
         virtual String^ GetFullInfo() override;
         virtual double CalculateDiscount() override;
 
-        // === СВОЙСТВА ===
+        // === РЎР’РћР™РЎРўР’Рђ ===
         property String^ PhoneNumber {
             String^ get() { return phoneNumber; }
             void set(String^ value) { phoneNumber = value; }
@@ -63,18 +56,29 @@ namespace InfSystBusStation {
             DateTime get() { return registrationDate; }
         }
 
-        property bool HasActiveOrder {
-            bool get() { return userOrder != nullptr && !userOrder->IsEmpty(); }
+        property bool IsRegistered {
+            bool get() { return isRegistered; }
+            void set(bool value) { isRegistered = value; }
         }
 
-        property Order^ CurrentOrder {
-            Order^ get() { return userOrder; }
+        property bool HasItemsInCart {
+            bool get() {
+                return shoppingCart != nullptr &&
+                    !shoppingCart->IsEmpty();
+            }
         }
 
-        // === ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ===
+        property Order^ ShoppingCart {
+            Order^ get() {
+                if (shoppingCart == nullptr) {
+                    shoppingCart = gcnew Order();
+                }
+                return shoppingCart;
+            }
+        }
+
+        // === Р’РЎРџРћРњРћР“РђРўР•Р›Р¬РќР«Р• РњР•РўРћР”Р« ===
         bool ValidateUserData();
         String^ GetShortInfo();
-        bool UpdateEmail(String^ newEmail);
-        bool UpdatePhone(String^ newPhone);
     };
 }

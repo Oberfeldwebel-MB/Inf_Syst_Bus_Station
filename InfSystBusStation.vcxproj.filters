@@ -90,9 +90,6 @@
     <ClInclude Include="DeleteDriverForm.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="BusValidator.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="BusListForm.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
@@ -130,6 +127,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="OrdersForm.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="TicketSelectionForm.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
@@ -246,6 +246,9 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="TicketForm.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="TicketSelectionForm.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>

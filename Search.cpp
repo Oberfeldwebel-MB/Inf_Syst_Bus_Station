@@ -1,13 +1,16 @@
-// Search.cpp - ѕ–ќ—“јя ¬≈–—»я Ѕ≈« ЋяћЅƒ
 #include "Search.hpp"
 
 using namespace InfSystBusStation;
 using namespace System;
 using namespace System::Collections::Generic;
 
+// ================= ¬—ѕќћќ√ј“≈Ћ№Ќџ≈ ћ≈“ќƒџ =================
+
 bool Search::CompareStringsIgnoreCase(String^ str1, String^ str2) {
     return String::Compare(str1, str2, StringComparison::OrdinalIgnoreCase) == 0;
 }
+
+// ================= ѕќ»—  ј¬“ќЅ”—ќ¬ =================
 
 Bus^ Search::FindBusByCode(BusList^ busList, String^ code) {
     if (busList == nullptr || String::IsNullOrEmpty(code)) {
@@ -132,13 +135,15 @@ List<Bus^>^ Search::FindBusesWithMinSeats(BusList^ busList, int minSeats) {
     auto allBuses = busList->AllBuses;
 
     for each (Bus ^ bus in allBuses) {
-        if (bus->GetPlaceCount() >= minSeats) {
+        if (bus->GetSeatCount() >= minSeats) {
             result->Add(bus);
         }
     }
 
     return result;
 }
+
+// ================= ѕќ»—  ѕќ≈«ƒќ  =================
 
 List<Trip^>^ Search::FindTripsByDate(TripList^ tripList, DateTime date) {
     if (tripList == nullptr) {
@@ -175,7 +180,278 @@ List<Trip^>^ Search::FindTripsByRoute(TripList^ tripList, String^ route) {
     return result;
 }
 
-// ”прощенный FindAll без предиката (можно удалить, если не используетс€)
+List<Trip^>^ Search::FindTripsByBus(TripList^ tripList, String^ busCode) {
+    if (tripList == nullptr || String::IsNullOrEmpty(busCode)) {
+        return gcnew List<Trip^>();
+    }
+
+    List<Trip^>^ result = gcnew List<Trip^>();
+    auto allTrips = tripList->AllTrips;
+
+    for each (Trip ^ trip in allTrips) {
+        if (trip->GetBus() != nullptr) {
+            // —равниваем код без учета регистра и формата
+            if (trip->GetBus()->GetCode()->ToLower() == busCode->ToLower() ||
+                trip->GetBus()->GetFormattedCode()->ToLower() == busCode->ToLower()) {
+                result->Add(trip);
+            }
+        }
+    }
+
+    return result;
+}
+
+List<Trip^>^ Search::FindTripsByDriver(TripList^ tripList, String^ driverName) {
+    if (tripList == nullptr || String::IsNullOrEmpty(driverName)) {
+        return gcnew List<Trip^>();
+    }
+
+    List<Trip^>^ result = gcnew List<Trip^>();
+    auto allTrips = tripList->AllTrips;
+    String^ driverNameLower = driverName->ToLower();
+
+    for each (Trip ^ trip in allTrips) {
+        if (trip->GetDriver() != nullptr) {
+            String^ fullName = trip->GetDriver()->GetFullName()->ToLower();
+            if (fullName->Contains(driverNameLower)) {
+                result->Add(trip);
+            }
+        }
+    }
+
+    return result;
+}
+
+List<Trip^>^ Search::FindActiveTrips(TripList^ tripList) {
+    if (tripList == nullptr) {
+        return gcnew List<Trip^>();
+    }
+
+    List<Trip^>^ result = gcnew List<Trip^>();
+    auto allTrips = tripList->AllTrips;
+
+    for each (Trip ^ trip in allTrips) {
+        if (trip->IsPlanned() || trip->IsInProgress()) {
+            result->Add(trip);
+        }
+    }
+
+    return result;
+}
+
+List<Trip^>^ Search::FindPlannedTrips(TripList^ tripList) {
+    if (tripList == nullptr) {
+        return gcnew List<Trip^>();
+    }
+
+    List<Trip^>^ result = gcnew List<Trip^>();
+    auto allTrips = tripList->AllTrips;
+
+    for each (Trip ^ trip in allTrips) {
+        if (trip->IsPlanned()) {
+            result->Add(trip);
+        }
+    }
+
+    return result;
+}
+
+List<Trip^>^ Search::FindTripsCombined(TripList^ tripList,
+    String^ routeFilter, DateTime^ dateFilter, String^ statusFilter) {
+
+    if (tripList == nullptr) {
+        return gcnew List<Trip^>();
+    }
+
+    List<Trip^>^ result = gcnew List<Trip^>();
+    auto allTrips = tripList->AllTrips;
+
+    for each (Trip ^ trip in allTrips) {
+        bool matches = true;
+
+        // ‘ильтр по маршруту
+        if (!String::IsNullOrEmpty(routeFilter)) {
+            if (!trip->GetRoute()->ToLower()->Contains(routeFilter->ToLower())) {
+                matches = false;
+            }
+        }
+
+        // ‘ильтр по дате
+        if (dateFilter != nullptr) {
+            if (trip->GetTripDate().Date != dateFilter->Date) {
+                matches = false;
+            }
+        }
+
+        // ‘ильтр по статусу
+        if (!String::IsNullOrEmpty(statusFilter)) {
+            if (trip->GetStatus() != statusFilter) {
+                matches = false;
+            }
+        }
+
+        if (matches) {
+            result->Add(trip);
+        }
+    }
+
+    return result;
+}
+
+// ================= –ј—Ў»–≈ЌЌџ… ѕќ»—  ѕќ≈«ƒќ  =================
+
+List<Trip^>^ Search::FindTripsByPriceRange(TripList^ tripList, int minPrice, int maxPrice) {
+    if (tripList == nullptr || minPrice < 0 || maxPrice < minPrice) {
+        return gcnew List<Trip^>();
+    }
+
+    if (maxPrice == 0) maxPrice = Int32::MaxValue;
+
+    List<Trip^>^ result = gcnew List<Trip^>();
+    auto allTrips = tripList->AllTrips;
+
+    for each (Trip ^ trip in allTrips) {
+        int price = trip->GetPrice();
+        if (price >= minPrice && price <= maxPrice) {
+            result->Add(trip);
+        }
+    }
+
+    return result;
+}
+
+List<Trip^>^ Search::FindTripsWithAvailableSeats(TripList^ tripList, int minSeats) {
+    if (tripList == nullptr || minSeats < 0) {
+        return gcnew List<Trip^>();
+    }
+
+    List<Trip^>^ result = gcnew List<Trip^>();
+    auto allTrips = tripList->AllTrips;
+
+    for each (Trip ^ trip in allTrips) {
+        if (trip->GetAvailableSeatsCount() >= minSeats) {
+            result->Add(trip);
+        }
+    }
+
+    return result;
+}
+
+List<Trip^>^ Search::FindTripsByStartPoint(TripList^ tripList, String^ startPoint) {
+    if (tripList == nullptr || String::IsNullOrEmpty(startPoint)) {
+        return gcnew List<Trip^>();
+    }
+
+    List<Trip^>^ result = gcnew List<Trip^>();
+    auto allTrips = tripList->AllTrips;
+    String^ startPointLower = startPoint->ToLower();
+
+    for each (Trip ^ trip in allTrips) {
+        if (trip->GetStartPoint()->ToLower()->Contains(startPointLower)) {
+            result->Add(trip);
+        }
+    }
+
+    return result;
+}
+
+List<Trip^>^ Search::FindTripsByFinishPoint(TripList^ tripList, String^ finishPoint) {
+    if (tripList == nullptr || String::IsNullOrEmpty(finishPoint)) {
+        return gcnew List<Trip^>();
+    }
+
+    List<Trip^>^ result = gcnew List<Trip^>();
+    auto allTrips = tripList->AllTrips;
+    String^ finishPointLower = finishPoint->ToLower();
+
+    for each (Trip ^ trip in allTrips) {
+        if (trip->GetFinishPoint()->ToLower()->Contains(finishPointLower)) {
+            result->Add(trip);
+        }
+    }
+
+    return result;
+}
+
+List<Trip^>^ Search::AdvancedTripSearch(
+    TripList^ tripList,
+    String^ from,
+    String^ to,
+    DateTime^ date,
+    int minPrice,
+    int maxPrice,
+    String^ busModel,
+    String^ driverName,
+    int minAvailableSeats) {
+
+    if (tripList == nullptr) {
+        return gcnew List<Trip^>();
+    }
+
+    if (maxPrice == 0) maxPrice = Int32::MaxValue;
+
+    List<Trip^>^ result = gcnew List<Trip^>();
+    auto allTrips = tripList->AllTrips;
+
+    for each (Trip ^ trip in allTrips) {
+        bool matches = true;
+
+        // ‘ильтр по пункту отправлени€
+        if (!String::IsNullOrEmpty(from)) {
+            if (!trip->GetStartPoint()->ToLower()->Contains(from->ToLower())) {
+                matches = false;
+            }
+        }
+
+        // ‘ильтр по пункту назначени€
+        if (!String::IsNullOrEmpty(to)) {
+            if (!trip->GetFinishPoint()->ToLower()->Contains(to->ToLower())) {
+                matches = false;
+            }
+        }
+
+        // ‘ильтр по дате
+        if (date != nullptr) {
+            if (trip->GetTripDate().Date != date->Date) {
+                matches = false;
+            }
+        }
+
+        // ‘ильтр по цене
+        int price = trip->GetPrice();
+        if (price < minPrice || price > maxPrice) {
+            matches = false;
+        }
+
+        // ‘ильтр по автобусу
+        if (!String::IsNullOrEmpty(busModel) && trip->GetBus() != nullptr) {
+            if (!trip->GetBus()->GetModel()->ToLower()->Contains(busModel->ToLower())) {
+                matches = false;
+            }
+        }
+
+        // ‘ильтр по водителю
+        if (!String::IsNullOrEmpty(driverName) && trip->GetDriver() != nullptr) {
+            if (!trip->GetDriver()->GetFullName()->ToLower()->Contains(driverName->ToLower())) {
+                matches = false;
+            }
+        }
+
+        // ‘ильтр по свободным местам
+        if (trip->GetAvailableSeatsCount() < minAvailableSeats) {
+            matches = false;
+        }
+
+        if (matches) {
+            result->Add(trip);
+        }
+    }
+
+    return result;
+}
+
+// ================= ”Ќ»¬≈–—јЋ№Ќџ… ѕќ»—  =================
+
 generic<typename T>
 List<T>^ Search::FindAll(List<T>^ list, Predicate<T>^ predicate) {
     if (list == nullptr || predicate == nullptr) {
@@ -187,6 +463,215 @@ List<T>^ Search::FindAll(List<T>^ list, Predicate<T>^ predicate) {
     for each (T item in list) {
         if (predicate(item)) {
             result->Add(item);
+        }
+    }
+
+    return result;
+}
+
+// ================= —“ј“»—“» ј =================
+
+Dictionary<String^, int>^ Search::GetTripsStatistics(TripList^ tripList) {
+    Dictionary<String^, int>^ stats = gcnew Dictionary<String^, int>();
+
+    if (tripList == nullptr) {
+        return stats;
+    }
+
+    auto allTrips = tripList->AllTrips;
+
+    for each (Trip ^ trip in allTrips) {
+        String^ status = trip->GetStatus();
+
+        if (stats->ContainsKey(status)) {
+            stats[status]++;
+        }
+        else {
+            stats->Add(status, 1);
+        }
+    }
+
+    return stats;
+}
+
+List<String^>^ Search::GetUniqueStartPoints(TripList^ tripList) {
+    List<String^>^ result = gcnew List<String^>();
+
+    if (tripList == nullptr) {
+        return result;
+    }
+
+    auto allTrips = tripList->AllTrips;
+
+    for each (Trip ^ trip in allTrips) {
+        String^ startPoint = trip->GetStartPoint();
+
+        if (!String::IsNullOrEmpty(startPoint) && !result->Contains(startPoint)) {
+            result->Add(startPoint);
+        }
+    }
+
+    result->Sort();
+    return result;
+}
+
+List<String^>^ Search::GetUniqueFinishPoints(TripList^ tripList) {
+    List<String^>^ result = gcnew List<String^>();
+
+    if (tripList == nullptr) {
+        return result;
+    }
+
+    auto allTrips = tripList->AllTrips;
+
+    for each (Trip ^ trip in allTrips) {
+        String^ finishPoint = trip->GetFinishPoint();
+
+        if (!String::IsNullOrEmpty(finishPoint) && !result->Contains(finishPoint)) {
+            result->Add(finishPoint);
+        }
+    }
+
+    result->Sort();
+    return result;
+}
+
+List<Trip^>^ Search::FindTodayTrips(TripList^ tripList) {
+    if (tripList == nullptr) {
+        return gcnew List<Trip^>();
+    }
+
+    return FindTripsByDate(tripList, DateTime::Today);
+}
+
+List<Trip^>^ Search::FindTomorrowTrips(TripList^ tripList) {
+    if (tripList == nullptr) {
+        return gcnew List<Trip^>();
+    }
+
+    DateTime tomorrow = DateTime::Today.AddDays(1);
+    return FindTripsByDate(tripList, tomorrow);
+}
+
+List<Trip^>^ Search::FindUpcomingTrips(TripList^ tripList, int daysAhead) {
+    if (tripList == nullptr || daysAhead <= 0) {
+        return gcnew List<Trip^>();
+    }
+
+    List<Trip^>^ result = gcnew List<Trip^>();
+    auto allTrips = tripList->AllTrips;
+
+    DateTime today = DateTime::Today;
+    DateTime endDate = today.AddDays(daysAhead);
+
+    for each (Trip ^ trip in allTrips) {
+        DateTime tripDate = trip->GetTripDate().Date;
+
+        if (tripDate >= today && tripDate <= endDate && trip->IsPlanned()) {
+            result->Add(trip);
+        }
+    }
+
+    return result;
+
+}
+
+
+List<Trip^>^ Search::ComplexTripSearch(
+    TripList^ tripList,
+    bool useStartPoint, String^ startPoint,
+    bool useFinishPoint, String^ finishPoint,
+    bool useDate, DateTime^ date,
+    bool usePrice, int price,
+    bool useDriver, String^ driverName,
+    bool useBus, String^ busInfo,
+    bool useStatus, String^ status) {
+
+    if (tripList == nullptr) {
+        return gcnew List<Trip^>();
+    }
+
+    List<Trip^>^ result = gcnew List<Trip^>();
+    auto allTrips = tripList->AllTrips;
+
+    for each (Trip ^ trip in allTrips) {
+        bool matches = true;
+
+        // ‘ильтр по пункту отправлени€
+        if (useStartPoint && !String::IsNullOrEmpty(startPoint)) {
+            if (!trip->GetStartPoint()->ToLower()->Contains(startPoint->ToLower())) {
+                matches = false;
+            }
+        }
+
+        // ‘ильтр по пункту назначени€
+        if (useFinishPoint && !String::IsNullOrEmpty(finishPoint)) {
+            if (!trip->GetFinishPoint()->ToLower()->Contains(finishPoint->ToLower())) {
+                matches = false;
+            }
+        }
+
+        // ‘ильтр по дате
+        if (useDate && date != nullptr) {
+            if (trip->GetTripDate().Date != date->Date) {
+                matches = false;
+            }
+        }
+
+        // ‘ильтр по цене (диапазон ±100)
+        if (usePrice && price > 0) {
+            int tripPrice = trip->GetPrice();
+            if (tripPrice < (price - 100) || tripPrice >(price + 100)) {
+                matches = false;
+            }
+        }
+
+        // ‘ильтр по водителю
+        if (useDriver && !String::IsNullOrEmpty(driverName) && trip->GetDriver() != nullptr) {
+            if (!trip->GetDriver()->GetFullName()->ToLower()->Contains(driverName->ToLower())) {
+                matches = false;
+            }
+        }
+
+        // ‘ильтр по автобусу (упрощенно - ищем по модели)
+        if (useBus && !String::IsNullOrEmpty(busInfo) && trip->GetBus() != nullptr) {
+            String^ busModel = trip->GetBus()->GetModel()->ToLower();
+            String^ busBrand = trip->GetBus()->GetBrand()->ToLower();
+            String^ search = busInfo->ToLower();
+
+            if (!busModel->Contains(search) && !busBrand->Contains(search)) {
+                matches = false;
+            }
+        }
+
+        // ‘ильтр по статусу
+        if (useStatus && !String::IsNullOrEmpty(status)) {
+            if (trip->GetStatus() != status) {
+                matches = false;
+            }
+        }
+
+        if (matches) {
+            result->Add(trip);
+        }
+    }
+
+    return result;
+}
+
+
+List<Trip^>^ Search::FindTripsByPriceRange(TripList^ tripList, int minPrice, int maxPrice) {
+    if (tripList == nullptr || minPrice < 0 || maxPrice < 0 || maxPrice < minPrice) {
+        return gcnew List<Trip^>();
+    }
+
+    List<Trip^>^ result = gcnew List<Trip^>();
+    auto allTrips = tripList->AllTrips;
+
+    for each (Trip ^ trip in allTrips) {
+        int price = trip->GetPrice();
+        if (price >= minPrice && price <= maxPrice) {
+            result->Add(trip);
         }
     }
 

@@ -144,9 +144,9 @@ bool TripList::ShowDeleteTripForm(Form^ owner) {
     }
 }
 
-void TripList::ShowTripListForm(Form^ owner) {
+void TripList::ShowTripListForm(Form^ owner, BusList^ busList, DriversList^ driverList) {
     try {
-        TripListForm^ form = gcnew TripListForm(this);
+        TimingForm^ form = gcnew TimingForm(this, busList, driverList);
         form->ShowDialog(owner);
     }
     catch (Exception^ ex) {
@@ -414,4 +414,37 @@ List<String^>^ TripList::GetAllTripRoutes() {
 
 Trip^ TripList::GetTripByRoute(String^ route) {
     return FindTripByRoute(route);
+}
+
+
+
+// Установить результаты поиска
+void TripList::SetSearchResults(List<Trip^>^ results) {
+    if (searchResults == nullptr) {
+        searchResults = gcnew List<Trip^>();
+    }
+    searchResults->Clear();
+
+    if (results != nullptr) {
+        for each (Trip ^ trip in results) {
+            searchResults->Add(trip);
+        }
+    }
+}
+
+// Получить результаты поиска
+List<Trip^>^ TripList::GetSearchResults() {
+    return searchResults;
+}
+
+// Очистить результаты поиска
+void TripList::ClearSearchResults() {
+    if (searchResults != nullptr) {
+        searchResults->Clear();
+    }
+}
+
+// Проверить наличие результатов
+bool TripList::HasSearchResults() {
+    return searchResults != nullptr && searchResults->Count > 0;
 }

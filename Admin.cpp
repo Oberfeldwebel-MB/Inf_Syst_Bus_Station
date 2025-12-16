@@ -97,7 +97,8 @@ void Admin::ShowTripManagementForm(Form^ owner) {
         return;
     }
 
-    tripList->ShowTripListForm(owner);
+    // Передаем все три параметра, так как TimingForm требует их
+    tripList->ShowTripListForm(owner, busList, driversList);
 }
 
 // === ПОИСК ЧЕРЕЗ КЛАСС Search ===

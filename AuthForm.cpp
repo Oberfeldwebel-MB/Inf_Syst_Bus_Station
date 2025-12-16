@@ -1,4 +1,6 @@
+Ôªø
 #include "AuthForm.h"
+#include "ChangePasswordForm.h"  
 
 namespace InfSystBusStation {
 
@@ -6,46 +8,46 @@ namespace InfSystBusStation {
 	{
 		if (!_isAdminMode)
 		{
-			// –ÂÊËÏ Ó·˚˜ÌÓ„Ó ÔÓÎ¸ÁÓ‚‡ÚÂÎˇ - ÒÍ˚‚‡ÂÏ ˝ÎÂÏÂÌÚ˚ Ô‡ÓÎˇ
+			// –†–µ–∂–∏–º –æ–±—ã—á–Ω–æ–≥–æ –ø–æ–ª—å–∑–æ–≤–∞—Ç–µ–ª—è - —Å–∫—Ä—ã–≤–∞–µ–º —ç–ª–µ–º–µ–Ω—Ç—ã –ø–∞—Ä–æ–ª—è
 			label1->Visible = false;
 			check_pass_box->Visible = false;
 			change_pass->Visible = false;
 
-			// ÃÂÌˇÂÏ ÚÂÍÒÚ ÍÌÓÔÍË Ë ÔÓÎÓÊÂÌËÂ
-			next_pass->Text = L"œÓ‰ÓÎÊËÚ¸";
+			// –ú–µ–Ω—è–µ–º —Ç–µ–∫—Å—Ç –∫–Ω–æ–ø–∫–∏ –∏ –ø–æ–ª–æ–∂–µ–Ω–∏–µ
+			next_pass->Text = L"–ü—Ä–æ–¥–æ–ª–∂–∏—Ç—å";
 			next_pass->Location = System::Drawing::Point(167, 200);
 
-			// ”‚ÂÎË˜Ë‚‡ÂÏ ‡ÁÏÂ ÙÓÏ˚ ‰Îˇ ÎÛ˜¯Â„Ó ÓÚÓ·‡ÊÂÌËˇ
+			// –£–≤–µ–ª–∏—á–∏–≤–∞–µ–º —Ä–∞–∑–º–µ—Ä —Ñ–æ—Ä–º—ã –¥–ª—è –ª—É—á—à–µ–≥–æ –æ—Ç–æ–±—Ä–∞–∂–µ–Ω–∏—è
 			this->ClientSize = System::Drawing::Size(443, 280);
 
-			// ÃÂÌˇÂÏ Á‡„ÓÎÓ‚ÓÍ ÙÓÏ˚
-			this->Text = L"–Â„ËÒÚ‡ˆËˇ ÔÓÎ¸ÁÓ‚‡ÚÂÎˇ - ¿‚ÚÓ·ÛÒÌ˚È Ô‡Í";
+			// –ú–µ–Ω—è–µ–º –∑–∞–≥–æ–ª–æ–≤–æ–∫ —Ñ–æ—Ä–º—ã
+			this->Text = L"–†–µ–≥–∏—Å—Ç—Ä–∞—Ü–∏—è –ø–æ–ª—å–∑–æ–≤–∞—Ç–µ–ª—è - –ê–≤—Ç–æ–±—É—Å–Ω—ã–π –ø–∞—Ä–∫";
 
-			// »ÁÏÂÌˇÂÏ ÔÓ‰ÒÍ‡ÁÍË
-			labelFIO->Text = L"¬‚Â‰ËÚÂ ‚‡¯Â ‘»Œ (ÙÓÏ‡Ú ¿.¿.–Ó„‡ÚËÌ)";
-			labelInfo->Text = L"œËÏÂ: ¿.¿.–Ó„‡ÚËÌ ËÎË ¿.¿.–.";
-			labelEmail->Text = L"¬‚Â‰ËÚÂ ‚‡¯ email";
-			labelEmailInfo->Text = L"œËÏÂ: example@mail.ru ËÎË user@gmail.com";
+			// –ò–∑–º–µ–Ω—è–µ–º –ø–æ–¥—Å–∫–∞–∑–∫–∏
+			labelFIO->Text = L"–í–≤–µ–¥–∏—Ç–µ –≤–∞—à–µ –§–ò–û (—Ñ–æ—Ä–º–∞—Ç –ê.–ê.–†–æ–≥–∞—Ç–∏–Ω)";
+			labelInfo->Text = L"–ü—Ä–∏–º–µ—Ä: –ê.–ê.–†–æ–≥–∞—Ç–∏–Ω –∏–ª–∏ –ê.–ê.–†.";
+			labelEmail->Text = L"–í–≤–µ–¥–∏—Ç–µ –≤–∞—à email";
+			labelEmailInfo->Text = L"–ü—Ä–∏–º–µ—Ä: example@mail.ru –∏–ª–∏ user@gmail.com";
 		}
 		else
 		{
-			// –ÂÊËÏ ‡‰ÏËÌËÒÚ‡ÚÓ‡ - ÔÓÍ‡Á˚‚‡ÂÏ ‚ÒÂ ˝ÎÂÏÂÌÚ˚
+			// –†–µ–∂–∏–º –∞–¥–º–∏–Ω–∏—Å—Ç—Ä–∞—Ç–æ—Ä–∞ - –ø–æ–∫–∞–∑—ã–≤–∞–µ–º –≤—Å–µ —ç–ª–µ–º–µ–Ω—Ç—ã
 			label1->Visible = true;
 			check_pass_box->Visible = true;
 			change_pass->Visible = true;
 
-			// ¬ÓÁ‚‡˘‡ÂÏ ÒÚ‡Ì‰‡ÚÌ˚Â Ì‡ÒÚÓÈÍË
-			next_pass->Text = L"¬ÓÈÚË";
+			// –í–æ–∑–≤—Ä–∞—â–∞–µ–º —Å—Ç–∞–Ω–¥–∞—Ä—Ç–Ω—ã–µ –Ω–∞—Å—Ç—Ä–æ–π–∫–∏
+			next_pass->Text = L"–í–æ–π—Ç–∏";
 			next_pass->Location = System::Drawing::Point(167, 280);
 
 			this->ClientSize = System::Drawing::Size(443, 380);
 
-			this->Text = L"¿‚ÚÓËÁ‡ˆËˇ ‡‰ÏËÌËÒÚ‡ÚÓ‡ - ¿‚ÚÓ·ÛÒÌ˚È Ô‡Í";
+			this->Text = L"–ê–≤—Ç–æ—Ä–∏–∑–∞—Ü–∏—è –∞–¥–º–∏–Ω–∏—Å—Ç—Ä–∞—Ç–æ—Ä–∞ - –ê–≤—Ç–æ–±—É—Å–Ω—ã–π –ø–∞—Ä–∫";
 
-			labelFIO->Text = L"¬‚Â‰ËÚÂ ‘»Œ ‡‰ÏËÌËÒÚ‡ÚÓ‡ (ÙÓÏ‡Ú ¿.¿.–Ó„‡ÚËÌ)";
-			labelInfo->Text = L"œËÏÂ: ¿.¿.–Ó„‡ÚËÌ ËÎË ¿.¿.–.";
-			labelEmail->Text = L"¬‚Â‰ËÚÂ email ‡‰ÏËÌËÒÚ‡ÚÓ‡";
-			labelEmailInfo->Text = L"œËÏÂ: admin@buspark.ru ËÎË admin@gmail.com";
+			labelFIO->Text = L"–í–≤–µ–¥–∏—Ç–µ –§–ò–û –∞–¥–º–∏–Ω–∏—Å—Ç—Ä–∞—Ç–æ—Ä–∞ (—Ñ–æ—Ä–º–∞—Ç –ê.–ê.–†–æ–≥–∞—Ç–∏–Ω)";
+			labelInfo->Text = L"–ü—Ä–∏–º–µ—Ä: –ê.–ê.–†–æ–≥–∞—Ç–∏–Ω –∏–ª–∏ –ê.–ê.–†.";
+			labelEmail->Text = L"–í–≤–µ–¥–∏—Ç–µ email –∞–¥–º–∏–Ω–∏—Å—Ç—Ä–∞—Ç–æ—Ä–∞";
+			labelEmailInfo->Text = L"–ü—Ä–∏–º–µ—Ä: admin@buspark.ru –∏–ª–∏ admin@gmail.com";
 		}
 	}
 
@@ -59,9 +61,9 @@ namespace InfSystBusStation {
 			return;
 		}
 
-		// œ‡ÚÚÂÌ ‰Îˇ ÙÓÏ‡Ú‡: ¿.¿.–Ó„‡ÚËÌ ËÎË ¿.¿.–.
+		// –ü–∞—Ç—Ç–µ—Ä–Ω –¥–ª—è —Ñ–æ—Ä–º–∞—Ç–∞: –ê.–ê.–†–æ–≥–∞—Ç–∏–Ω –∏–ª–∏ –ê.–ê.–†.
 		System::Text::RegularExpressions::Regex^ regex =
-			gcnew System::Text::RegularExpressions::Regex(L"^[¿-ﬂ®]\\.[¿-ﬂ®]\\.([¿-ﬂ®][‡-ˇ∏]+|[¿-ﬂ®]\\.)$");
+			gcnew System::Text::RegularExpressions::Regex(L"^[–ê-–Ø–Å]\\.[–ê-–Ø–Å]\\.([–ê-–Ø–Å][–∞-—è—ë]+|[–ê-–Ø–Å]\\.)$");
 
 		if (regex->IsMatch(fio))
 		{
@@ -83,7 +85,7 @@ namespace InfSystBusStation {
 			return;
 		}
 
-		// œÓÒÚ‡ˇ ‚‡ÎË‰‡ˆËˇ email
+		// –ü—Ä–æ—Å—Ç–∞—è –≤–∞–ª–∏–¥–∞—Ü–∏—è email
 		try
 		{
 			System::Net::Mail::MailAddress^ mailAddress = gcnew System::Net::Mail::MailAddress(email);
@@ -118,74 +120,74 @@ namespace InfSystBusStation {
 
 	System::Void AuthForm::next_pass_Click(System::Object^ sender, System::EventArgs^ e)
 	{
-		// œÓ‚ÂÍ‡ ‘»Œ
+		// –ü—Ä–æ–≤–µ—Ä–∫–∞ –§–ò–û
 		String^ fio = fio_textbox->Text->Trim();
 
 		if (String::IsNullOrEmpty(fio))
 		{
-			MessageBox::Show(L"œÓÊ‡ÎÛÈÒÚ‡, ‚‚Â‰ËÚÂ ‘»Œ!", L"Œ¯Ë·Í‡",
+			MessageBox::Show(L"–ü–æ–∂–∞–ª—É–π—Å—Ç–∞, –≤–≤–µ–¥–∏—Ç–µ –§–ò–û!", L"–û—à–∏–±–∫–∞",
 				MessageBoxButtons::OK, MessageBoxIcon::Warning);
 			fio_textbox->Focus();
 			return;
 		}
 
-		// œÓ‚ÂÍ‡ ÙÓÏ‡Ú‡ ‘»Œ
+		// –ü—Ä–æ–≤–µ—Ä–∫–∞ —Ñ–æ—Ä–º–∞—Ç–∞ –§–ò–û
 		System::Text::RegularExpressions::Regex^ fioRegex =
-			gcnew System::Text::RegularExpressions::Regex(L"^[¿-ﬂ®]\\.[¿-ﬂ®]\\.([¿-ﬂ®][‡-ˇ∏]+|[¿-ﬂ®]\\.)$");
+			gcnew System::Text::RegularExpressions::Regex(L"^[–ê-–Ø–Å]\\.[–ê-–Ø–Å]\\.([–ê-–Ø–Å][–∞-—è—ë]+|[–ê-–Ø–Å]\\.)$");
 
 		if (!fioRegex->IsMatch(fio))
 		{
-			MessageBox::Show(L"ÕÂ‚ÂÌ˚È ÙÓÏ‡Ú ‘»Œ! »ÒÔÓÎ¸ÁÛÈÚÂ ÙÓÏ‡Ú: ¿.¿.–Ó„‡ÚËÌ ËÎË ¿.¿.–.",
-				L"Œ¯Ë·Í‡", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+			MessageBox::Show(L"–ù–µ–≤–µ—Ä–Ω—ã–π —Ñ–æ—Ä–º–∞—Ç –§–ò–û! –ò—Å–ø–æ–ª—å–∑—É–π—Ç–µ —Ñ–æ—Ä–º–∞—Ç: –ê.–ê.–†–æ–≥–∞—Ç–∏–Ω –∏–ª–∏ –ê.–ê.–†.",
+				L"–û—à–∏–±–∫–∞", MessageBoxButtons::OK, MessageBoxIcon::Warning);
 			fio_textbox->Focus();
 			fio_textbox->SelectAll();
 			return;
 		}
 
-		// œÓ‚ÂÍ‡ email
+		// –ü—Ä–æ–≤–µ—Ä–∫–∞ email
 		String^ email = email_textbox->Text->Trim();
 
 		if (String::IsNullOrEmpty(email))
 		{
-			MessageBox::Show(L"œÓÊ‡ÎÛÈÒÚ‡, ‚‚Â‰ËÚÂ email!", L"Œ¯Ë·Í‡",
+			MessageBox::Show(L"–ü–æ–∂–∞–ª—É–π—Å—Ç–∞, –≤–≤–µ–¥–∏—Ç–µ email!", L"–û—à–∏–±–∫–∞",
 				MessageBoxButtons::OK, MessageBoxIcon::Warning);
 			email_textbox->Focus();
 			return;
 		}
 
-		// œÓ‚ÂÍ‡ ÙÓÏ‡Ú‡ email
+		// –ü—Ä–æ–≤–µ—Ä–∫–∞ —Ñ–æ—Ä–º–∞—Ç–∞ email
 		System::Text::RegularExpressions::Regex^ emailRegex =
 			gcnew System::Text::RegularExpressions::Regex(
 				L"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
 
 		if (!emailRegex->IsMatch(email))
 		{
-			MessageBox::Show(L"ÕÂ‚ÂÌ˚È ÙÓÏ‡Ú email! »ÒÔÓÎ¸ÁÛÈÚÂ ÙÓÏ‡Ú: example@mail.ru",
-				L"Œ¯Ë·Í‡", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+			MessageBox::Show(L"–ù–µ–≤–µ—Ä–Ω—ã–π —Ñ–æ—Ä–º–∞—Ç email! –ò—Å–ø–æ–ª—å–∑—É–π—Ç–µ —Ñ–æ—Ä–º–∞—Ç: example@mail.ru",
+				L"–û—à–∏–±–∫–∞", MessageBoxButtons::OK, MessageBoxIcon::Warning);
 			email_textbox->Focus();
 			email_textbox->SelectAll();
 			return;
 		}
 
-		// —Óı‡ÌˇÂÏ ‰‡ÌÌ˚Â
+		// –°–æ—Ö—Ä–∞–Ω—è–µ–º –¥–∞–Ω–Ω—ã–µ
 		_userFIO = fio;
 		_userEmail = email;
 
 		if (_isAdminMode)
 		{
-			// œÓ‚ÂÍ‡ Ô‡ÓÎˇ ‰Îˇ ÂÊËÏ‡ ‡‰ÏËÌËÒÚ‡ÚÓ‡
+			// –ü—Ä–æ–≤–µ—Ä–∫–∞ –ø–∞—Ä–æ–ª—è –¥–ª—è —Ä–µ–∂–∏–º–∞ –∞–¥–º–∏–Ω–∏—Å—Ç—Ä–∞—Ç–æ—Ä–∞
 			String^ password = check_pass_box->Text;
 
 			if (String::IsNullOrEmpty(password))
 			{
-				MessageBox::Show(L"œÓÊ‡ÎÛÈÒÚ‡, ‚‚Â‰ËÚÂ Ô‡ÓÎ¸!", L"Œ¯Ë·Í‡",
+				MessageBox::Show(L"–ü–æ–∂–∞–ª—É–π—Å—Ç–∞, –≤–≤–µ–¥–∏—Ç–µ –ø–∞—Ä–æ–ª—å!", L"–û—à–∏–±–∫–∞",
 					MessageBoxButtons::OK, MessageBoxIcon::Warning);
 				check_pass_box->Focus();
 				return;
 			}
 
-			// œÓ‚ÂˇÂÏ Ô‡ÓÎ¸ ‡‰ÏËÌËÒÚ‡ÚÓ‡ (ı‡‰ÍÓ‰ - Û·Ë‡ÂÏ Ù‡ÈÎ˚)
-			String^ adminPassword = "admin123"; // œ‡ÓÎ¸ ÔÓ ÛÏÓÎ˜‡ÌË˛
+			// –ü—Ä–æ–≤–µ—Ä—è–µ–º –ø–∞—Ä–æ–ª—å –∞–¥–º–∏–Ω–∏—Å—Ç—Ä–∞—Ç–æ—Ä–∞ (—Ö–∞—Ä–¥–∫–æ–¥ - —É–±–∏—Ä–∞–µ–º —Ñ–∞–π–ª—ã)
+			String^ adminPassword = "admin123"; // –ü–∞—Ä–æ–ª—å –ø–æ —É–º–æ–ª—á–∞–Ω–∏—é
 
 			if (password == adminPassword)
 			{
@@ -195,7 +197,7 @@ namespace InfSystBusStation {
 			}
 			else
 			{
-				MessageBox::Show(L"ÕÂ‚ÂÌ˚È Ô‡ÓÎ¸ ‡‰ÏËÌËÒÚ‡ÚÓ‡!", L"Œ¯Ë·Í‡",
+				MessageBox::Show(L"–ù–µ–≤–µ—Ä–Ω—ã–π –ø–∞—Ä–æ–ª—å –∞–¥–º–∏–Ω–∏—Å—Ç—Ä–∞—Ç–æ—Ä–∞!", L"–û—à–∏–±–∫–∞",
 					MessageBoxButtons::OK, MessageBoxIcon::Error);
 				check_pass_box->Clear();
 				check_pass_box->Focus();
@@ -203,7 +205,7 @@ namespace InfSystBusStation {
 		}
 		else
 		{
-			// –ÂÊËÏ Ó·˚˜ÌÓ„Ó ÔÓÎ¸ÁÓ‚‡ÚÂÎˇ - ÔÓÒÚÓ Á‡Í˚‚‡ÂÏ ÙÓÏÛ
+			// –†–µ–∂–∏–º –æ–±—ã—á–Ω–æ–≥–æ –ø–æ–ª—å–∑–æ–≤–∞—Ç–µ–ª—è - –ø—Ä–æ—Å—Ç–æ –∑–∞–∫—Ä—ã–≤–∞–µ–º —Ñ–æ—Ä–º—É
 			_authenticated = true;
 			this->DialogResult = Windows::Forms::DialogResult::OK;
 			this->Close();
@@ -218,44 +220,48 @@ namespace InfSystBusStation {
 
 	System::Void AuthForm::change_pass_Click(System::Object^ sender, System::EventArgs^ e)
 	{
-		// œÓ‚ÂˇÂÏ, Á‡ÔÓÎÌÂÌ˚ ÎË Ó·ˇÁ‡ÚÂÎ¸Ì˚Â ÔÓÎˇ
+		// –ü—Ä–æ–≤–µ—Ä—è–µ–º, –∑–∞–ø–æ–ª–Ω–µ–Ω—ã –ª–∏ –æ–±—è–∑–∞—Ç–µ–ª—å–Ω—ã–µ –ø–æ–ª—è
 		String^ fio = fio_textbox->Text->Trim();
 		String^ email = email_textbox->Text->Trim();
 
 		if (String::IsNullOrEmpty(fio) || String::IsNullOrEmpty(email))
 		{
-			MessageBox::Show(L"«‡ÔÓÎÌËÚÂ ‘»Œ Ë email ÔÂÂ‰ ÒÏÂÌÓÈ Ô‡ÓÎˇ!", L"œÂ‰ÛÔÂÊ‰ÂÌËÂ",
+			MessageBox::Show(L"–ó–∞–ø–æ–ª–Ω–∏—Ç–µ –§–ò–û –∏ email –ø–µ—Ä–µ–¥ —Å–º–µ–Ω–æ–π –ø–∞—Ä–æ–ª—è!", L"–ü—Ä–µ–¥—É–ø—Ä–µ–∂–¥–µ–Ω–∏–µ",
 				MessageBoxButtons::OK, MessageBoxIcon::Warning);
 			return;
 		}
 
-		// œÓ‚ÂˇÂÏ ÚÂÍÛ˘ËÈ Ô‡ÓÎ¸ ÔÂÂ‰ ÒÏÂÌÓÈ
+		// –ü—Ä–æ–≤–µ—Ä—è–µ–º —Ç–µ–∫—É—â–∏–π –ø–∞—Ä–æ–ª—å –ø–µ—Ä–µ–¥ —Å–º–µ–Ω–æ–π
 		String^ currentPassword = check_pass_box->Text;
-		String^ adminPassword = "admin123"; // “ÂÍÛ˘ËÈ Ô‡ÓÎ¸
+		String^ adminPassword = "admin123"; // –¢–µ–∫—É—â–∏–π –ø–∞—Ä–æ–ª—å
 
 		if (String::IsNullOrEmpty(currentPassword))
 		{
-			MessageBox::Show(L"¬‚Â‰ËÚÂ ÚÂÍÛ˘ËÈ Ô‡ÓÎ¸ ‰Îˇ ÒÏÂÌ˚!", L"œÂ‰ÛÔÂÊ‰ÂÌËÂ",
+			MessageBox::Show(L"–í–≤–µ–¥–∏—Ç–µ —Ç–µ–∫—É—â–∏–π –ø–∞—Ä–æ–ª—å –¥–ª—è —Å–º–µ–Ω—ã!", L"–ü—Ä–µ–¥—É–ø—Ä–µ–∂–¥–µ–Ω–∏–µ",
 				MessageBoxButtons::OK, MessageBoxIcon::Warning);
 			return;
 		}
 
 		if (currentPassword != adminPassword)
 		{
-			MessageBox::Show(L"ÕÂ‚ÂÌ˚È ÚÂÍÛ˘ËÈ Ô‡ÓÎ¸!", L"Œ¯Ë·Í‡",
+			MessageBox::Show(L"–ù–µ–≤–µ—Ä–Ω—ã–π —Ç–µ–∫—É—â–∏–π –ø–∞—Ä–æ–ª—å!", L"–û—à–∏–±–∫–∞",
 				MessageBoxButtons::OK, MessageBoxIcon::Error);
 			check_pass_box->Clear();
 			check_pass_box->Focus();
 			return;
 		}
 
-		// ŒÚÍ˚‚‡ÂÏ ÙÓÏÛ ÒÏÂÌ˚ Ô‡ÓÎˇ
+		// –û—Ç–∫—Ä—ã–≤–∞–µ–º —Ñ–æ—Ä–º—É —Å–º–µ–Ω—ã –ø–∞—Ä–æ–ª—è
 		ChangePasswordForm^ changeForm = gcnew ChangePasswordForm();
 		if (changeForm->ShowDialog() == System::Windows::Forms::DialogResult::OK)
 		{
-			// œÓÎÛ˜‡ÂÏ ÌÓ‚˚È Ô‡ÓÎ¸ ËÁ ÙÓÏ˚
+			// –ü–æ–ª—É—á–∞–µ–º –Ω–æ–≤—ã–π –ø–∞—Ä–æ–ª—å –∏–∑ —Ñ–æ—Ä–º—ã - –ë–ï–ó –°–ö–û–ë–û–ö!
 			String^ newPassword = changeForm->NewPassword;
+
+			// –ú–æ–∂–Ω–æ –¥–æ–±–∞–≤–∏—Ç—å —á—Ç–æ-—Ç–æ –¥–µ–ª–∞—Ç—å —Å –ø–∞—Ä–æ–ª–µ–º
+			MessageBox::Show(L"–ù–æ–≤—ã–π –ø–∞—Ä–æ–ª—å: " + newPassword +
+				L"\n(–í –±—É–¥—É—â–µ–º –±—É–¥–µ—Ç —Å–æ—Ö—Ä–∞–Ω–µ–Ω –≤ —Å–∏—Å—Ç–µ–º–µ)",
+				L"–ò–Ω—Ñ–æ—Ä–º–∞—Ü–∏—è", MessageBoxButtons::OK, MessageBoxIcon::Information);
 		}
 	}
-
 }

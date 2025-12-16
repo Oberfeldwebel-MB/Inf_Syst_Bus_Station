@@ -33,7 +33,7 @@ namespace InfSystBusStation {
         // === церрепш ===
         String^ GetBrand() { return brand; }
         String^ GetModel() { return model; }
-        int GetPlaceCount() { return placeCount; }
+        int GetSeatCount() { return placeCount; }
         bool GetAvailability() { return isAvailable; }
         String^ GetCode() { return code; }
         String^ GetTechCondition() { return techCondition; }

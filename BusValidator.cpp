@@ -1,4 +1,4 @@
-#include "BusValidator.h"
+#include "BusValidator.hpp"
 #include <regex>
 
 using namespace InfSystBusStation;
@@ -130,7 +130,7 @@ BusValidator::ValidationResult BusValidator::ValidateBus(Bus^ bus) {
     auto modelResult = ValidateModel(bus->GetModel());
     if (!modelResult.isValid) return modelResult;
 
-    auto placeResult = ValidatePlaceCount(bus->GetPlaceCount());
+    auto placeResult = ValidatePlaceCount(bus->GetSeatCount());
     if (!placeResult.isValid) return placeResult;
 
     auto codeResult = ValidateCode(bus->GetCode());

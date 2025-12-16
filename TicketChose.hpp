@@ -1,65 +1,67 @@
 #pragma once
+
 #include "Trip.hpp"
-#include "Passenger.hpp"
-#include "Ticket.hpp"
 #include "Order.hpp"
 #include <vector>
-#include <memory>
 
-class TicketChose {
-private:
-    std::unique_ptr<Trip> currentTrip;  
-    std::vector<int> availableSeats;
+namespace InfSystBusStation {
 
-public:
-    // Конструктор
-    TicketChose::TicketChose(std::unique_ptr<Trip> trip)
-        : currentTrip(std::move(trip)) {
+    public ref class TicketChose {
+    private:
+        Trip^ selectedTrip;           // Выбранная поездка
+        Order^ currentOrder;         // Текущий заказ пользователя
+        List<int>^ availableSeats;   // Свободные места
+        List<int>^ selectedSeats;    // Выбранные пользователем места
+        int totalSeats;              // Всего мест в автобусе
 
-        try {
-            if (!currentTrip) {
-                throw std::invalid_argument("Нельзя создать TicketChose с пустой поездкой!");
-            }
+    public:
+        // Конструктор
+        TicketChose(Trip^ trip, Order^ order);
 
-            std::shared_ptr<Bus> bus = currentTrip->GetBus();
-            if (!bus) {
-                throw std::invalid_argument("Не указан автобус для поездки!");
-            }
+        // === МЕТОДЫ УПРАВЛЕНИЯ МЕСТАМИ ===
+        void LoadAvailableSeats();                     // Загрузить свободные места
+        bool IsSeatAvailable(int seatNumber);         // Проверить свободно ли место
+        bool SelectSeat(int seatNumber);              // Выбрать место
+        bool DeselectSeat(int seatNumber);            // Отменить выбор места
+        void ClearSelection();                        // Очистить выбор
 
-            int totalSeats = bus->GetPlaces();
-            if (totalSeats <= 0) {
-                throw std::invalid_argument("Количество мест в автобусе должно быть положительным!");
-            }
+        // === РАБОТА С БИЛЕТАМИ ===
+        bool AddSelectedTicketsToOrder();             // Добавить выбранные билеты в заказ
+        bool RemoveTicketFromOrder(int seatNumber);   // Удалить билет из заказа
+        void ReturnSeatToAvailable(int seatNumber);   // Вернуть место в доступные
 
-            // Заполняем доступные места (от 1 до количества мест в автобусе)
-            for (int i = 1; i <= totalSeats; i++) {
-                availableSeats.push_back(i);
-            }
+        // === ИНФОРМАЦИОННЫЕ МЕТОДЫ ===
+        String^ GetTripInfo();                        // Получить инфо о поездке
+        List<int>^ GetAvailableSeats();               // Получить список свободных мест
+        List<int>^ GetSelectedSeats();                // Получить выбранные места
+        int GetSelectedSeatsCount();                  // Количество выбранных мест
+        Decimal GetTotalPrice();                      // Общая стоимость выбранных мест
 
-            std::cout << "Создан выбор мест для поездки: "
-                << currentTrip->GetRoute() << " (мест: " << totalSeats << ")\n";
+        // === ПРОВЕРКИ ===
+        bool HasAvailableSeats();                     // Есть ли свободные места
+        bool HasSelectedSeats();                      // Выбраны ли места
+        bool CanAddToOrder();                         // Можно ли добавить в заказ
+
+        // === СВОЙСТВА ===
+        property Trip^ SelectedTrip {
+            Trip^ get() { return selectedTrip; }
         }
-        catch (const std::exception& e) {
-            std::cerr << "Ошибка создания TicketChose: " << e.what() << "\n";
-            throw;
+
+        property Order^ CurrentOrder {
+            Order^ get() { return currentOrder; }
+            void set(Order^ value) { currentOrder = value; }
         }
-    }
 
-    ~TicketChose() = default;
+        property int TotalSeats {
+            int get() { return totalSeats; }
+        }
 
-    // Основные методы
-    bool IsSeatAvailable(int seatNumber) const;
-    void ShowAvailableSeats() const;
-    void TicketToOrder(std::shared_ptr<Order> order, int seatNumber,
-        const Passenger& passenger, Ticket::TicketType ticketType);
-    bool ReserveSeat(int seatNumber);
-    void ReleaseSeat(int seatNumber);
+        property int AvailableSeatsCount {
+            int get() { return availableSeats->Count; }
+        }
 
-    // Геттеры
-    const std::vector<int>& GetAvailableSeats() const { return availableSeats; }
-    const Trip* GetCurrentTrip() const { return currentTrip.get(); }  // Возвращаем указатель
-    bool HasTrip() const { return currentTrip != nullptr; }
-
-    // Информационные методы
-    void PrintTicketChoseInfo() const;
-};
+        property Decimal TotalSelectedPrice {
+            Decimal get() { return GetTotalPrice(); }
+        }
+    };
+}

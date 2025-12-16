@@ -63,7 +63,7 @@ void DeleteBusForm::UpdateBusInfo(Bus^ bus) {
     // Заполняем информацию
     brandLabel->Text = "Марка: " + bus->GetBrand();
     modelLabel->Text = "Модель: " + bus->GetModel();
-    placesLabel->Text = "Количество мест: " + bus->GetPlaceCount().ToString();
+    placesLabel->Text = "Количество мест: " + bus->GetSeatCount().ToString();
     conditionLabel->Text = "Техническое состояние: " + bus->GetTechCondition();
 
     // Дата ТО

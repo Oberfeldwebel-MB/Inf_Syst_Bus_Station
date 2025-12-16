@@ -10,6 +10,7 @@ namespace InfSystBusStation {
     public ref class TripList {
     private:
         System::Collections::Generic::List<Trip^>^ trips;
+        System::Collections::Generic::List<Trip^>^ searchResults;
 
         // Âñïîìîãàòåëüíûå äàííûå (àíàëîãè÷íî map â Timing)
         System::Collections::Generic::Dictionary<String^, String^>^ stringData;
@@ -20,6 +21,18 @@ namespace InfSystBusStation {
         TripList();
         ~TripList();
 
+    public:
+        // === ÌÅÒÎÄÛ ÄËß ĞÀÁÎÒÛ Ñ ĞÅÇÓËÜÒÀÒÀÌÈ ÏÎÈÑÊÀ ===
+        void SetSearchResults(System::Collections::Generic::List<Trip^>^ results);
+        System::Collections::Generic::List<Trip^>^ GetSearchResults();
+        void ClearSearchResults();
+        bool HasSearchResults();
+
+        property System::Collections::Generic::List<Trip^>^ SearchResults {
+            System::Collections::Generic::List<Trip^>^ get() { return searchResults; }
+            void set(System::Collections::Generic::List<Trip^>^ value) { searchResults = value; }
+        }
+
         // === ÎÑÍÎÂÍÛÅ ÌÅÒÎÄÛ ÓÏĞÀÂËÅÍÈß ===
         void AddTrip(Trip^ trip);
         bool RemoveTrip(String^ route);
@@ -29,7 +42,7 @@ namespace InfSystBusStation {
         // === ÌÅÒÎÄÛ ÄËß ÔÎĞÌ ===
         bool ShowAddTripForm(Form^ owner, BusList^ busList, DriversList^ driverList);
         bool ShowDeleteTripForm(Form^ owner);
-        void ShowTripListForm(Form^ owner);
+        void ShowTripListForm(Form^ owner, BusList^ busList, DriversList^ driverList);
 
         // === ÔÈËÜÒĞÀÖÈß È ÏÎÈÑÊ ===
         System::Collections::Generic::List<Trip^>^ GetActiveTrips();

@@ -149,6 +149,7 @@
     <ClCompile Include="StartForm.cpp" />
     <ClCompile Include="Ticket.cpp" />
     <ClCompile Include="TicketChose.cpp" />
+    <ClCompile Include="TicketSelectionForm.cpp" />
     <ClCompile Include="TicketForm.cpp" />
     <ClCompile Include="TripList.cpp" />
     <ClCompile Include="TimingForm.cpp" />
@@ -174,9 +175,6 @@
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="BusListForm.h">
-      <FileType>CppForm</FileType>
-    </ClInclude>
-    <ClInclude Include="BusValidator.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="BusValidator.hpp" />
@@ -250,6 +248,9 @@
     <ClInclude Include="TicketChose.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="TicketSelectionForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="TicketForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
@@ -297,6 +298,9 @@
     <EmbeddedResource Include="AuthForm.resx">
       <DependentUpon>AuthForm.h</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="OrdersForm.resx">
+      <DependentUpon>OrdersForm.h</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="PassengerForm.resx">
       <DependentUpon>PassengerForm.h</DependentUpon>
     </EmbeddedResource>
@@ -305,6 +309,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="StartForm.resx">
       <DependentUpon>StartForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TicketSelectionForm.resx">
+      <DependentUpon>TicketSelectionForm.h</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TimingForm.resx">
       <DependentUpon>TimingForm.h</DependentUpon>

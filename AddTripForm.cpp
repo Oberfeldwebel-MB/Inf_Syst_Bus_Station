@@ -1,4 +1,3 @@
-// AddTripForm.cpp
 #include "AddTripForm.h"
 
 using namespace InfSystBusStation;
@@ -9,20 +8,25 @@ using namespace System::Windows::Forms;
 void AddTripForm::LoadDriverComboBox() {
     driverComboBox->Items->Clear();
 
-    if (driverList == nullptr || driverList->Count == 0) {
+    if (driverList == nullptr) {
         driverComboBox->Enabled = false;
+        driverComboBox->Items->Add("Список водителей не загружен");
         return;
     }
 
-    // Загружаем только доступных водителей
+    // Получаем доступных водителей
+    bool hasAvailableDrivers = false;
+
     for each (Driver ^ driver in driverList->AllDrivers) {
-        if (driver->GetAvailability()) {
+        if (driver->IsAvailable()) {  // Используем IsAvailable()
             driverComboBox->Items->Add(driver->GetFullName());
+            hasAvailableDrivers = true;
         }
     }
 
-    if (driverComboBox->Items->Count > 0) {
+    if (hasAvailableDrivers) {
         driverComboBox->SelectedIndex = 0;
+        driverComboBox->Enabled = true;
     }
     else {
         driverComboBox->Items->Add("Нет доступных водителей");
@@ -35,23 +39,29 @@ void AddTripForm::LoadDriverComboBox() {
 void AddTripForm::LoadBusComboBox() {
     busComboBox->Items->Clear();
 
-    if (busList == nullptr || busList->Count == 0) {
+    if (busList == nullptr) {
         busComboBox->Enabled = false;
+        busComboBox->Items->Add("Список автобусов не загружен");
         return;
     }
 
-    // Загружаем только доступные автобусы, используя Search класс
-    auto availableBuses = Search::FindAvailableBuses(busList);
-    for each (Bus ^ bus in availableBuses) {
-        String^ busInfo = String::Format("{0} {1} [{2}]",
-            bus->GetBrand(),
-            bus->GetModel(),
-            bus->GetFormattedCode());
-        busComboBox->Items->Add(busInfo);
+    // Загружаем только доступные автобусы
+    bool hasAvailableBuses = false;
+
+    for each (Bus ^ bus in busList->AllBuses) {
+        if (bus->CheckAvailability()) {  // Используем CheckAvailability()
+            String^ busInfo = String::Format("{0} {1} [{2}]",
+                bus->GetBrand(),
+                bus->GetModel(),
+                bus->GetFormattedCode());
+            busComboBox->Items->Add(busInfo);
+            hasAvailableBuses = true;
+        }
     }
 
-    if (busComboBox->Items->Count > 0) {
+    if (hasAvailableBuses) {
         busComboBox->SelectedIndex = 0;
+        busComboBox->Enabled = true;
     }
     else {
         busComboBox->Items->Add("Нет доступных автобусов");
@@ -70,6 +80,34 @@ String^ ExtractBusCodeFromInfo(String^ busInfo) {
     }
 
     return String::Empty;
+}
+
+// Вспомогательная функция для поиска автобуса по коду
+Bus^ FindBusByCode(BusList^ busList, String^ code) {
+    if (busList == nullptr || String::IsNullOrEmpty(code)) {
+        return nullptr;
+    }
+
+    for each (Bus ^ bus in busList->AllBuses) {
+        if (bus->GetCode() == code) {
+            return bus;
+        }
+    }
+    return nullptr;
+}
+
+// Вспомогательная функция для поиска водителя по имени
+Driver^ FindDriverByName(DriversList^ driverList, String^ name) {
+    if (driverList == nullptr || String::IsNullOrEmpty(name)) {
+        return nullptr;
+    }
+
+    for each (Driver ^ driver in driverList->AllDrivers) {
+        if (driver->GetFullName() == name) {
+            return driver;
+        }
+    }
+    return nullptr;
 }
 
 System::Void AddTripForm::add_button_Click(System::Object^ sender, System::EventArgs^ e) {
@@ -166,22 +204,22 @@ System::Void AddTripForm::add_button_Click(System::Object^ sender, System::Event
         }
 
         String^ selectedDriverName = safe_cast<String^>(driverComboBox->SelectedItem);
-        if (selectedDriverName == "Нет доступных водителей") {
+        if (selectedDriverName == "Нет доступных водителей" ||
+            selectedDriverName == "Список водителей не загружен") {
             MessageBox::Show("Нет доступных водителей!", "Ошибка",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             return;
         }
 
-        // Поиск водителя по имени (здесь можно было бы добавить метод в Search)
-        Driver^ selectedDriver = nullptr;
-        for each (Driver ^ driver in driverList->AllDrivers) {
-            if (driver->GetFullName() == selectedDriverName && driver->GetAvailability()) {
-                selectedDriver = driver;
-                break;
-            }
+        // Поиск водителя по имени
+        Driver^ selectedDriver = FindDriverByName(driverList, selectedDriverName);
+        if (selectedDriver == nullptr) {
+            MessageBox::Show("Водитель не найден!", "Ошибка",
+                MessageBoxButtons::OK, MessageBoxIcon::Warning);
+            return;
         }
 
-        if (selectedDriver == nullptr) {
+        if (!selectedDriver->IsAvailable()) {
             MessageBox::Show("Выбранный водитель недоступен!", "Ошибка",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             return;
@@ -196,7 +234,8 @@ System::Void AddTripForm::add_button_Click(System::Object^ sender, System::Event
         }
 
         String^ selectedBusInfo = safe_cast<String^>(busComboBox->SelectedItem);
-        if (selectedBusInfo == "Нет доступных автобусов") {
+        if (selectedBusInfo == "Нет доступных автобусов" ||
+            selectedBusInfo == "Список автобусов не загружен") {
             MessageBox::Show("Нет доступных автобусов!", "Ошибка",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             return;
@@ -210,9 +249,15 @@ System::Void AddTripForm::add_button_Click(System::Object^ sender, System::Event
             return;
         }
 
-        // ИСПРАВЛЕНИЕ: Используем Search класс для поиска автобуса
-        Bus^ selectedBus = Search::FindBusByCode(busList, busCode);
-        if (selectedBus == nullptr || !selectedBus->GetAvailability()) {
+        // Поиск автобуса по коду
+        Bus^ selectedBus = FindBusByCode(busList, busCode);
+        if (selectedBus == nullptr) {
+            MessageBox::Show("Автобус не найден!", "Ошибка",
+                MessageBoxButtons::OK, MessageBoxIcon::Warning);
+            return;
+        }
+
+        if (!selectedBus->CheckAvailability()) {
             MessageBox::Show("Выбранный автобус недоступен!", "Ошибка",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             return;
@@ -247,6 +292,7 @@ System::Void AddTripForm::add_button_Click(System::Object^ sender, System::Event
         // Извлекаем время из строки даты (последние 5 символов "HH:mm")
         String^ departureTime = depDateStr->Substring(11, 5);
 
+        // Используем InternalAddTrip из TripList
         if (tripList->InternalAddTrip(startPoint, finishPoint, price,
             selectedBus, selectedDriver, depDate, departureTime)) {
 
@@ -269,7 +315,9 @@ System::Void AddTripForm::add_button_Click(System::Object^ sender, System::Event
             LoadBusComboBox();
 
             // Генерация события
-            DataAdded(this, EventArgs::Empty);
+            if (DataAdded != nullptr) {
+                DataAdded(this, EventArgs::Empty);
+            }
 
             // Закрываем форму с результатом OK
             this->DialogResult = System::Windows::Forms::DialogResult::OK;
@@ -277,7 +325,7 @@ System::Void AddTripForm::add_button_Click(System::Object^ sender, System::Event
         }
     }
     catch (Exception^ ex) {
-        MessageBox::Show("Ошибка: " + ex->Message, "Ошибка системы",
+        MessageBox::Show("Ошибка при добавлении поездки: " + ex->Message, "Ошибка системы",
             MessageBoxButtons::OK, MessageBoxIcon::Error);
     }
 }

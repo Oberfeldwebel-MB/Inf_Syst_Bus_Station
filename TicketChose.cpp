@@ -1,148 +1,160 @@
 #include "TicketChose.hpp"
-#include <iostream>
-#include <stdexcept>
-#include <algorithm>
+#include "Trip.hpp"
+#include "Order.hpp"
 
-bool TicketChose::IsSeatAvailable(int seatNumber) const {
-    try {
-        if (seatNumber <= 0) {
-            throw std::invalid_argument("Номер места должен быть положительным!");
-        }
+using namespace InfSystBusStation;
+using namespace System;
+using namespace System::Collections::Generic;
 
-        return std::find(availableSeats.begin(), availableSeats.end(), seatNumber) != availableSeats.end();
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка проверки места: " << e.what() << "\n";
-        return false;
-    }
-}
+// Конструктор
+TicketChose::TicketChose(Trip^ trip, Order^ order)
+    : selectedTrip(trip), currentOrder(order) {
 
-bool TicketChose::ReserveSeat(int seatNumber) {
-    try {
-        if (seatNumber <= 0) {
-            throw std::invalid_argument("Номер места должен быть положительным!");
-        }
-
-        auto it = std::find(availableSeats.begin(), availableSeats.end(), seatNumber);
-        if (it == availableSeats.end()) {
-            std::cout << "[TicketChose] Место " << seatNumber << " уже занято!\n";
-            return false;  // Место уже занято
-        }
-
-        availableSeats.erase(it);
-        std::cout << "[TicketChose] Место " << seatNumber << " успешно забронировано\n";
-        return true;
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка резервирования места: " << e.what() << "\n";
-        return false;
-    }
-}
-
-void TicketChose::ReleaseSeat(int seatNumber) {
-    try {
-        if (seatNumber <= 0) {
-            throw std::invalid_argument("Номер места должен быть положительным!");
-        }
-
-        // Добавляем место обратно, если его еще нет в списке
-        if (!IsSeatAvailable(seatNumber)) {
-            availableSeats.push_back(seatNumber);
-            std::sort(availableSeats.begin(), availableSeats.end());
-            std::cout << "[TicketChose] Место " << seatNumber << " освобождено\n";
-        }
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка освобождения места: " << e.what() << "\n";
-        throw;
-    }
-}
-
-void TicketChose::ShowAvailableSeats() const {
-    std::cout << "=== Доступные места ===\n";
-
-    if (!currentTrip) {
-        std::cout << "Ошибка: поездка не установлена!\n";
-        return;
+    if (trip == nullptr) {
+        throw gcnew ArgumentNullException("Поездка не может быть null!");
     }
 
-    std::shared_ptr<Bus> bus = currentTrip->GetBus();
-    if (bus) {
-        std::cout << "Автобус: " << bus->GetBrand()
-            << " [" << bus->GetCode() << "]\n";
-        std::cout << "Маршрут: " << currentTrip->GetRoute() << "\n";
-        std::cout << "Всего мест: " << bus->GetPlaces()
-            << ", свободно: " << availableSeats.size() << "\n\n";
+    if (order == nullptr) {
+        throw gcnew ArgumentNullException("Заказ не может быть null!");
     }
 
-    if (availableSeats.empty()) {
-        std::cout << "Нет свободных мест!\n";
+    availableSeats = gcnew List<int>();
+    selectedSeats = gcnew List<int>();
+
+    // Получаем количество мест из автобуса
+    if (trip->GetBus() != nullptr) {
+        totalSeats = trip->GetBus()->GetSeatCount(); // Нужно добавить метод GetSeatCount() в Bus
     }
     else {
-        std::cout << "Свободные места: ";
-        for (size_t i = 0; i < availableSeats.size(); ++i) {
-            std::cout << availableSeats[i];
-            if (i < availableSeats.size() - 1) {
-                std::cout << ", ";
-            }
-        }
-        std::cout << "\n";
+        totalSeats = 40; // Значение по умолчанию
     }
-    std::cout << "========================\n";
+
+    LoadAvailableSeats();
 }
 
-void TicketChose::TicketToOrder(std::shared_ptr<Order> order, int seatNumber,
-    const Passenger& passenger, Ticket::TicketType ticketType) {
-    try {
-        if (!order) {
-            throw std::invalid_argument("Заказ не может быть пустым!");
-        }
+// Загрузить свободные места
+void TicketChose::LoadAvailableSeats() {
+    availableSeats->Clear();
 
-        if (seatNumber <= 0) {
-            throw std::invalid_argument("Номер места должен быть положительным!");
-        }
-
-        if (!currentTrip) {
-            throw std::runtime_error("Поездка не установлена в TicketChose!");
-        }
-
-        // Проверяем доступность места
-        auto it = std::find(availableSeats.begin(), availableSeats.end(), seatNumber);
-        if (it == availableSeats.end()) {
-            throw std::runtime_error("Место " + std::to_string(seatNumber) + " уже занято или не существует!");
-        }
-
-        // Резервируем место
-        availableSeats.erase(it);
-
-        // Создаем билет (используем разыменованный unique_ptr)
-        Ticket newTicket(seatNumber, *currentTrip, passenger, ticketType);
-
-        // Добавляем билет в Order
-        order->AddTicket(newTicket);
-
-        std::cout << "   Билет успешно забронирован!\n";
-        std::cout << "   Место: " << seatNumber << "\n";
-        std::cout << "   Тип: " << newTicket.GetTicketTypeName() << "\n";
-        std::cout << "   Цена: " << newTicket.GetFinalPrice() << " руб.\n";
-        std::cout << "   Пассажир: " << passenger.GetFullName() << "\n";
-        std::cout << "   Маршрут: " << currentTrip->GetRoute() << "\n";
+    // 1. Все места от 1 до totalSeats
+    for (int i = 1; i <= totalSeats; i++) {
+        availableSeats->Add(i);
     }
-    catch (const std::exception& e) {
-        std::cerr << "Ошибка бронирования билета: " << e.what() << "\n";
-        throw;
-    }
+
+    // 2. Удалить уже занятые места (нужно получить из Order или базы данных)
+    // Это заглушка - нужно будет реализовать проверку занятых мест
+    // Например: if (IsSeatOccupied(i)) availableSeats->Remove(i);
+
+    // 3. Сортировка
+    availableSeats->Sort();
 }
 
-void TicketChose::PrintTicketChoseInfo() const {
-    std::cout << "=== Информация о выборе мест ===\n";
-    if (currentTrip) {
-        std::cout << "Поездка: " << currentTrip->GetRoute() << "\n";
-        std::cout << "Статус: " << currentTrip->GetStatus() << "\n";
+// Проверить свободно ли место
+bool TicketChose::IsSeatAvailable(int seatNumber) {
+    return availableSeats->Contains(seatNumber);
+}
+
+// Выбрать место
+bool TicketChose::SelectSeat(int seatNumber) {
+    if (!IsSeatAvailable(seatNumber)) {
+        return false;
     }
-    else {
-        std::cout << "Поездка: не установлена\n";
+
+    if (selectedSeats->Contains(seatNumber)) {
+        return false; // Уже выбрано
     }
-    std::cout << "Доступно мест: " << availableSeats.size() << "\n";
-    std::cout << "===============================\n";
+
+    availableSeats->Remove(seatNumber);
+    selectedSeats->Add(seatNumber);
+    selectedSeats->Sort();
+
+    return true;
+}
+
+// Отменить выбор места
+bool TicketChose::DeselectSeat(int seatNumber) {
+    if (!selectedSeats->Contains(seatNumber)) {
+        return false;
+    }
+
+    selectedSeats->Remove(seatNumber);
+    availableSeats->Add(seatNumber);
+    availableSeats->Sort();
+
+    return true;
+}
+
+// Очистить выбор
+void TicketChose::ClearSelection() {
+    // Возвращаем все выбранные места в доступные
+    for each (int seat in selectedSeats) {
+        availableSeats->Add(seat);
+    }
+    availableSeats->Sort();
+    selectedSeats->Clear();
+}
+
+// Добавить выбранные билеты в заказ
+bool TicketChose::AddSelectedTicketsToOrder() {
+    if (!HasSelectedSeats()) {
+        return false;
+    }
+
+    // Для каждого выбранного места создаем билет
+    for each (int seat in selectedSeats) {
+        // Создаем билет (нужен класс Ticket)
+        // Ticket^ ticket = gcnew Ticket(selectedTrip, seat, selectedTrip->GetPrice());
+        // currentOrder->AddTicket(ticket);
+    }
+
+    // Очищаем выбор после добавления
+    selectedSeats->Clear();
+
+    return true;
+}
+
+// Получить информацию о поездке
+String^ TicketChose::GetTripInfo() {
+    if (selectedTrip == nullptr) {
+        return "Поездка не выбрана";
+    }
+
+    return String::Format(
+        "МАРШРУТ: {0}\n"
+        "ДАТА: {1:dd.MM.yyyy}\n"
+        "ВРЕМЯ: {2}\n"
+        "АВТОБУС: {3}\n"
+        "ВОДИТЕЛЬ: {4}\n"
+        "ЦЕНА БИЛЕТА: {5} руб.",
+        selectedTrip->GetRoute(),
+        selectedTrip->GetTripDate(),
+        selectedTrip->GetTripTime(),
+        selectedTrip->GetBus() != nullptr ?
+        selectedTrip->GetBus()->GetBrand() + " " + selectedTrip->GetBus()->GetModel() : "Не указан",
+        selectedTrip->GetDriver() != nullptr ?
+        selectedTrip->GetDriver()->GetFullName() : "Не назначен",
+        selectedTrip->GetPrice()
+    );
+}
+
+// Вспомогательные методы
+bool TicketChose::HasAvailableSeats() {
+    return availableSeats->Count > 0;
+}
+
+bool TicketChose::HasSelectedSeats() {
+    return selectedSeats->Count > 0;
+}
+
+bool TicketChose::CanAddToOrder() {
+    return HasSelectedSeats() && currentOrder != nullptr;
+}
+
+int TicketChose::GetSelectedSeatsCount() {
+    return selectedSeats->Count;
+}
+
+Decimal TicketChose::GetTotalPrice() {
+    if (selectedTrip == nullptr) return 0;
+    return selectedTrip->GetPrice() * selectedSeats->Count;
 }
