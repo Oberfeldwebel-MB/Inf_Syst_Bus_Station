@@ -36,9 +36,6 @@
     <ClInclude Include="Ticket.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="Passenger.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="TripList.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
@@ -60,7 +57,7 @@
     <ClInclude Include="DriversList.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="AuthForm.h">
+    <ClInclude Include="AdminLoginForm.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="StartForm.h">
@@ -132,6 +129,9 @@
     <ClInclude Include="TicketSelectionForm.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="TripValidator.hpp">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Bus.cpp">
@@ -153,9 +153,6 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="Ticket.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="Passenger.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="TripList.cpp">
@@ -185,7 +182,7 @@
     <ClCompile Include="StartForm.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="AuthForm.cpp">
+    <ClCompile Include="AdminLoginForm.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="TimingForm.cpp">
@@ -251,10 +248,8 @@
     <ClCompile Include="TicketSelectionForm.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="database.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
+    <ClCompile Include="TripValidator.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

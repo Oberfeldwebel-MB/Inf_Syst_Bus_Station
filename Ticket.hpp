@@ -1,6 +1,6 @@
 #pragma once
 #include "Trip.hpp"
-#include "Passenger.hpp"
+#include "User.hpp"
 
 namespace InfSystBusStation {
 

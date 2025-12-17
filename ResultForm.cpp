@@ -127,9 +127,9 @@ System::Void ResultForm::EditTrip_Click(System::Object^ sender, System::EventArg
 System::Void ResultForm::Search_Click(System::Object^ sender, System::EventArgs^ e) {
     try {
         // Создаем и показываем форму поиска
-        SearchForm^ searchForm = gcnew SearchForm(tripList);
+        SearchForm^ searchForm = gcnew SearchForm(tripList, busList, driverList);
 
-        if (searchForm->ShowDialog() == DialogResult::OK) {
+        if (searchForm->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
             // Получаем результаты из формы поиска
             List<Trip^>^ results = searchForm->SearchResults;
 
@@ -199,7 +199,7 @@ System::Void ResultForm::BuyTicket_Click(System::Object^ sender, System::EventAr
         Trip^ selectedTrip = nullptr;
 
         for each (Trip ^ trip in searchResults) {
-            if (trip->GetRoute() == route) {
+            if (trip->GetStartPoint() == startPoint && trip->GetFinishPoint() == finishPoint) {
                 selectedTrip = trip;
                 break;
             }
@@ -218,20 +218,29 @@ System::Void ResultForm::BuyTicket_Click(System::Object^ sender, System::EventAr
             return;
         }
 
-        // Открыть форму выбора билета
-        // TODO: Нужен объект Order для пользователя
-         TicketSelectionForm^ ticketForm = gcnew TicketSelectionForm(selectedTrip, currentOrder);
-         
-         if (ticketForm->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
-             if (ticketForm->TicketAdded) {
-                 MessageBox::Show(L"Билет добавлен в заказ", L"Успех",
-                     MessageBoxButtons::OK, MessageBoxIcon::Information);
-                 UpdateDataGridView();
-             }
-         }
+        // Создать новый заказ, если его нет
+        if (currentOrder == nullptr) {
+            // TODO: Получить имя пассажира (можно из формы входа или запросить)
+            String^ passengerName = L"Пассажир"; // Заменить на реальное имя
+            currentOrder = gcnew Order(passengerName);
+        }
 
-        MessageBox::Show(L"Функция покупки билета в разработке", L"Информация",
-            MessageBoxButtons::OK, MessageBoxIcon::Information);
+        // Открыть форму выбора билета
+        TicketSelectionForm^ ticketForm = gcnew TicketSelectionForm(selectedTrip, currentOrder);
+
+        if (ticketForm->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
+            if (ticketForm->TicketAdded) {
+                MessageBox::Show(L"Билет добавлен в заказ", L"Успех",
+                    MessageBoxButtons::OK, MessageBoxIcon::Information);
+
+                // Показать форму заказа с билетами
+                OrderForm^ orderForm = gcnew OrderForm(currentOrder);
+                orderForm->ShowDialog();
+
+                // Обновляем данные о поездках (возможно изменилось количество свободных мест)
+                UpdateDataGridView();
+            }
+        }
     }
     catch (Exception^ ex) {
         MessageBox::Show(L"Ошибка: " + ex->Message, L"Ошибка",

@@ -16,13 +16,15 @@ namespace InfSystBusStation {
 
     public ref class SearchForm : public System::Windows::Forms::Form {
     public:
-        SearchForm(void) {
+        SearchForm::SearchForm(TripList^ tripList, BusList^ busList, DriversList^ driverList) {
             InitializeComponent();
-            tripList = nullptr;
-            busList = nullptr;
-            driverList = nullptr;
-            searchResults = nullptr;
+            this->tripList = tripList;
+            this->busList = busList;
+            this->driverList = driverList;
+            this->searchResults = nullptr;
             InitializeForm();
+            LoadDriverComboBox(); 
+            LoadBusComboBox();     
         }
 
         property List<Trip^>^ SearchResults {

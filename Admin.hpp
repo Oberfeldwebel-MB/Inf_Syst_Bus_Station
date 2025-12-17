@@ -88,5 +88,10 @@ namespace InfSystBusStation {
         property String^ Password {
             String^ get() { return adminPassword; }
         }
+
+    public:
+        void SetPassword(String^ newPassword) {
+            adminPassword = newPassword;
+        }
     };
 }

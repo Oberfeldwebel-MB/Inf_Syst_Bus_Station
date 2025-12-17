@@ -1,4 +1,5 @@
 #include "AddTripForm.h"
+#include "TripValidator.hpp"
 
 using namespace InfSystBusStation;
 using namespace System;
@@ -288,11 +289,30 @@ System::Void AddTripForm::add_button_Click(System::Object^ sender, System::Event
             return;
         }
 
-        // === 4. Вызов метода TripList для добавления ===
         // Извлекаем время из строки даты (последние 5 символов "HH:mm")
         String^ departureTime = depDateStr->Substring(11, 5);
 
-        // Используем InternalAddTrip из TripList
+        // === 4. ВАЛИДАЦИЯ ЧЕРЕЗ TRIPVALIDATOR ===
+        String^ validationError;
+        bool isValid = TripValidator::ValidateNewTripStatic(
+            startPoint,
+            finishPoint,
+            price,
+            selectedBus,
+            selectedDriver,
+            depDate,
+            departureTime,
+            tripList,
+            validationError  // out-параметр для ошибки
+        );
+
+        if (!isValid) {
+            MessageBox::Show(validationError, "Ошибка валидации",
+                MessageBoxButtons::OK, MessageBoxIcon::Warning);
+            return;
+        }
+
+        // === 5. Вызов метода TripList для добавления ===
         if (tripList->InternalAddTrip(startPoint, finishPoint, price,
             selectedBus, selectedDriver, depDate, departureTime)) {
 
@@ -315,9 +335,8 @@ System::Void AddTripForm::add_button_Click(System::Object^ sender, System::Event
             LoadBusComboBox();
 
             // Генерация события
-            if (DataAdded != nullptr) {
-                DataAdded(this, EventArgs::Empty);
-            }
+            DataAdded(this, EventArgs::Empty);
+            
 
             // Закрываем форму с результатом OK
             this->DialogResult = System::Windows::Forms::DialogResult::OK;

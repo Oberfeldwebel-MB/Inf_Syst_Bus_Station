@@ -1,7 +1,8 @@
 ﻿#pragma once
 
 #include "People.hpp"
-#include "Order.hpp"        
+#include "Order.hpp"  
+#include "Ticket.hpp" 
 
 namespace InfSystBusStation {
 
@@ -15,8 +16,9 @@ namespace InfSystBusStation {
     public:
         // === КОНСТРУКТОРЫ ===
 
-        // Конструктор из данных формы регистрации
-        User(String^ fioFormatted, String^ email, String^ phone);
+        // Основной конструктор со ВСЕМИ параметрами
+        User(String^ fioFormatted, String^ gender, String^ passportSeries,
+            String^ passportNumber, String^ email, String^ phone);
 
         // Деструктор
         ~User();
@@ -24,8 +26,11 @@ namespace InfSystBusStation {
         // === СТАТИЧЕСКИЕ МЕТОДЫ ===
         static User^ CreateFromRegistrationForm(
             String^ fioFormatted,      // В формате "А.А.Рогатин"
-            String^ email,
-            String^ phone);
+            String^ gender,            // "М" или "Ж"
+            String^ passportSeries,    // "1234"
+            String^ passportNumber,    // "567890"
+            String^ email,             // email@example.com
+            String^ phone);            // +71234567890
 
         // === РАБОТА С КОРЗИНОЙ (Order) ===
         void AddTicketToCart(Ticket^ ticket);
@@ -64,7 +69,7 @@ namespace InfSystBusStation {
         property bool HasItemsInCart {
             bool get() {
                 return shoppingCart != nullptr &&
-                    !shoppingCart->IsEmpty();
+                    !shoppingCart->IsEmpty;
             }
         }
 

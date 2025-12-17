@@ -101,24 +101,6 @@ void Admin::ShowTripManagementForm(Form^ owner) {
     tripList->ShowTripListForm(owner, busList, driversList);
 }
 
-// === ПОИСК ЧЕРЕЗ КЛАСС Search ===
-
-Bus^ Admin::FindBus(String^ code) {
-    return Search::FindBusByCode(busList, code);
-}
-
-Driver^ Admin::FindDriver(String^ fio) {
-    return driversList->FindDriverByName(fio);
-}
-
-Trip^ Admin::FindTrip(String^ route) {
-    return tripList->FindTripByRoute(route);
-}
-
-List<Bus^>^ Admin::FindAvailableBuses() {
-    return Search::FindAvailableBuses(busList);
-}
-
 List<Driver^>^ Admin::FindAvailableDrivers() {
     List<Driver^>^ result = gcnew List<Driver^>();
     for each (Driver ^ driver in driversList->AllDrivers) {

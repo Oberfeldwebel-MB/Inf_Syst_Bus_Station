@@ -15,8 +15,8 @@ System::Void AddDriverForm::AddButtonDriver_Click(System::Object^ sender, System
         // === 2. Получение данных из формы ===
 
         // ФИО
-        String^ fioStr = FIO_add->Text->Trim();
-        if (String::IsNullOrEmpty(fioStr)) {
+        System::String^ fioStr = FIO_add->Text->Trim();
+        if (System::String::IsNullOrEmpty(fioStr)) {
             MessageBox::Show("Введите ФИО водителя!", "Ошибка",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             FIO_add->Focus();
@@ -25,7 +25,7 @@ System::Void AddDriverForm::AddButtonDriver_Click(System::Object^ sender, System
         }
 
         // Пол
-        String^ genderStr = "";
+        System::String^ genderStr = "";
         if (pol_add->GetItemChecked(0)) {
             genderStr = "М";
         }
@@ -33,18 +33,18 @@ System::Void AddDriverForm::AddButtonDriver_Click(System::Object^ sender, System
             genderStr = "Ж";
         }
 
-        if (String::IsNullOrEmpty(genderStr)) {
+        if (System::String::IsNullOrEmpty(genderStr)) {
             MessageBox::Show("Выберите пол водителя!", "Ошибка",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             return;
         }
 
         // Паспортные данные
-        String^ passportStr = data_add->Text->Trim();
-        String^ passportSeries = "";
-        String^ passportNumber = "";
+        System::String^ passportStr = data_add->Text->Trim();
+        System::String^ passportSeries = "";
+        System::String^ passportNumber = "";
 
-        if (!String::IsNullOrEmpty(passportStr)) {
+        if (!System::String::IsNullOrEmpty(passportStr)) {
             // Убираем возможные пробелы и символы
             passportStr = passportStr->Replace(" ", "")->Replace("-", "")->Replace("/", "");
 
@@ -57,8 +57,8 @@ System::Void AddDriverForm::AddButtonDriver_Click(System::Object^ sender, System
         }
 
         // Номер водительского удостоверения
-        String^ licenseStr = maskedTextBox1->Text->Trim();
-        if (String::IsNullOrEmpty(licenseStr)) {
+        System::String^ licenseStr = maskedTextBox1->Text->Trim();
+        if (System::String::IsNullOrEmpty(licenseStr)) {
             MessageBox::Show("Введите номер водительского удостоверения!",
                 "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Warning);
             maskedTextBox1->Focus();
@@ -72,9 +72,10 @@ System::Void AddDriverForm::AddButtonDriver_Click(System::Object^ sender, System
         // === 3. ВАЛИДАЦИЯ ДАННЫХ ===
 
         // Валидация ФИО
-        auto fioValidation = DriverValidator::ValidateFIO(fioStr);
-        if (!fioValidation.isValid) {
-            MessageBox::Show(fioValidation.errorMessage, "Ошибка валидации",
+        System::String^ fioError;
+        bool fioValid = DriverValidator::ValidateFIOStatic(fioStr, fioError);
+        if (!fioValid) {
+            MessageBox::Show(fioError, "Ошибка валидации",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             FIO_add->Focus();
             FIO_add->SelectAll();
@@ -82,17 +83,19 @@ System::Void AddDriverForm::AddButtonDriver_Click(System::Object^ sender, System
         }
 
         // Валидация пола
-        auto genderValidation = DriverValidator::ValidateGender(genderStr);
-        if (!genderValidation.isValid) {
-            MessageBox::Show(genderValidation.errorMessage, "Ошибка валидации",
+        System::String^ genderError;
+        bool genderValid = DriverValidator::ValidateGenderStatic(genderStr, genderError);
+        if (!genderValid) {
+            MessageBox::Show(genderError, "Ошибка валидации",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             return;
         }
 
         // Валидация прав
-        auto licenseValidation = DriverValidator::ValidateLicense(licenseStr);
-        if (!licenseValidation.isValid) {
-            MessageBox::Show(licenseValidation.errorMessage, "Ошибка валидации",
+        System::String^ licenseError;
+        bool licenseValid = DriverValidator::ValidateLicenseStatic(licenseStr, licenseError);
+        if (!licenseValid) {
+            MessageBox::Show(licenseError, "Ошибка валидации",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             maskedTextBox1->Focus();
             maskedTextBox1->SelectAll();
@@ -100,9 +103,10 @@ System::Void AddDriverForm::AddButtonDriver_Click(System::Object^ sender, System
         }
 
         // Валидация зарплаты
-        auto salaryValidation = DriverValidator::ValidateSalary(salary);
-        if (!salaryValidation.isValid) {
-            MessageBox::Show(salaryValidation.errorMessage, "Ошибка валидации",
+        System::String^ salaryError;
+        bool salaryValid = DriverValidator::ValidateSalaryStatic(salary, salaryError);
+        if (!salaryValid) {
+            MessageBox::Show(salaryError, "Ошибка валидации",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             ratingNumericUpDown->Focus();
             ratingNumericUpDown->Select(0, ratingNumericUpDown->Text->Length);
@@ -110,10 +114,11 @@ System::Void AddDriverForm::AddButtonDriver_Click(System::Object^ sender, System
         }
 
         // Валидация паспорта (если введен)
-        if (!String::IsNullOrEmpty(passportSeries) || !String::IsNullOrEmpty(passportNumber)) {
-            auto passportValidation = DriverValidator::ValidatePassport(passportSeries, passportNumber);
-            if (!passportValidation.isValid) {
-                MessageBox::Show(passportValidation.errorMessage, "Ошибка валидации паспорта",
+        if (!System::String::IsNullOrEmpty(passportSeries) || !System::String::IsNullOrEmpty(passportNumber)) {
+            System::String^ passportError;
+            bool passportValid = DriverValidator::ValidatePassportStatic(passportSeries, passportNumber, passportError);
+            if (!passportValid) {
+                MessageBox::Show(passportError, "Ошибка валидации паспорта",
                     MessageBoxButtons::OK, MessageBoxIcon::Warning);
                 data_add->Focus();
                 data_add->SelectAll();
@@ -136,9 +141,10 @@ System::Void AddDriverForm::AddButtonDriver_Click(System::Object^ sender, System
             passportNumber, salary, licenseStr);
 
         // Полная валидация перед добавлением
-        auto fullValidation = DriverValidator::ValidateForAddition(newDriver, driverList);
-        if (!fullValidation.isValid) {
-            MessageBox::Show(fullValidation.errorMessage, "Ошибка валидации",
+        System::String^ fullError;
+        bool fullValid = DriverValidator::ValidateForAdditionStatic(newDriver, driverList, fullError);
+        if (!fullValid) {
+            MessageBox::Show(fullError, "Ошибка валидации",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             return;
         }

@@ -1,5 +1,5 @@
-// DeleteTripForm.cpp
 #include "DeleteTripForm.h"
+#include "Search.hpp"  
 
 using namespace InfSystBusStation;
 using namespace System::Windows::Forms;
@@ -78,7 +78,10 @@ void DeleteTripForm::UpdateTripInfo(Trip^ trip) {
 System::Void DeleteTripForm::tripComboBox_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
     if (tripComboBox->SelectedIndex >= 0) {
         String^ selectedRoute = safe_cast<String^>(tripComboBox->SelectedItem);
-        Trip^ selectedTrip = tripList->GetTripByRoute(selectedRoute);
+
+        // ИЗМЕНЕНО: Используем Search класс вместо прямого вызова
+        Trip^ selectedTrip = Search::FindTripByRoute(tripList, selectedRoute);
+
         UpdateTripInfo(selectedTrip);
     }
 }
@@ -86,18 +89,20 @@ System::Void DeleteTripForm::tripComboBox_SelectedIndexChanged(System::Object^ s
 System::Void DeleteTripForm::deleteButton_Click(System::Object^ sender, System::EventArgs^ e) {
     if (tripComboBox->SelectedIndex < 0) {
         MessageBox::Show("Выберите поездку для удаления!", "Ошибка",
-            System::Windows::Forms::MessageBoxButtons::OK,
-            System::Windows::Forms::MessageBoxIcon::Error);
+            MessageBoxButtons::OK,
+            MessageBoxIcon::Error);
         return;
     }
 
     String^ selectedRoute = safe_cast<String^>(tripComboBox->SelectedItem);
-    Trip^ selectedTrip = tripList->GetTripByRoute(selectedRoute);
+
+    // ИЗМЕНЕНО: Используем Search класс вместо прямого вызова
+    Trip^ selectedTrip = Search::FindTripByRoute(tripList, selectedRoute);
 
     if (selectedTrip == nullptr) {
         MessageBox::Show("Выбранная поездка не найдена в системе!", "Ошибка",
-            System::Windows::Forms::MessageBoxButtons::OK,
-            System::Windows::Forms::MessageBoxIcon::Error);
+            MessageBoxButtons::OK,
+            MessageBoxIcon::Error);
         return;
     }
 
@@ -117,8 +122,8 @@ System::Void DeleteTripForm::deleteButton_Click(System::Object^ sender, System::
                 selectedTrip->GetTripTime());
 
             MessageBox::Show(infoMessage, "Успешное удаление",
-                System::Windows::Forms::MessageBoxButtons::OK,
-                System::Windows::Forms::MessageBoxIcon::Information);
+                MessageBoxButtons::OK,
+                MessageBoxIcon::Information);
 
             // Обновляем список в ComboBox
             LoadTripRoutes();
@@ -135,14 +140,14 @@ System::Void DeleteTripForm::deleteButton_Click(System::Object^ sender, System::
         }
         else {
             MessageBox::Show("Не удалось удалить поездку!", "Ошибка",
-                System::Windows::Forms::MessageBoxButtons::OK,
-                System::Windows::Forms::MessageBoxIcon::Error);
+                MessageBoxButtons::OK,
+                MessageBoxIcon::Error);
         }
     }
     catch (Exception^ ex) {
         MessageBox::Show("Ошибка при удалении: " + ex->Message, "Ошибка",
-            System::Windows::Forms::MessageBoxButtons::OK,
-            System::Windows::Forms::MessageBoxIcon::Error);
+            MessageBoxButtons::OK,
+            MessageBoxIcon::Error);
     }
 }
 

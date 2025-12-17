@@ -14,9 +14,11 @@ namespace InfSystBusStation {
 
     public ref class TimingForm : public System::Windows::Forms::Form {
     public:
-        TimingForm(TripList^ tripList) {
+        TimingForm(TripList^ tripList, BusList^ busList, DriversList^ driverList) {
             InitializeComponent();
             this->tripList = tripList;
+            this->busList = busList;      
+            this->driverList = driverList; 
             currentOrder = nullptr;
             isAdminMode = true;
             UpdateDataGridView();
@@ -38,6 +40,9 @@ namespace InfSystBusStation {
         TripList^ tripList;
         Order^ currentOrder;
         bool isAdminMode;
+        BusList^ busList;      // Добавить
+        DriversList^ driverList; // Добавить
+
         System::ComponentModel::Container^ components;
 
         System::Windows::Forms::MenuStrip^ menuStrip;

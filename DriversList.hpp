@@ -13,16 +13,16 @@ namespace InfSystBusStation {
         ~DriversList();
 
     public:
-        List<Driver^>^ GetAvailableDrivers();
-        List<String^>^ GetAvailableDriverNames();
+        System::Collections::Generic::List<Driver^>^ GetAvailableDrivers();
+        System::Collections::Generic::List<System::String^>^ GetAvailableDriverNames();
 
         // Старые методы
         void AddDriver(Driver^ driver);
-        void AddDriver(String^ fullName, int salary, String^ gender,
-            String^ license, String^ passportSeries,
-            String^ passportNumber);
-        Driver^ FindDriverByName(String^ fullName);
-        bool RemoveDriver(String^ fullName);
+        void AddDriver(System::String^ fullName, int salary, System::String^ gender,
+            System::String^ license, System::String^ passportSeries,
+            System::String^ passportNumber);
+        Driver^ FindDriverByName(System::String^ fullName);
+        bool RemoveDriver(System::String^ fullName);
         void DisplayAllDrivers();
 
         // Свойства

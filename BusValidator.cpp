@@ -1,81 +1,91 @@
+// BusValidator.cpp
 #include "BusValidator.hpp"
 #include <regex>
 
 using namespace InfSystBusStation;
 using namespace System;
 using namespace System::Text::RegularExpressions;
+// Добавляем это пространство имен для атрибута [Out]
+using namespace System::Runtime::InteropServices;
 
-BusValidator::ValidationResult BusValidator::ValidateBrand(String^ brand) {
-    if (String::IsNullOrEmpty(brand)) {
-        return ValidationResult::Error("Марка автобуса не может быть пустой!");
+// Обязательные методы
+bool BusValidator::Validate(Object^ item) {
+    Bus^ bus = dynamic_cast<Bus^>(item);
+    if (bus == nullptr) {
+        _lastErrorMessage = "Неверный тип объекта! Ожидался Bus.";
+        return false;
     }
 
-    if (brand->Length < 2) {
-        return ValidationResult::Error("Марка автобуса слишком короткая!");
+    String^ error;
+    bool isValid = ValidateBus(bus, error);
+    if (!isValid) {
+        _lastErrorMessage = error;
     }
-
-    if (brand->Length > 50) {
-        return ValidationResult::Error("Марка автобуса слишком длинная!");
-    }
-
-    return ValidationResult::Success();
+    return isValid;
 }
 
-BusValidator::ValidationResult BusValidator::ValidateModel(String^ model) {
-    if (String::IsNullOrEmpty(model)) {
-        return ValidationResult::Error("Модель автобуса не может быть пустой!");
+bool BusValidator::ValidateForAddition(Object^ item, Object^ container) {
+    Bus^ bus = dynamic_cast<Bus^>(item);
+    BusList^ busList = dynamic_cast<BusList^>(container);
+
+    if (bus == nullptr) {
+        _lastErrorMessage = "Неверный тип объекта! Ожидался Bus.";
+        return false;
+    }
+    if (busList == nullptr) {
+        _lastErrorMessage = "Неверный тип контейнера! Ожидался BusList.";
+        return false;
     }
 
-    if (model->Length < 1) {
-        return ValidationResult::Error("Модель автобуса слишком короткая!");
+    // Сначала валидируем сам автобус
+    String^ error;
+    if (!ValidateBus(bus, error)) {
+        _lastErrorMessage = error;
+        return false;
     }
 
-    if (model->Length > 50) {
-        return ValidationResult::Error("Модель автобуса слишком длинная!");
+    // Проверка уникальности кода
+    for each (Bus ^ existingBus in busList->AllBuses) {
+        if (existingBus->GetCode() == bus->GetCode()) {
+            _lastErrorMessage = "Автобус с таким кодом уже существует!";
+            return false;
+        }
     }
 
-    return ValidationResult::Success();
+    _lastErrorMessage = "";
+    return true;
 }
 
-BusValidator::ValidationResult BusValidator::ValidatePlaceCount(int placeCount) {
-    if (placeCount <= 0) {
-        return ValidationResult::Error("Количество мест должно быть больше 0!");
-    }
-
-    if (placeCount > 200) {
-        return ValidationResult::Error("Количество мест не может быть больше 200!");
-    }
-
-    return ValidationResult::Success();
+// Специфичные методы
+bool BusValidator::ValidateBrand(String^ brand, [Out] String^% errorMessage) {
+    return ValidateString(brand, "Марка автобуса", 2, 50, errorMessage);
 }
 
-BusValidator::ValidationResult BusValidator::ValidateCode(String^ code) {
-    if (String::IsNullOrEmpty(code)) {
-        return ValidationResult::Error("Код автобуса не может быть пустым!");
-    }
-
-    // Формат кода: буква + 3 цифры + 2 буквы (например: А888АА)
-    if (code->Length != 6) {
-        return ValidationResult::Error("Код должен содержать 6 символов (например: А888АА)!");
-    }
-
-    // Проверяем формат: буква + 3 цифры + 2 буквы
-    Regex^ pattern = gcnew Regex("^[А-ЯA-Z]\\d{3}[А-ЯA-Z]{2}$");
-    if (!pattern->IsMatch(code)) {
-        return ValidationResult::Error(
-            "Неверный формат кода! Должен быть: буква/3 цифры/2 буквы\n" +
-            "Пример: А888АА, В123МН, С456ОР");
-    }
-
-    return ValidationResult::Success();
+bool BusValidator::ValidateModel(String^ model, [Out] String^% errorMessage) {
+    return ValidateString(model, "Модель автобуса", 1, 50, errorMessage);
 }
 
-BusValidator::ValidationResult BusValidator::ValidateTechCondition(String^ condition) {
+bool BusValidator::ValidatePlaceCount(int places, [Out] String^% errorMessage) {
+    return ValidateInt(places, "Количество мест", 1, 200, errorMessage);
+}
+
+bool BusValidator::ValidateCode(String^ code, [Out] String^% errorMessage) {
+    // Сначала базовая проверка длины
+    if (!ValidateString(code, "Код автобуса", 6, 6, errorMessage)) {
+        return false;
+    }
+
+    // Затем проверка формата
+    return ValidateRegex(code, "^[А-ЯA-Z]\\d{3}[А-ЯA-Z]{2}$",
+        "Неверный формат кода! Пример: А888АА, В123МН", errorMessage);
+}
+
+bool BusValidator::ValidateTechCondition(String^ condition, [Out] String^% errorMessage) {
     if (String::IsNullOrEmpty(condition)) {
-        return ValidationResult::Error("Техническое состояние не может быть пустым!");
+        errorMessage = "Техническое состояние не может быть пустым!";
+        return false;
     }
 
-    // Допустимые состояния
     array<String^>^ validConditions = {
         "Отличное", "Хорошее", "Удовлетворительное",
         "Неудовлетворительное", "Плохое", "Аварийное",
@@ -84,26 +94,28 @@ BusValidator::ValidationResult BusValidator::ValidateTechCondition(String^ condi
 
     for each (String ^ validCondition in validConditions) {
         if (condition == validCondition) {
-            return ValidationResult::Success();
+            errorMessage = "";
+            return true;
         }
     }
 
-    return ValidationResult::Error(
-        "Недопустимое техническое состояние! Допустимые значения: " +
+    errorMessage = "Недопустимое техническое состояние! Допустимые значения: " +
         "Отличное, Хорошее, Удовлетворительное, Неудовлетворительное, " +
-        "Плохое, Аварийное, На обслуживании");
+        "Плохое, Аварийное, На обслуживании";
+    return false;
 }
 
-BusValidator::ValidationResult BusValidator::ValidateMaintenanceDate(String^ date) {
+bool BusValidator::ValidateMaintenanceDate(String^ date, [Out] String^% errorMessage) {
     if (String::IsNullOrEmpty(date)) {
-        return ValidationResult::Success(); // Необязательное поле
+        errorMessage = ""; // Необязательное поле
+        return true;
     }
 
     // Проверяем формат даты DD/MM/YYYY
     Regex^ pattern = gcnew Regex("^\\d{2}/\\d{2}/\\d{4}$");
-
     if (!pattern->IsMatch(date)) {
-        return ValidationResult::Error("Неверный формат даты! Используйте DD/MM/YYYY");
+        errorMessage = "Неверный формат даты! Используйте DD/MM/YYYY";
+        return false;
     }
 
     // Проверяем корректность даты
@@ -112,37 +124,89 @@ BusValidator::ValidationResult BusValidator::ValidateMaintenanceDate(String^ dat
             System::Globalization::CultureInfo::InvariantCulture);
 
         if (maintenanceDate > DateTime::Now) {
-            return ValidationResult::Error("Дата ТО не может быть в будущем!");
+            errorMessage = "Дата ТО не может быть в будущем!";
+            return false;
         }
     }
     catch (Exception^) {
-        return ValidationResult::Error("Некорректная дата! Пример: 15/03/2023");
+        errorMessage = "Некорректная дата! Пример: 15/03/2023";
+        return false;
     }
 
-    return ValidationResult::Success();
+    errorMessage = "";
+    return true;
 }
 
-BusValidator::ValidationResult BusValidator::ValidateBus(Bus^ bus) {
+bool BusValidator::ValidateBus(Bus^ bus, [Out] String^% errorMessage) {
+    if (bus == nullptr) {
+        errorMessage = "Автобус не указан!";
+        return false;
+    }
+
     // Проверяем все поля
-    auto brandResult = ValidateBrand(bus->GetBrand());
-    if (!brandResult.isValid) return brandResult;
+    String^ brandError, ^ modelError, ^ placesError, ^ codeError, ^ conditionError, ^ dateError;
 
-    auto modelResult = ValidateModel(bus->GetModel());
-    if (!modelResult.isValid) return modelResult;
+    bool isValid =
+        ValidateBrand(bus->GetBrand(), brandError) &&
+        ValidateModel(bus->GetModel(), modelError) &&
+        ValidatePlaceCount(bus->GetSeatCount(), placesError) &&
+        ValidateCode(bus->GetCode(), codeError) &&
+        ValidateTechCondition(bus->GetTechCondition(), conditionError) &&
+        ValidateMaintenanceDate(bus->GetLastMaintenance(), dateError);
 
-    auto placeResult = ValidatePlaceCount(bus->GetSeatCount());
-    if (!placeResult.isValid) return placeResult;
+    if (!isValid) {
+        // Возвращаем первую найденную ошибку
+        if (!String::IsNullOrEmpty(brandError)) errorMessage = brandError;
+        else if (!String::IsNullOrEmpty(modelError)) errorMessage = modelError;
+        else if (!String::IsNullOrEmpty(placesError)) errorMessage = placesError;
+        else if (!String::IsNullOrEmpty(codeError)) errorMessage = codeError;
+        else if (!String::IsNullOrEmpty(conditionError)) errorMessage = conditionError;
+        else if (!String::IsNullOrEmpty(dateError)) errorMessage = dateError;
 
-    auto codeResult = ValidateCode(bus->GetCode());
-    if (!codeResult.isValid) return codeResult;
+        return false;
+    }
 
-    auto conditionResult = ValidateTechCondition(bus->GetTechCondition());
-    if (!conditionResult.isValid) return conditionResult;
-
-    auto dateResult = ValidateMaintenanceDate(bus->GetLastMaintenance());
-    if (!dateResult.isValid) return dateResult;
-
-    return ValidationResult::Success();
+    errorMessage = "";
+    return true;
 }
 
+// Статические методы (просто вызывают методы экземпляра)
+bool BusValidator::ValidateBrandStatic(String^ brand, [Out] String^% errorMessage) {
+    BusValidator^ validator = gcnew BusValidator();
+    return validator->ValidateBrand(brand, errorMessage);
+}
 
+bool BusValidator::ValidateModelStatic(String^ model, [Out] String^% errorMessage) {
+    BusValidator^ validator = gcnew BusValidator();
+    return validator->ValidateModel(model, errorMessage);
+}
+
+bool BusValidator::ValidateCodeStatic(String^ code, [Out] String^% errorMessage) {
+    BusValidator^ validator = gcnew BusValidator();
+    return validator->ValidateCode(code, errorMessage);
+}
+
+bool BusValidator::ValidatePlaceCountStatic(int places, [Out] String^% errorMessage) {
+    BusValidator^ validator = gcnew BusValidator();
+    return validator->ValidatePlaceCount(places, errorMessage);
+}
+
+bool BusValidator::ValidateTechConditionStatic(String^ condition, [Out] String^% errorMessage) {
+    BusValidator^ validator = gcnew BusValidator();
+    return validator->ValidateTechCondition(condition, errorMessage);
+}
+
+bool BusValidator::ValidateMaintenanceDateStatic(String^ date, [Out] String^% errorMessage) {
+    BusValidator^ validator = gcnew BusValidator();
+    return validator->ValidateMaintenanceDate(date, errorMessage);
+}
+
+bool BusValidator::ValidateBusStatic(Bus^ bus, [Out] String^% errorMessage) {
+    BusValidator^ validator = gcnew BusValidator();
+    return validator->ValidateBus(bus, errorMessage);
+}
+
+bool BusValidator::ValidateForAdditionStatic(Bus^ bus, BusList^ busList, [Out] String^% errorMessage) {
+    BusValidator^ validator = gcnew BusValidator();
+    return validator->ValidateForAddition(bus, busList);
+}

@@ -139,8 +139,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Order.cpp" />
     <ClCompile Include="OrdersForm.cpp" />
-    <ClCompile Include="Passenger.cpp" />
-    <ClCompile Include="AuthForm.cpp" />
+    <ClCompile Include="AdminLoginForm.cpp" />
     <ClCompile Include="PassengerForm.cpp" />
     <ClCompile Include="People.cpp" />
     <ClCompile Include="ResultForm.cpp" />
@@ -154,6 +153,7 @@
     <ClCompile Include="TripList.cpp" />
     <ClCompile Include="TimingForm.cpp" />
     <ClCompile Include="Trip.cpp" />
+    <ClCompile Include="TripValidator.cpp" />
     <ClCompile Include="User.cpp" />
     <ClCompile Include="UserForm.cpp" />
     <ClCompile Include="Workers.cpp" />
@@ -218,10 +218,7 @@
     <ClInclude Include="OrdersForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="Passenger.hpp">
-      <FileType>CppForm</FileType>
-    </ClInclude>
-    <ClInclude Include="AuthForm.h">
+    <ClInclude Include="AdminLoginForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="PassengerForm.h">
@@ -263,6 +260,9 @@
     <ClInclude Include="Trip.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="TripValidator.hpp">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="User.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
@@ -295,8 +295,8 @@
     <EmbeddedResource Include="EditTripForm.resx">
       <DependentUpon>EditTripForm.h</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="AuthForm.resx">
-      <DependentUpon>AuthForm.h</DependentUpon>
+    <EmbeddedResource Include="AdminLoginForm.resx">
+      <DependentUpon>AdminLoginForm.h</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="OrdersForm.resx">
       <DependentUpon>OrdersForm.h</DependentUpon>
@@ -306,6 +306,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ResultForm.resx">
       <DependentUpon>ResultForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SearchForm.resx">
+      <DependentUpon>SearchForm.h</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="StartForm.resx">
       <DependentUpon>StartForm.h</DependentUpon>
@@ -319,9 +322,6 @@
     <EmbeddedResource Include="UserForm.resx">
       <DependentUpon>UserForm.h</DependentUpon>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="database.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

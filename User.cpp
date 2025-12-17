@@ -5,15 +5,16 @@ using namespace InfSystBusStation;
 using namespace System;
 using namespace System::Collections::Generic;
 
-// Конструктор
-User::User(String^ fioFormatted, String^ email, String^ phone)
-    : People(fioFormatted, "Мужской", "1234", "567890", email),
+// Основной конструктор со ВСЕМИ параметрами
+User::User(String^ fioFormatted, String^ gender, String^ passportSeries,
+    String^ passportNumber, String^ email, String^ phone)
+    : People(fioFormatted, gender, passportSeries, passportNumber, email),
     phoneNumber(phone),
     registrationDate(DateTime::Now),
     isRegistered(true),
     shoppingCart(nullptr) {
 
-    // В реальной системе паспортные данные брать из формы
+    Console::WriteLine("[User] Создан новый пользователь: {0}", GetFullName());
 }
 
 // Деструктор
@@ -24,10 +25,10 @@ User::~User() {
 }
 
 // Создание User из формы регистрации
-User^ User::CreateFromRegistrationForm(String^ fioFormatted,
-    String^ email, String^ phone) {
+User^ User::CreateFromRegistrationForm(String^ fioFormatted, String^ gender,
+    String^ passportSeries, String^ passportNumber, String^ email, String^ phone) {
 
-    return gcnew User(fioFormatted, email, phone);
+    return gcnew User(fioFormatted, gender, passportSeries, passportNumber, email, phone);
 }
 
 // === РАБОТА С КОРЗИНОЙ ===
@@ -59,7 +60,7 @@ void User::ClearCart() {
 }
 
 void User::CheckoutCart() {
-    if (shoppingCart == nullptr || shoppingCart->IsEmpty()) {
+    if (shoppingCart == nullptr || shoppingCart->IsEmpty) {
         throw gcnew InvalidOperationException("Корзина пуста!");
     }
 
@@ -74,13 +75,13 @@ void User::CheckoutCart() {
 }
 
 bool User::HasTicketsInCart() {
-    return shoppingCart != nullptr && !shoppingCart->IsEmpty();
+    return shoppingCart != nullptr && !shoppingCart->IsEmpty;
 }
 
 // === ИНФОРМАЦИЯ О КОРЗИНЕ ===
 
 String^ User::GetCartSummary() {
-    if (shoppingCart == nullptr || shoppingCart->IsEmpty()) {
+    if (shoppingCart == nullptr || shoppingCart->IsEmpty) {
         return "Корзина пуста";
     }
 
@@ -120,17 +121,21 @@ void User::PrintInfo() {
 }
 
 String^ User::GetFullInfo() {
+    String^ passportInfo = "";
+    if (!String::IsNullOrEmpty(GetPassportSeries()) && !String::IsNullOrEmpty(GetPassportNumber())) {
+        passportInfo = String::Format("\nПаспорт: {0} {1}", GetPassportSeries(), GetPassportNumber());
+    }
+
     return String::Format(
         "Пользователь: {0}\n"
         "Email: {1}\n"
         "Телефон: {2}\n"
-        "Дата регистрации: {3:dd.MM.yyyy}\n"
-        "В корзине: {4} билетов",
+        "Дата регистрации: {3:dd.MM.yyyy}{4}",
         GetFullName(),
         GetEmail(),
         phoneNumber,
         registrationDate,
-        GetCartTicketCount()
+        passportInfo
     );
 }
 
@@ -142,14 +147,25 @@ double User::CalculateDiscount() {
 // === ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ===
 
 bool User::ValidateUserData() {
+    // Проверка телефона
     if (String::IsNullOrEmpty(phoneNumber) || phoneNumber->Length < 10) {
+        Console::WriteLine("[User] Ошибка валидации: неверный номер телефона");
         return false;
     }
 
-    if (String::IsNullOrEmpty(GetEmail())) {
+    // Проверка email
+    if (String::IsNullOrEmpty(GetEmail()) || !GetEmail()->Contains("@")) {
+        Console::WriteLine("[User] Ошибка валидации: неверный email");
         return false;
     }
 
+    // Проверка ФИО
+    if (String::IsNullOrEmpty(GetFullName()) || GetFullName()->Length < 5) {
+        Console::WriteLine("[User] Ошибка валидации: неверное ФИО");
+        return false;
+    }
+
+    Console::WriteLine("[User] Данные пользователя {0} прошли валидацию", GetFullName());
     return true;
 }
 

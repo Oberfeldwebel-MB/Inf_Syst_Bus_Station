@@ -1,5 +1,5 @@
-// DeleteBusForm.cpp - УПРОЩЕННАЯ ВЕРСИЯ
 #include "DeleteBusForm.h"
+#include "Search.hpp"  // ДОБАВИТЬ эту строку
 
 using namespace InfSystBusStation;
 using namespace System;
@@ -53,7 +53,6 @@ void DeleteBusForm::LoadBusCodes() {
 }
 
 // Обновление информации через BusList
-// DeleteBusForm.cpp - Оставьте старую сигнатуру
 void DeleteBusForm::UpdateBusInfo(Bus^ bus) {
     if (bus == nullptr) {
         ClearBusInfo();
@@ -106,17 +105,18 @@ void DeleteBusForm::ClearBusInfo() {
 System::Void DeleteBusForm::busComboBox_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
     if (busComboBox->SelectedIndex >= 0) {
         String^ selectedCode = safe_cast<String^>(busComboBox->SelectedItem);
-        // Получаем автобус через BusList
-        Bus^ selectedBus = busList->GetBusByFormattedCode(selectedCode);
-        UpdateBusInfo(selectedBus);  // Передаем объект Bus, а не строку
+
+        // ИЗМЕНЕНО: Используем Search класс вместо прямого вызова
+        Bus^ selectedBus = Search::FindBusByFormattedCode(busList, selectedCode);
+
+        UpdateBusInfo(selectedBus);
     }
 }
 
 System::Void DeleteBusForm::deleteButton_Click(System::Object^ sender, System::EventArgs^ e) {
     if (busComboBox->SelectedIndex < 0) {
-        System::Windows::Forms::MessageBox::Show("Выберите автобус для удаления!", "Ошибка",
-            System::Windows::Forms::MessageBoxButtons::OK,
-            System::Windows::Forms::MessageBoxIcon::Error);
+        MessageBox::Show("Выберите автобус для удаления!", "Ошибка",
+            MessageBoxButtons::OK, MessageBoxIcon::Error);
         return;
     }
 
@@ -128,12 +128,11 @@ System::Void DeleteBusForm::deleteButton_Click(System::Object^ sender, System::E
         "Данное действие нельзя отменить!",
         selectedCode);
 
-    System::Windows::Forms::DialogResult result =
-        System::Windows::Forms::MessageBox::Show(
-            message,
-            "Подтверждение удаления",
-            System::Windows::Forms::MessageBoxButtons::YesNo,
-            System::Windows::Forms::MessageBoxIcon::Warning);
+    System::Windows::Forms::DialogResult result = MessageBox::Show(
+        message,
+        "Подтверждение удаления",
+        MessageBoxButtons::YesNo,
+        MessageBoxIcon::Warning);
 
     if (result == System::Windows::Forms::DialogResult::Yes) {
         try {
@@ -141,9 +140,8 @@ System::Void DeleteBusForm::deleteButton_Click(System::Object^ sender, System::E
             bool success = busList->RemoveBusByFormattedCode(selectedCode);
 
             if (success) {
-                System::Windows::Forms::MessageBox::Show("Автобус успешно удален!", "Успех",
-                    System::Windows::Forms::MessageBoxButtons::OK,
-                    System::Windows::Forms::MessageBoxIcon::Information);
+                MessageBox::Show("Автобус успешно удален!", "Успех",
+                    MessageBoxButtons::OK, MessageBoxIcon::Information);
 
                 // Обновляем список через BusList
                 LoadBusCodes();
@@ -159,15 +157,13 @@ System::Void DeleteBusForm::deleteButton_Click(System::Object^ sender, System::E
                 }
             }
             else {
-                System::Windows::Forms::MessageBox::Show("Не удалось удалить автобус!", "Ошибка",
-                    System::Windows::Forms::MessageBoxButtons::OK,
-                    System::Windows::Forms::MessageBoxIcon::Error);
+                MessageBox::Show("Не удалось удалить автобус!", "Ошибка",
+                    MessageBoxButtons::OK, MessageBoxIcon::Error);
             }
         }
         catch (Exception^ ex) {
-            System::Windows::Forms::MessageBox::Show("Ошибка при удалении: " + ex->Message, "Ошибка",
-                System::Windows::Forms::MessageBoxButtons::OK,
-                System::Windows::Forms::MessageBoxIcon::Error);
+            MessageBox::Show("Ошибка при удалении: " + ex->Message, "Ошибка",
+                MessageBoxButtons::OK, MessageBoxIcon::Error);
         }
     }
 }

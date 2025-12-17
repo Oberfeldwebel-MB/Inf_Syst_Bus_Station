@@ -1,134 +1,82 @@
 #pragma once
 
-#include "Bus.hpp"
-#include "BusList.hpp"
-#include "Trip.hpp"
 #include "TripList.hpp"
-#include "Driver.hpp"
+#include "BusList.hpp"
 #include "DriversList.hpp"
-#include "BusValidator.hpp"
+#include "SearchForm.h"
 
 namespace InfSystBusStation {
 
-    using namespace System;
-    using namespace System::Collections::Generic;
+    ref class SearchForm;
 
-    public ref class Search {
-
+    public ref class Search abstract sealed {
     public:
-        // Комплексный поиск по всем возможным критериям
-        static List<Trip^>^ ComplexTripSearch(
+        // ================= ПОИСК ПОЕЗДОК =================
+
+        // Основной метод поиска поездок (используется в SearchForm)
+        static List<Trip^>^ SearchTrips(
             TripList^ tripList,
-            bool useStartPoint, String^ startPoint,
-            bool useFinishPoint, String^ finishPoint,
-            bool useDate, DateTime^ date,
-            bool usePrice, int price,
-            bool useDriver, String^ driverName,
-            bool useBus, String^ busInfo,
-            bool useStatus, String^ status);
-    public:
-        // === ПОИСК АВТОБУСОВ ===
+            String^ startPoint,
+            String^ finishPoint,
+            DateTime^ date,
+            int minPrice,
+            int maxPrice,
+            String^ driverName,
+            String^ busCode);
 
-        // Поиск автобуса по коду (с использованием BusValidator)
+        // ================= ПОИСК ДЛЯ УДАЛЕНИЯ =================
+
+        // Поиск автобуса по коду (для DeleteBusForm)
         static Bus^ FindBusByCode(BusList^ busList, String^ code);
 
-        // Поиск автобусов по марке (с валидацией через BusValidator)
-        static List<Bus^>^ FindBusesByBrand(BusList^ busList, String^ brand);
+        // Поиск водителя по ФИО (для DeleteDriverForm)
+        static Driver^ FindDriverByName(DriversList^ driversList, String^ fullName);
 
-        // Поиск автобусов по модели (с валидацией через BusValidator)
-        static List<Bus^>^ FindBusesByModel(BusList^ busList, String^ model);
+        // Поиск поездки по маршруту (для DeleteTripForm)
+        static Trip^ FindTripByRoute(TripList^ tripList, String^ route);
 
-        // Поиск доступных автобусов
-        static List<Bus^>^ FindAvailableBuses(BusList^ busList);
-
-        // Поиск автобусов, требующих ТО
-        static List<Bus^>^ FindBusesNeedingMaintenance(BusList^ busList);
-
-        // Поиск автобусов по техническому состоянию (с валидацией через BusValidator)
-        static List<Bus^>^ FindBusesByCondition(BusList^ busList, String^ condition);
-
-        // Поиск автобусов с количеством мест больше указанного
-        static List<Bus^>^ FindBusesWithMinSeats(BusList^ busList, int minSeats);
-
-        // === ПОИСК ПОЕЗДОК ===
-
-        // Поиск поездок по дате
-        static List<Trip^>^ FindTripsByDate(TripList^ tripList, DateTime date);
-
-        // Поиск поездок по маршруту
-        static List<Trip^>^ FindTripsByRoute(TripList^ tripList, String^ route);
-
-        // Поиск поездок по автобусу
-        static List<Trip^>^ FindTripsByBus(TripList^ tripList, String^ busCode);
-
-        // Поиск поездок по водителю
-        static List<Trip^>^ FindTripsByDriver(TripList^ tripList, String^ driverName);
-
-        // Поиск активных поездок
-        static List<Trip^>^ FindActiveTrips(TripList^ tripList);
-
-        // Поиск запланированных поездок
-        static List<Trip^>^ FindPlannedTrips(TripList^ tripList);
-
-        // Комбинированный поиск поездок
-        static List<Trip^>^ FindTripsCombined(TripList^ tripList,
-            String^ routeFilter, DateTime^ dateFilter, String^ statusFilter);
-
-        // === РАСШИРЕННЫЙ ПОИСК ПОЕЗДОК ===
-
-        // Поиск поездок по диапазону цен
-        static List<Trip^>^ FindTripsByPriceRange(TripList^ tripList, int minPrice, int maxPrice);
-
-        // Поиск поездок с доступными местами
-        static List<Trip^>^ FindTripsWithAvailableSeats(TripList^ tripList, int minSeats = 1);
-
-        // Поиск поездок по пункту отправления
-        static List<Trip^>^ FindTripsByStartPoint(TripList^ tripList, String^ startPoint);
-
-        // Поиск поездок по пункту назначения
-        static List<Trip^>^ FindTripsByFinishPoint(TripList^ tripList, String^ finishPoint);
-
-        // Комбинированный поиск с большим количеством параметров
-        static List<Trip^>^ AdvancedTripSearch(
-            TripList^ tripList,
-            String^ from = nullptr,
-            String^ to = nullptr,
-            DateTime^ date = nullptr,
-            int minPrice = 0,
-            int maxPrice = 0,
-            String^ busModel = nullptr,
-            String^ driverName = nullptr,
-            int minAvailableSeats = 0
-        );
-
-        // === УНИВЕРСАЛЬНЫЙ ПОИСК ===
-
-        // Универсальный поиск с предикатом
-        generic<typename T>
-        static List<T>^ FindAll(List<T>^ list, Predicate<T>^ predicate);
-
-        // === СТАТИСТИКА ===
-
-        // Получить количество поездок по статусу
-        static Dictionary<String^, int>^ GetTripsStatistics(TripList^ tripList);
-
-        // Получить список уникальных пунктов отправления
-        static List<String^>^ GetUniqueStartPoints(TripList^ tripList);
-
-        // Получить список уникальных пунктов назначения
-        static List<String^>^ GetUniqueFinishPoints(TripList^ tripList);
-
-        // Найти поездки сегодня
-        static List<Trip^>^ FindTodayTrips(TripList^ tripList);
-
-        // Найти поездки на завтра
-        static List<Trip^>^ FindTomorrowTrips(TripList^ tripList);
-
-        // Найти ближайшие поездки (на ближайшие N дней)
-        static List<Trip^>^ FindUpcomingTrips(TripList^ tripList, int daysAhead = 7);
+        // Поиск автобуса по отформатированному коду (удобная обертка)
+        static Bus^ FindBusByFormattedCode(BusList^ busList, String^ formattedCode);
 
     private:
-        // Вспомогательный метод для сравнения строк без учета регистра
+        // ================= ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ =================
+
+        // Основная логика поиска (вызывается из SearchTrips)
+        static List<Trip^>^ AdvancedTripSearch(
+            TripList^ tripList,
+            String^ from,
+            String^ to,
+            DateTime^ date,
+            int minPrice,
+            int maxPrice,
+            String^ busModel,
+            String^ driverName,
+            int minAvailableSeats);
+
+        // Поиск активных поездок (используется при отсутствии критериев)
+        static List<Trip^>^ FindActiveTrips(TripList^ tripList);
+
+        // Сравнение строк без учета регистра
         static bool CompareStringsIgnoreCase(String^ str1, String^ str2);
+
+        // ================= ВНУТРЕННИЕ СТРУКТУРЫ =================
+
+        ref class SearchData {
+        public:
+            bool searchByStartPoint;
+            bool searchByFinishPoint;
+            bool searchByDate;
+            bool searchByPrice;
+            bool searchByDriver;
+            bool searchByBus;
+
+            String^ startPoint;
+            String^ finishPoint;
+            DateTime^ date;
+            int minPrice;
+            int maxPrice;
+            String^ driverName;
+            String^ busCode;
+        };
     };
 }

@@ -1,49 +1,32 @@
 // DriverValidator.h
 #pragma once
+#include "BaseValidator.hpp"
 #include "Driver.hpp"
 #include "DriversList.hpp"
-#include <regex>
 
 namespace InfSystBusStation {
 
-    public ref class DriverValidator {
+    public ref class DriverValidator sealed : public BaseValidator {
     public:
-        // Структура для результата валидации
-        value struct ValidationResult {
-            bool isValid;
-            String^ errorMessage;
+        // Обязательные методы
+        virtual bool Validate(System::Object^ item) override;
+        virtual bool ValidateForAddition(System::Object^ item, System::Object^ container) override;
 
-            ValidationResult(bool valid, String^ msg)
-                : isValid(valid), errorMessage(msg) {
-            }
+        // Специфичные методы
+        virtual bool ValidateFIO(System::String^ fio, [System::Runtime::InteropServices::Out] System::String^% errorMessage) override;
+        virtual bool ValidateSalary(int salary, [System::Runtime::InteropServices::Out] System::String^% errorMessage) override;
+        virtual bool ValidateGender(System::String^ gender, [System::Runtime::InteropServices::Out] System::String^% errorMessage) override;
+        virtual bool ValidateLicense(System::String^ license, [System::Runtime::InteropServices::Out] System::String^% errorMessage) override;
+        virtual bool ValidatePassport(System::String^ series, System::String^ number, [System::Runtime::InteropServices::Out] System::String^% errorMessage) override;
+        virtual bool ValidateDriver(Driver^ driver, [System::Runtime::InteropServices::Out] System::String^% errorMessage) override;
 
-            static ValidationResult Success() {
-                return ValidationResult(true, "");
-            }
-
-            static ValidationResult Error(String^ msg) {
-                return ValidationResult(false, msg);
-            }
-
-            operator bool() { return isValid; }
-        };
-
-        // Валидация отдельного водителя
-        static ValidationResult ValidateDriver(Driver^ driver);
-
-        // Валидация перед добавлением в список
-        static ValidationResult ValidateForAddition(Driver^ driver, DriversList^ driversList);
-
-        // Валидация отдельных полей
-        static ValidationResult ValidateFIO(String^ fio);
-        static ValidationResult ValidateSalary(int salary);
-        static ValidationResult ValidateGender(String^ gender);
-        static ValidationResult ValidateLicense(String^ license);
-        static ValidationResult ValidatePassport(String^ series, String^ number);
-
-    private:
-        // Вспомогательные методы
-        static bool IsDuplicateLicense(String^ license, DriversList^ driversList);
-        static bool IsDuplicateName(String^ name, DriversList^ driversList);
+        // Статические методы
+        static bool ValidateFIOStatic(System::String^ fio, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
+        static bool ValidateSalaryStatic(int salary, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
+        static bool ValidateGenderStatic(System::String^ gender, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
+        static bool ValidateLicenseStatic(System::String^ license, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
+        static bool ValidatePassportStatic(System::String^ series, System::String^ number, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
+        static bool ValidateDriverStatic(Driver^ driver, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
+        static bool ValidateForAdditionStatic(Driver^ driver, DriversList^ driversList, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
     };
 }

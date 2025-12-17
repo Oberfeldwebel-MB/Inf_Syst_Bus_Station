@@ -102,13 +102,40 @@ void TimingForm::UpdateDataGridView() {
 // === ОБРАБОТЧИКИ СОБЫТИЙ ===
 
 System::Void TimingForm::AddTrip_Click(System::Object^ sender, System::EventArgs^ e) {
-    MessageBox::Show("Функция добавления поездки в разработке", "Информация",
-        MessageBoxButtons::OK, MessageBoxIcon::Information);
+    try {
+        AddTripForm^ form = gcnew AddTripForm();
+        form->SetTripList(tripList);
+        form->SetBusList(busList);
+        form->SetDriverList(driverList);
+
+        if (form->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
+            UpdateDataGridView(); // Обновить таблицу после добавления
+        }
+    }
+    catch (Exception^ ex) {
+        MessageBox::Show("Ошибка при открытии формы добавления: " + ex->Message,
+            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+    }
 }
 
 System::Void TimingForm::DeleteTrip_Click(System::Object^ sender, System::EventArgs^ e) {
-    MessageBox::Show("Функция удаления поездки в разработке", "Информация",
-        MessageBoxButtons::OK, MessageBoxIcon::Information);
+    try {
+        if (tripList == nullptr || tripList->Count == 0) {
+            MessageBox::Show("Расписание пусто!", "Информация",
+                MessageBoxButtons::OK, MessageBoxIcon::Information);
+            return;
+        }
+
+        DeleteTripForm^ form = gcnew DeleteTripForm(tripList);
+
+        if (form->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
+            UpdateDataGridView(); // Обновить таблицу после удаления
+        }
+    }
+    catch (Exception^ ex) {
+        MessageBox::Show("Ошибка при открытии формы удаления: " + ex->Message,
+            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+    }
 }
 
 System::Void TimingForm::EditTrip_Click(System::Object^ sender, System::EventArgs^ e) {
@@ -119,7 +146,7 @@ System::Void TimingForm::EditTrip_Click(System::Object^ sender, System::EventArg
 System::Void TimingForm::Search_Click(System::Object^ sender, System::EventArgs^ e) {
     try {
         // Создаем и показываем форму поиска
-        SearchForm^ searchForm = gcnew SearchForm(tripList);
+        SearchForm^ searchForm = gcnew SearchForm(tripList, busList, driverList);
 
         if (searchForm->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
             // Получаем результаты из формы поиска

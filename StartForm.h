@@ -1,4 +1,9 @@
+// StartForm.h
 #pragma once
+#include "Admin.hpp"
+#include "BusList.hpp"
+#include "DriversList.hpp"
+#include "TripList.hpp"
 
 namespace InfSystBusStation {
 
@@ -12,8 +17,14 @@ namespace InfSystBusStation {
 
     public ref class StartForm : public System::Windows::Forms::Form {
     public:
-        StartForm(void) {
+        // Конструктор принимает ВСЕ объекты системы
+        StartForm(Admin^ admin, BusList^ busList, DriversList^ driversList, TripList^ tripList)
+        {
             InitializeComponent();
+            this->admin = admin;
+            this->busList = busList;
+            this->driversList = driversList;
+            this->tripList = tripList;
             _validationErrors = gcnew System::Collections::Generic::List<String^>();
             this->Text = L"ИСА Автобусный автопарк - Главное меню";
         }
@@ -26,6 +37,12 @@ namespace InfSystBusStation {
         }
 
     private:
+        // Объекты системы
+        Admin^ admin;
+        BusList^ busList;
+        DriversList^ driversList;
+        TripList^ tripList;
+
         System::ComponentModel::Container^ components;
         System::Windows::Forms::Label^ label_MenuAuthorization;
         System::Windows::Forms::Label^ label_ChoiceAccess;
@@ -134,6 +151,7 @@ namespace InfSystBusStation {
 #pragma endregion
 
     private:
+        // Обработчики событий
         System::Void buttonAdmin_Click(System::Object^ sender, System::EventArgs^ e);
         System::Void buttonUser_Click(System::Object^ sender, System::EventArgs^ e);
         System::Void buttonInfo_Click(System::Object^ sender, System::EventArgs^ e);
