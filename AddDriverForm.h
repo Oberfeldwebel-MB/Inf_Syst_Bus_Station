@@ -45,17 +45,16 @@ namespace InfSystBusStation {
         // Инициализация формы
         void InitializeForm()
         {
-            // Устанавливаем значение по умолчанию для зарплаты
             ratingNumericUpDown->Value = 30000;
 
-            // Очищаем поля
+
             FIO_add->Clear();
             maskedTextBox1->Clear();
             data_add->Clear();
             pol_add->SetItemChecked(0, false);
             pol_add->SetItemChecked(1, false);
 
-            // Устанавливаем фокус на поле ФИО
+ 
             FIO_add->Focus();
         }
 
@@ -273,7 +272,7 @@ namespace InfSystBusStation {
 
     private:
         System::Void AddDriverForm::BackButDriver_Click(System::Object^ sender, System::EventArgs^ e) {
-            // Просто закрываем форму
+       
             this->Close();
 
         }

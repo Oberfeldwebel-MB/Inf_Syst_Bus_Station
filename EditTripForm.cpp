@@ -1,113 +1,173 @@
-// EditTripForm.cpp
-#include "EditTripForm.h"
+п»ї#include "EditTripForm.h"
 #include "Search.hpp"
+#include "TripValidator.hpp"
 
 using namespace InfSystBusStation;
 using namespace System::Windows::Forms;
 
-// Загрузка информации о выбранной поездке
-void EditTripForm::LoadTripInfo() {
-    if (currentTrip == nullptr) {
-        currentInfoLabel->Text = "Текущая поездка: не выбрана";
+// Р—Р°РіСЂСѓР·РєР° СЃРїРёСЃРєР° РїРѕРµР·РґРѕРє РІ ComboBox
+void EditTripForm::LoadTripComboBox() {
+    tripComboBox->Items->Clear();
+
+    if (tripList == nullptr || tripList->Count == 0) {
+        tripComboBox->Items->Add("РќРµС‚ РґРѕСЃС‚СѓРїРЅС‹С… РїРѕРµР·РґРѕРє");
+        tripComboBox->Enabled = false;
         return;
     }
 
-    // Отображаем текущую информацию
-    currentInfoLabel->Text = "Текущая поездка: " + currentTrip->GetRoute();
+    int index = 1;
+    for each (Trip ^ trip in tripList->AllTrips) {
+        // Р¤РѕСЂРјРёСЂСѓРµРј СЃС‚СЂРѕРєСѓ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ: "1. РњРѕСЃРєРІР° в†’ РЎР°РЅРєС‚-РџРµС‚РµСЂР±СѓСЂРі (15.12.2024 10:00)"
+        String^ displayText = String::Format("{0}. {1} в†’ {2} ({3:dd.MM.yyyy} {4})",
+            index,
+            trip->GetStartPoint(),
+            trip->GetFinishPoint(),
+            trip->GetTripDate(),
+            trip->GetTripTime()
+        );
+        tripComboBox->Items->Add(displayText);
+        index++;
+    }
 
-    // Заполняем поля текущими значениями (только для отображения)
+    tripComboBox->Enabled = true;
+}
+
+// Р—Р°РіСЂСѓР·РєР° РёРЅС„РѕСЂРјР°С†РёРё Рѕ РІС‹Р±СЂР°РЅРЅРѕР№ РїРѕРµР·РґРєРµ
+void EditTripForm::LoadTripInfo() {
+    if (currentTrip == nullptr) {
+        currentInfoLabel->Text = "РўРµРєСѓС‰Р°СЏ РїРѕРµР·РґРєР°: РЅРµ РІС‹Р±СЂР°РЅР°";
+
+        // РћС‡РёС‰Р°РµРј РІСЃРµ РїРѕР»СЏ
+        startPointBox->Text = "";
+        finishPointBox->Text = "";
+        depDateBox->Text = "";
+        arrDateBox->Text = "";
+        priceBox->Text = "";
+        driverComboBox->Text = "";
+        busComboBox->Text = "";
+
+        // РЎР±СЂР°СЃС‹РІР°РµРј РІСЃРµ С‡РµРєР±РѕРєСЃС‹
+        startPointCheckBox->Checked = false;
+        finishPointCheckBox->Checked = false;
+        depDateCheckBox->Checked = false;
+        arrDateCheckBox->Checked = false;
+        priceCheckBox->Checked = false;
+        driverCheckBox->Checked = false;
+        busCheckBox->Checked = false;
+
+        return;
+    }
+
+    // РћС‚РѕР±СЂР°Р¶Р°РµРј С‚РµРєСѓС‰СѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ
+    currentInfoLabel->Text = "РўРµРєСѓС‰Р°СЏ РїРѕРµР·РґРєР°: " + currentTrip->GetRoute();
+
+    // Р—Р°РїРѕР»РЅСЏРµРј РїРѕР»СЏ С‚РµРєСѓС‰РёРјРё Р·РЅР°С‡РµРЅРёСЏРјРё (С‚РѕР»СЊРєРѕ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ)
     startPointBox->Text = currentTrip->GetStartPoint();
     finishPointBox->Text = currentTrip->GetFinishPoint();
-    depDateBox->Text = currentTrip->GetTripDate().ToString("dd/MM/yyyy ") + currentTrip->GetTripTime();
 
-    // Дата прибытия (расчетная)
+    // Р¤РѕСЂРјР°С‚РёСЂСѓРµРј РґР°С‚Сѓ РѕС‚РїСЂР°РІР»РµРЅРёСЏ
+    String^ depDateTime = currentTrip->GetTripDate().ToString("dd/MM/yyyy") + " " +
+        currentTrip->GetTripTime();
+    depDateBox->Text = depDateTime;
+
+    // Р”Р°С‚Р° РїСЂРёР±С‹С‚РёСЏ (СЂР°СЃС‡РµС‚РЅР°СЏ) - РїСЂРёР±Р°РІР»СЏРµРј 2 С‡Р°СЃР°
     DateTime arrivalDate = currentTrip->GetTripDate().AddHours(2);
     arrDateBox->Text = arrivalDate.ToString("dd/MM/yyyy HH:mm");
 
     priceBox->Text = currentTrip->GetPrice().ToString();
 
-    // Водитель
+    // Р’РѕРґРёС‚РµР»СЊ
     if (currentTrip->GetDriver() != nullptr) {
         driverComboBox->Text = currentTrip->GetDriver()->GetFullName();
     }
 
-    // Автобус
+    // РђРІС‚РѕР±СѓСЃ
     if (currentTrip->GetBus() != nullptr) {
-        busComboBox->Text = currentTrip->GetBus()->GetBrand() + " " +
-            currentTrip->GetBus()->GetModel() +
-            " [" + currentTrip->GetBus()->GetFormattedCode() + "]";
+        String^ busDisplay = String::Format("{0} {1} [{2}]",
+            currentTrip->GetBus()->GetBrand(),
+            currentTrip->GetBus()->GetModel(),
+            currentTrip->GetBus()->GetFormattedCode()
+        );
+        busComboBox->Text = busDisplay;
     }
+
+    // РЎР±СЂР°СЃС‹РІР°РµРј РІСЃРµ С‡РµРєР±РѕРєСЃС‹
+    startPointCheckBox->Checked = false;
+    finishPointCheckBox->Checked = false;
+    depDateCheckBox->Checked = false;
+    arrDateCheckBox->Checked = false;
+    priceCheckBox->Checked = false;
+    driverCheckBox->Checked = false;
+    busCheckBox->Checked = false;
 }
 
-// Загрузка списка водителей в ComboBox
+// Р—Р°РіСЂСѓР·РєР° СЃРїРёСЃРєР° РІРѕРґРёС‚РµР»РµР№ РІ ComboBox
 void EditTripForm::LoadDriverComboBox() {
     driverComboBox->Items->Clear();
 
     if (driverList == nullptr || driverList->Count == 0) {
+        driverComboBox->Items->Add("РќРµС‚ РґРѕСЃС‚СѓРїРЅС‹С… РІРѕРґРёС‚РµР»РµР№");
         return;
     }
 
-    // Загружаем всех водителей (включая текущего)
+    // Р—Р°РіСЂСѓР¶Р°РµРј РІСЃРµС… РІРѕРґРёС‚РµР»РµР№ (РІРєР»СЋС‡Р°СЏ С‚РµРєСѓС‰РµРіРѕ)
     for each (Driver ^ driver in driverList->AllDrivers) {
         driverComboBox->Items->Add(driver->GetFullName());
     }
 }
 
-// Загрузка списка автобусов в ComboBox
+// Р—Р°РіСЂСѓР·РєР° СЃРїРёСЃРєР° Р°РІС‚РѕР±СѓСЃРѕРІ РІ ComboBox
 void EditTripForm::LoadBusComboBox() {
     busComboBox->Items->Clear();
 
     if (busList == nullptr || busList->Count == 0) {
+        busComboBox->Items->Add("РќРµС‚ РґРѕСЃС‚СѓРїРЅС‹С… Р°РІС‚РѕР±СѓСЃРѕРІ");
         return;
     }
 
-    // Загружаем все автобусы (включая текущий)
+    // Р—Р°РіСЂСѓР¶Р°РµРј РІСЃРµ Р°РІС‚РѕР±СѓСЃС‹ (РІРєР»СЋС‡Р°СЏ С‚РµРєСѓС‰РёР№)
     for each (Bus ^ bus in busList->AllBuses) {
         String^ busInfo = String::Format("{0} {1} [{2}]",
             bus->GetBrand(),
             bus->GetModel(),
-            bus->GetFormattedCode());
+            bus->GetFormattedCode()
+        );
         busComboBox->Items->Add(busInfo);
     }
 }
 
 System::Void EditTripForm::btnLoad_Click(System::Object^ sender, System::EventArgs^ e) {
     try {
-        // Получаем номер поездки
-        if (String::IsNullOrEmpty(tripIndexBox->Text)) {
-            MessageBox::Show("Введите номер поездки!", "Ошибка",
+        // РџСЂРѕРІРµСЂСЏРµРј, РІС‹Р±СЂР°РЅР° Р»Рё РїРѕРµР·РґРєР°
+        if (tripComboBox->SelectedIndex < 0) {
+            MessageBox::Show("Р’С‹Р±РµСЂРёС‚Рµ РїРѕРµР·РґРєСѓ РёР· СЃРїРёСЃРєР°!", "РћС€РёР±РєР°",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             return;
         }
 
-        int index;
-        if (!Int32::TryParse(tripIndexBox->Text, index)) {
-            MessageBox::Show("Номер поездки должен быть числом!", "Ошибка",
+        // РџРѕР»СѓС‡Р°РµРј РёРЅРґРµРєСЃ РІС‹Р±СЂР°РЅРЅРѕР№ РїРѕРµР·РґРєРё (0-based)
+        int selectedIndex = tripComboBox->SelectedIndex;
+
+        // РџСЂРѕРІРµСЂСЏРµРј РґРёР°РїР°Р·РѕРЅ
+        if (selectedIndex < 0 || selectedIndex >= tripList->Count) {
+            MessageBox::Show("Р’С‹Р±СЂР°РЅРЅР°СЏ РїРѕРµР·РґРєР° РЅРµ РЅР°Р№РґРµРЅР°!", "РћС€РёР±РєР°",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             return;
         }
 
-        // Проверяем диапазон
-        if (index < 1 || index > tripList->Count) {
-            MessageBox::Show("Поездка с таким номером не найдена!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            return;
-        }
+        // РџРѕР»СѓС‡Р°РµРј РїРѕРµР·РґРєСѓ
+        currentTrip = tripList->AllTrips[selectedIndex];
+        tripIndex = selectedIndex;
 
-        // Получаем поездку
-        currentTrip = tripList->AllTrips[index - 1];
-
-        // Загружаем информацию
+        // Р—Р°РіСЂСѓР¶Р°РµРј РёРЅС„РѕСЂРјР°С†РёСЋ
         LoadTripInfo();
-        LoadDriverComboBox();
-        LoadBusComboBox();
 
-        MessageBox::Show("Информация о поездке загружена!", "Успех",
+        MessageBox::Show("РРЅС„РѕСЂРјР°С†РёСЏ Рѕ РїРѕРµР·РґРєРµ Р·Р°РіСЂСѓР¶РµРЅР°!", "РЈСЃРїРµС…",
             MessageBoxButtons::OK, MessageBoxIcon::Information);
 
     }
     catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при загрузке информации: " + ex->Message, "Ошибка",
+        MessageBox::Show("РћС€РёР±РєР° РїСЂРё Р·Р°РіСЂСѓР·РєРµ РёРЅС„РѕСЂРјР°С†РёРё: " + ex->Message, "РћС€РёР±РєР°",
             MessageBoxButtons::OK, MessageBoxIcon::Error);
     }
 }
@@ -115,21 +175,30 @@ System::Void EditTripForm::btnLoad_Click(System::Object^ sender, System::EventAr
 System::Void EditTripForm::btnEdit_Click(System::Object^ sender, System::EventArgs^ e) {
     try {
         if (currentTrip == nullptr) {
-            MessageBox::Show("Сначала загрузите информацию о поездке!", "Ошибка",
+            MessageBox::Show("РЎРЅР°С‡Р°Р»Р° Р·Р°РіСЂСѓР·РёС‚Рµ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РїРѕРµР·РґРєРµ!", "РћС€РёР±РєР°",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             return;
         }
 
         bool hasChanges = false;
+        String^ errorMessage;
 
-        // Проверяем изменения для каждого поля
+        // РџСЂРѕРІРµСЂСЏРµРј РёР·РјРµРЅРµРЅРёСЏ РґР»СЏ РєР°Р¶РґРѕРіРѕ РїРѕР»СЏ СЃ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµРј РІР°Р»РёРґР°С‚РѕСЂРѕРІ
         if (startPointCheckBox->Checked) {
             String^ newStartPoint = startPointBox->Text->Trim();
             if (String::IsNullOrEmpty(newStartPoint)) {
-                MessageBox::Show("Введите пункт отправления!", "Ошибка",
+                MessageBox::Show("Р’РІРµРґРёС‚Рµ РїСѓРЅРєС‚ РѕС‚РїСЂР°РІР»РµРЅРёСЏ!", "РћС€РёР±РєР°",
                     MessageBoxButtons::OK, MessageBoxIcon::Warning);
                 return;
             }
+
+            // Р’Р°Р»РёРґР°С†РёСЏ С‡РµСЂРµР· TripValidator
+            if (!TripValidator::ValidateStartPointStatic(newStartPoint, errorMessage)) {
+                MessageBox::Show("РћС€РёР±РєР° РІ РїСѓРЅРєС‚Рµ РѕС‚РїСЂР°РІР»РµРЅРёСЏ: " + errorMessage, "РћС€РёР±РєР°",
+                    MessageBoxButtons::OK, MessageBoxIcon::Warning);
+                return;
+            }
+
             NewStartPoint = newStartPoint;
             hasChanges = true;
         }
@@ -137,10 +206,18 @@ System::Void EditTripForm::btnEdit_Click(System::Object^ sender, System::EventAr
         if (finishPointCheckBox->Checked) {
             String^ newFinishPoint = finishPointBox->Text->Trim();
             if (String::IsNullOrEmpty(newFinishPoint)) {
-                MessageBox::Show("Введите пункт прибытия!", "Ошибка",
+                MessageBox::Show("Р’РІРµРґРёС‚Рµ РїСѓРЅРєС‚ РїСЂРёР±С‹С‚РёСЏ!", "РћС€РёР±РєР°",
                     MessageBoxButtons::OK, MessageBoxIcon::Warning);
                 return;
             }
+
+            // Р’Р°Р»РёРґР°С†РёСЏ С‡РµСЂРµР· TripValidator
+            if (!TripValidator::ValidateFinishPointStatic(newFinishPoint, errorMessage)) {
+                MessageBox::Show("РћС€РёР±РєР° РІ РїСѓРЅРєС‚Рµ РїСЂРёР±С‹С‚РёСЏ: " + errorMessage, "РћС€РёР±РєР°",
+                    MessageBoxButtons::OK, MessageBoxIcon::Warning);
+                return;
+            }
+
             NewFinishPoint = newFinishPoint;
             hasChanges = true;
         }
@@ -148,10 +225,18 @@ System::Void EditTripForm::btnEdit_Click(System::Object^ sender, System::EventAr
         if (depDateCheckBox->Checked) {
             String^ newDepDate = depDateBox->Text->Trim();
             if (String::IsNullOrEmpty(newDepDate) || newDepDate->Contains("_")) {
-                MessageBox::Show("Введите полную дату и время отправления!", "Ошибка",
+                MessageBox::Show("Р’РІРµРґРёС‚Рµ РїРѕР»РЅСѓСЋ РґР°С‚Сѓ Рё РІСЂРµРјСЏ РѕС‚РїСЂР°РІР»РµРЅРёСЏ!", "РћС€РёР±РєР°",
                     MessageBoxButtons::OK, MessageBoxIcon::Warning);
                 return;
             }
+
+            // Р’Р°Р»РёРґР°С†РёСЏ РґР°С‚С‹ С‡РµСЂРµР· TripValidator
+            if (!TripValidator::ValidateDateStringStatic(newDepDate, errorMessage)) {
+                MessageBox::Show("РћС€РёР±РєР° РІ РґР°С‚Рµ РѕС‚РїСЂР°РІР»РµРЅРёСЏ: " + errorMessage, "РћС€РёР±РєР°",
+                    MessageBoxButtons::OK, MessageBoxIcon::Warning);
+                return;
+            }
+
             NewDepDate = newDepDate;
             hasChanges = true;
         }
@@ -159,10 +244,18 @@ System::Void EditTripForm::btnEdit_Click(System::Object^ sender, System::EventAr
         if (arrDateCheckBox->Checked) {
             String^ newArrDate = arrDateBox->Text->Trim();
             if (String::IsNullOrEmpty(newArrDate) || newArrDate->Contains("_")) {
-                MessageBox::Show("Введите полную дату и время прибытия!", "Ошибка",
+                MessageBox::Show("Р’РІРµРґРёС‚Рµ РїРѕР»РЅСѓСЋ РґР°С‚Сѓ Рё РІСЂРµРјСЏ РїСЂРёР±С‹С‚РёСЏ!", "РћС€РёР±РєР°",
                     MessageBoxButtons::OK, MessageBoxIcon::Warning);
                 return;
             }
+
+            // Р’Р°Р»РёРґР°С†РёСЏ РґР°С‚С‹ С‡РµСЂРµР· TripValidator
+            if (!TripValidator::ValidateDateStringStatic(newArrDate, errorMessage)) {
+                MessageBox::Show("РћС€РёР±РєР° РІ РґР°С‚Рµ РїСЂРёР±С‹С‚РёСЏ: " + errorMessage, "РћС€РёР±РєР°",
+                    MessageBoxButtons::OK, MessageBoxIcon::Warning);
+                return;
+            }
+
             NewArrDate = newArrDate;
             hasChanges = true;
         }
@@ -170,24 +263,32 @@ System::Void EditTripForm::btnEdit_Click(System::Object^ sender, System::EventAr
         if (priceCheckBox->Checked) {
             String^ priceText = priceBox->Text->Trim();
             if (String::IsNullOrEmpty(priceText)) {
-                MessageBox::Show("Введите цену!", "Ошибка",
+                MessageBox::Show("Р’РІРµРґРёС‚Рµ С†РµРЅСѓ!", "РћС€РёР±РєР°",
                     MessageBoxButtons::OK, MessageBoxIcon::Warning);
                 return;
             }
 
             int newPrice;
-            if (!Int32::TryParse(priceText, newPrice) || newPrice <= 0) {
-                MessageBox::Show("Цена должна быть положительным числом!", "Ошибка",
+            if (!Int32::TryParse(priceText, newPrice)) {
+                MessageBox::Show("Р¦РµРЅР° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ С‡РёСЃР»РѕРј!", "РћС€РёР±РєР°",
                     MessageBoxButtons::OK, MessageBoxIcon::Warning);
                 return;
             }
+
+            // Р’Р°Р»РёРґР°С†РёСЏ С†РµРЅС‹ С‡РµСЂРµР· TripValidator
+            if (!TripValidator::ValidatePriceStatic(newPrice, errorMessage)) {
+                MessageBox::Show("РћС€РёР±РєР° РІ С†РµРЅРµ: " + errorMessage, "РћС€РёР±РєР°",
+                    MessageBoxButtons::OK, MessageBoxIcon::Warning);
+                return;
+            }
+
             NewPrice = newPrice;
             hasChanges = true;
         }
 
         if (driverCheckBox->Checked) {
             if (driverComboBox->SelectedIndex < 0) {
-                MessageBox::Show("Выберите водителя!", "Ошибка",
+                MessageBox::Show("Р’С‹Р±РµСЂРёС‚Рµ РІРѕРґРёС‚РµР»СЏ!", "РћС€РёР±РєР°",
                     MessageBoxButtons::OK, MessageBoxIcon::Warning);
                 return;
             }
@@ -203,7 +304,7 @@ System::Void EditTripForm::btnEdit_Click(System::Object^ sender, System::EventAr
             }
 
             if (newDriver == nullptr) {
-                MessageBox::Show("Выбранный водитель не найден!", "Ошибка",
+                MessageBox::Show("Р’С‹Р±СЂР°РЅРЅС‹Р№ РІРѕРґРёС‚РµР»СЊ РЅРµ РЅР°Р№РґРµРЅ!", "РћС€РёР±РєР°",
                     MessageBoxButtons::OK, MessageBoxIcon::Warning);
                 return;
             }
@@ -214,7 +315,7 @@ System::Void EditTripForm::btnEdit_Click(System::Object^ sender, System::EventAr
 
         if (busCheckBox->Checked) {
             if (busComboBox->SelectedIndex < 0) {
-                MessageBox::Show("Выберите автобус!", "Ошибка",
+                MessageBox::Show("Р’С‹Р±РµСЂРёС‚Рµ Р°РІС‚РѕР±СѓСЃ!", "РћС€РёР±РєР°",
                     MessageBoxButtons::OK, MessageBoxIcon::Warning);
                 return;
             }
@@ -222,16 +323,26 @@ System::Void EditTripForm::btnEdit_Click(System::Object^ sender, System::EventAr
             String^ busInfo = safe_cast<String^>(busComboBox->SelectedItem);
             String^ busCode = "";
 
-            // Извлекаем код автобуса
+            // РР·РІР»РµРєР°РµРј РєРѕРґ Р°РІС‚РѕР±СѓСЃР° РёР· СЃС‚СЂРѕРєРё С„РѕСЂРјР°С‚Р° "РњР°СЂРєР° РњРѕРґРµР»СЊ [РљРѕРґ]"
             int startBracket = busInfo->IndexOf('[');
             int endBracket = busInfo->IndexOf(']');
             if (startBracket != -1 && endBracket != -1) {
                 busCode = busInfo->Substring(startBracket + 1, endBracket - startBracket - 1);
+                // РЈР±РёСЂР°РµРј С„РѕСЂРјР°С‚РёСЂРѕРІР°РЅРёРµ СЃР»СЌС€Р°РјРё
+                busCode = busCode->Replace("/", "");
             }
 
-            Bus^ newBus = Search::FindBusByCode(busList, busCode);
+            // РќР°С…РѕРґРёРј Р°РІС‚РѕР±СѓСЃ РїРѕ РєРѕРґСѓ
+            Bus^ newBus = nullptr;
+            for each (Bus ^ bus in busList->AllBuses) {
+                if (bus->GetCode() == busCode) {
+                    newBus = bus;
+                    break;
+                }
+            }
+
             if (newBus == nullptr) {
-                MessageBox::Show("Выбранный автобус не найден!", "Ошибка",
+                MessageBox::Show("Р’С‹Р±СЂР°РЅРЅС‹Р№ Р°РІС‚РѕР±СѓСЃ РЅРµ РЅР°Р№РґРµРЅ!", "РћС€РёР±РєР°",
                     MessageBoxButtons::OK, MessageBoxIcon::Warning);
                 return;
             }
@@ -241,21 +352,18 @@ System::Void EditTripForm::btnEdit_Click(System::Object^ sender, System::EventAr
         }
 
         if (!hasChanges) {
-            MessageBox::Show("Выберите хотя бы одно поле для изменения!", "Внимание",
+            MessageBox::Show("Р’С‹Р±РµСЂРёС‚Рµ С…РѕС‚СЏ Р±С‹ РѕРґРЅРѕ РїРѕР»Рµ РґР»СЏ РёР·РјРµРЅРµРЅРёСЏ!", "Р’РЅРёРјР°РЅРёРµ",
                 MessageBoxButtons::OK, MessageBoxIcon::Information);
             return;
         }
 
-        // Сохраняем индекс
-        tripIndex = Int32::Parse(tripIndexBox->Text) - 1;
-
-        // Закрываем форму с результатом OK
+        // Р—Р°РєСЂС‹РІР°РµРј С„РѕСЂРјСѓ СЃ СЂРµР·СѓР»СЊС‚Р°С‚РѕРј OK
         this->DialogResult = System::Windows::Forms::DialogResult::OK;
         this->Close();
 
     }
     catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при сохранении изменений: " + ex->Message, "Ошибка",
+        MessageBox::Show("РћС€РёР±РєР° РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё РёР·РјРµРЅРµРЅРёР№: " + ex->Message, "РћС€РёР±РєР°",
             MessageBoxButtons::OK, MessageBoxIcon::Error);
     }
 }
@@ -265,7 +373,7 @@ System::Void EditTripForm::btnCancel_Click(System::Object^ sender, System::Event
     this->Close();
 }
 
-// Обработчики CheckBox для активации полей
+// РћР±СЂР°Р±РѕС‚С‡РёРєРё CheckBox РґР»СЏ Р°РєС‚РёРІР°С†РёРё РїРѕР»РµР№
 System::Void EditTripForm::startPointCheckBox_CheckedChanged(System::Object^ sender, System::EventArgs^ e) {
     startPointBox->Enabled = startPointCheckBox->Checked;
 }

@@ -46,31 +46,79 @@ bool BusList::InternalAddBus(String^ brand, String^ model, int placeCount,
     try {
         // Проверка на уникальность кода
         if (FindBusByCodeInternal(code) != nullptr) {
-            throw gcnew ArgumentException("Автобус с кодом '" + code + "' уже существует!");
+            MessageBox::Show("Автобус с кодом '" + code + "' уже существует!",
+                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return false;
         }
 
-        // Создание нового автобуса
-        // Конструктор Bus выполнит базовые проверки (placeCount > 0)
+        // Поэлементная валидация ПЕРЕД созданием объекта
+        String^ errorMessage;
+
+        if (!BusValidator::ValidateBrandStatic(brand, errorMessage)) {
+            MessageBox::Show("Ошибка в марке: " + errorMessage,
+                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return false;
+        }
+
+        if (!BusValidator::ValidateModelStatic(model, errorMessage)) {
+            MessageBox::Show("Ошибка в модели: " + errorMessage,
+                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return false;
+        }
+
+        if (!BusValidator::ValidatePlaceCountStatic(placeCount, errorMessage)) {
+            MessageBox::Show("Ошибка в количестве мест: " + errorMessage,
+                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return false;
+        }
+
+        if (!BusValidator::ValidateCodeStatic(code, errorMessage)) {
+            MessageBox::Show("Ошибка в коде: " + errorMessage,
+                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return false;
+        }
+
+        if (!BusValidator::ValidateTechConditionStatic(techCondition, errorMessage)) {
+            MessageBox::Show("Ошибка в техническом состоянии: " + errorMessage,
+                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return false;
+        }
+
+        if (!BusValidator::ValidateMaintenanceDateStatic(lastMaintenance, errorMessage)) {
+            MessageBox::Show("Ошибка в дате ТО: " + errorMessage,
+                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return false;
+        }
+
+        // Создание нового автобуса (проверка на placeCount > 0 уже в конструкторе)
         Bus^ newBus = gcnew Bus(brand, model, placeCount, code, techCondition, lastMaintenance);
 
-        // Дополнительная валидация через BusValidator
-        auto validationResult = BusValidator::ValidateBus(newBus);
-        if (!validationResult.isValid) {
-            throw gcnew ArgumentException(validationResult.errorMessage);
+        // Дополнительная проверка всего объекта
+        if (!BusValidator::ValidateBusStatic(newBus, errorMessage)) {
+            MessageBox::Show("Ошибка валидации автобуса: " + errorMessage,
+                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return false;
+        }
+
+        // Проверка на уникальность в контейнере
+        if (!BusValidator::ValidateForAdditionStatic(newBus, this, errorMessage)) {
+            MessageBox::Show("Ошибка добавления: " + errorMessage,
+                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return false;
         }
 
         buses->Add(newBus);
 
+        MessageBox::Show("Автобус успешно добавлен!\n" + newBus->GetFullName(),
+            "Успех", MessageBoxButtons::OK, MessageBoxIcon::Information);
         return true;
     }
     catch (ArgumentException^ ex) {
-        // Это наши проверки - показываем сообщение как есть
         MessageBox::Show("Ошибка при добавлении автобуса: " + ex->Message,
             "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
         return false;
     }
     catch (Exception^ ex) {
-        // Другие исключения (например, из конструктора Bus)
         MessageBox::Show("Ошибка при добавлении автобуса: " + ex->Message,
             "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
         return false;
@@ -231,19 +279,6 @@ List<Bus^>^ BusList::GetAvailableBuses() {
     return result;
 }
 
-// Получить автобусы, требующие ТО
-List<Bus^>^ BusList::GetBusesNeedingMaintenance() {
-    List<Bus^>^ result = gcnew List<Bus^>();
-    if (buses != nullptr) {
-        for each (Bus ^ bus in buses) {
-            if (bus->NeedsMaintenance()) {
-                result->Add(bus);
-            }
-        }
-    }
-    return result;
-}
-
 // Получить автобусы по марке
 List<Bus^>^ BusList::GetBusesByBrand(String^ brand) {
     List<Bus^>^ result = gcnew List<Bus^>();
@@ -301,27 +336,12 @@ String^ BusList::GetBusInfo(String^ code) {
 
 // === ДОПОЛНИТЕЛЬНЫЕ МЕТОДЫ ===
 
-// Получить автобусы в критическом состоянии
-List<Bus^>^ BusList::GetBusesInCriticalCondition() {
-    List<Bus^>^ result = gcnew List<Bus^>();
-    if (buses != nullptr) {
-        for each (Bus ^ bus in buses) {
-            if (bus->IsInCriticalCondition()) {
-                result->Add(bus);
-            }
-        }
-    }
-    return result;
-}
-
 // Получить автобусы, доступные для поездки
 List<Bus^>^ BusList::GetBusesReadyForTrip() {
     List<Bus^>^ result = gcnew List<Bus^>();
     if (buses != nullptr) {
         for each (Bus ^ bus in buses) {
-            if (bus->CheckAvailability() &&
-                !bus->IsInCriticalCondition() &&
-                !bus->NeedsMaintenance()) {
+            if (bus->CheckAvailability()) {
                 result->Add(bus);
             }
         }
@@ -334,13 +354,17 @@ bool BusList::UpdateBusCondition(String^ code, String^ newCondition) {
     try {
         Bus^ bus = FindBusByCodeInternal(code);
         if (bus == nullptr) {
-            throw gcnew ArgumentException("Автобус с кодом '" + code + "' не найден!");
+            MessageBox::Show("Автобус с кодом '" + code + "' не найден!",
+                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return false;
         }
 
-        // Используем BusValidator вместо отдельной проверки
-        auto validationResult = BusValidator::ValidateTechCondition(newCondition);
-        if (!validationResult.isValid) {
-            throw gcnew ArgumentException(validationResult.errorMessage);
+        // Используем статический метод с errorMessage
+        String^ errorMessage;
+        if (!BusValidator::ValidateTechConditionStatic(newCondition, errorMessage)) {
+            MessageBox::Show("Ошибка в техническом состоянии: " + errorMessage,
+                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return false;
         }
 
         bus->ChangeTechCondition(newCondition);
@@ -353,18 +377,23 @@ bool BusList::UpdateBusCondition(String^ code, String^ newCondition) {
     }
 }
 
+
 // Обновить дату последнего ТО
 bool BusList::UpdateMaintenanceDate(String^ code, String^ newDate) {
     try {
         Bus^ bus = FindBusByCodeInternal(code);
         if (bus == nullptr) {
-            throw gcnew ArgumentException("Автобус с кодом '" + code + "' не найден!");
+            MessageBox::Show("Автобус с кодом '" + code + "' не найден!",
+                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return false;
         }
 
-        // Используем BusValidator
-        auto validationResult = BusValidator::ValidateMaintenanceDate(newDate);
-        if (!validationResult.isValid) {
-            throw gcnew ArgumentException(validationResult.errorMessage);
+        // Используем статический метод с errorMessage
+        String^ errorMessage;
+        if (!BusValidator::ValidateMaintenanceDateStatic(newDate, errorMessage)) {
+            MessageBox::Show("Ошибка в дате ТО: " + errorMessage,
+                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return false;
         }
 
         bus->SetLastMaintenance(newDate);
@@ -376,22 +405,21 @@ bool BusList::UpdateMaintenanceDate(String^ code, String^ newDate) {
         return false;
     }
 }
-
-// Получить статистику
-void BusList::GetStatistics(int% total, int% available, int% needMaintenance, int% critical) {
-    total = Count;
-    available = AvailableCount;
-    needMaintenance = 0;
-    critical = 0;
+// Получение всех кодов автобусов (без форматирования)
+List<String^>^ BusList::GetAllBusCodes() {
+    List<String^>^ result = gcnew List<String^>();
 
     if (buses != nullptr) {
         for each (Bus ^ bus in buses) {
-            if (bus->NeedsMaintenance()) {
-                needMaintenance++;
-            }
-            if (bus->IsInCriticalCondition()) {
-                critical++;
+            if (bus != nullptr) {
+                // Получаем отформатированный код и убираем форматирование
+                String^ formattedCode = bus->GetFormattedCode();
+                String^ code = formattedCode->Replace("/", "");
+                result->Add(code);
             }
         }
     }
+
+    return result;
 }
+

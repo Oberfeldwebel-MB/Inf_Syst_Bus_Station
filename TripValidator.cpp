@@ -91,6 +91,122 @@ bool TripValidator::ValidateStartPoint(String^ startPoint, [Out] String^% errorM
         "Пункт отправления содержит недопустимые символы!", errorMessage);
 }
 
+bool TripValidator::ValidateDateString(String^ dateString, [Out] String^% errorMessage) {
+    try {
+        if (String::IsNullOrWhiteSpace(dateString)) {
+            errorMessage = "Дата не может быть пустой!";
+            return false;
+        }
+
+        // Проверяем базовый формат
+        if (dateString->Length != 16 || dateString[2] != '/' || dateString[5] != '/' || dateString[13] != ':') {
+            errorMessage = "Неверный формат даты! Используйте ДД/ММ/ГГГГ ЧЧ:ММ (например: 25/12/2024 14:30)";
+            return false;
+        }
+
+        // Разделяем на дату и время
+        String^ datePart = dateString->Substring(0, 10);  // "ДД/ММ/ГГГГ"
+        String^ timePart = dateString->Substring(11, 5);  // "ЧЧ:ММ"
+
+        // Проверяем разделители
+        if (datePart[2] != '/' || datePart[5] != '/') {
+            errorMessage = "Неверный формат даты! Используйте ДД/ММ/ГГГГ";
+            return false;
+        }
+
+        if (timePart[2] != ':') {
+            errorMessage = "Неверный формат времени! Используйте ЧЧ:ММ";
+            return false;
+        }
+
+        // Разбираем дату
+        array<String^>^ dateParts = datePart->Split('/');
+        if (dateParts->Length != 3) {
+            errorMessage = "Неверный формат даты! Должно быть ДД/ММ/ГГГГ";
+            return false;
+        }
+
+        int day, month, year;
+        if (!Int32::TryParse(dateParts[0], day) ||
+            !Int32::TryParse(dateParts[1], month) ||
+            !Int32::TryParse(dateParts[2], year)) {
+            errorMessage = "Дата должна содержать только числа!";
+            return false;
+        }
+
+        // Разбираем время
+        array<String^>^ timeParts = timePart->Split(':');
+        if (timeParts->Length != 2) {
+            errorMessage = "Неверный формат времени! Должно быть ЧЧ:ММ";
+            return false;
+        }
+
+        int hour, minute;
+        if (!Int32::TryParse(timeParts[0], hour) ||
+            !Int32::TryParse(timeParts[1], minute)) {
+            errorMessage = "Время должно содержать только числа!";
+            return false;
+        }
+
+        // Проверяем диапазоны
+
+        // Месяц
+        if (month < 1 || month > 12) {
+            errorMessage = "Месяц должен быть между 1 и 12!";
+            return false;
+        }
+
+        // День (с учетом дней в месяце и високосного года)
+        array<int>^ daysInMonth = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+        if (DateTime::IsLeapYear(year)) {
+            daysInMonth[1] = 29;
+        }
+
+        if (day < 1 || day > daysInMonth[month - 1]) {
+            errorMessage = String::Format("День должен быть между 1 и {0} для месяца {1}!",
+                daysInMonth[month - 1], month);
+            return false;
+        }
+
+        // Год (разумные ограничения)
+        if (year < 2000 || year > 2100) {
+            errorMessage = "Год должен быть между 2000 и 2100!";
+            return false;
+        }
+
+        // Часы
+        if (hour < 0 || hour > 23) {
+            errorMessage = "Часы должны быть между 0 и 23!";
+            return false;
+        }
+
+        // Минуты
+        if (minute < 0 || minute > 59) {
+            errorMessage = "Минуты должны быть между 0 и 59!";
+            return false;
+        }
+
+        // Пробуем создать DateTime для окончательной проверки
+        try {
+            DateTime::ParseExact(dateString, "dd/MM/yyyy HH:mm", nullptr);
+        }
+        catch (Exception^) {
+            errorMessage = "Некорректная дата!";
+            return false;
+        }
+
+        // Все проверки пройдены
+        errorMessage = "";
+        return true;
+    }
+    catch (Exception^ ex) {
+        errorMessage = "Ошибка при валидации даты: " + ex->Message;
+        return false;
+    }
+}
+
+
+
 bool TripValidator::ValidateFinishPoint(String^ finishPoint, [Out] String^% errorMessage) {
     if (String::IsNullOrWhiteSpace(finishPoint)) {
         errorMessage = "Пункт назначения не может быть пустым!";
@@ -130,20 +246,42 @@ bool TripValidator::ValidateDateTime(DateTime dateTime, String^ time, [Out] Stri
 }
 
 bool TripValidator::ValidateDepartureDate(DateTime departureDate, [Out] String^% errorMessage) {
-    if (departureDate < DateTime::Now) {
-        errorMessage = "Дата отправления должна быть в будущем!";
+    try {
+        // Минимальная допустимая дата (например, 2000 год)
+        DateTime minDate = DateTime(2000, 1, 1);
+
+        // Максимальная допустимая дата (например, 2100 год)
+        DateTime maxDate = DateTime(2100, 12, 31);
+
+        // Проверяем, что дата в допустимом диапазоне
+        if (departureDate < minDate) {
+            errorMessage = String::Format("Дата отправления не может быть раньше {0:dd.MM.yyyy}!", minDate);
+            return false;
+        }
+
+        if (departureDate > maxDate) {
+            errorMessage = String::Format("Дата отправления не может быть позже {0:dd.MM.yyyy}!", maxDate);
+            return false;
+        }
+
+        // Проверяем, что это не минимальное/максимальное значение DateTime
+        if (departureDate == DateTime::MinValue) {
+            errorMessage = "Дата отправления не может быть минимальным значением!";
+            return false;
+        }
+
+        if (departureDate == DateTime::MaxValue) {
+            errorMessage = "Дата отправления не может быть максимальным значением!";
+            return false;
+        }
+
+        errorMessage = "";
+        return true;
+    }
+    catch (Exception^ ex) {
+        errorMessage = "Ошибка при проверке даты отправления: " + ex->Message;
         return false;
     }
-
-    // Нельзя планировать поездку более чем на год вперед
-    DateTime maxDate = DateTime::Now.AddYears(1);
-    if (departureDate > maxDate) {
-        errorMessage = "Дата отправления не может быть более чем на год вперед!";
-        return false;
-    }
-
-    errorMessage = "";
-    return true;
 }
 
 bool TripValidator::ValidateTrip(Trip^ trip, [Out] String^% errorMessage) {
@@ -279,6 +417,8 @@ bool TripValidator::CheckDriverAvailability(Driver^ driver, TripList^ tripList,
     return true;
 }
 
+
+
 // Статические методы
 bool TripValidator::ValidateStartPointStatic(String^ startPoint, [Out] String^% errorMessage) {
     TripValidator^ validator = gcnew TripValidator();
@@ -308,6 +448,11 @@ bool TripValidator::ValidateDepartureDateStatic(DateTime departureDate, [Out] St
 bool TripValidator::ValidateTripStatic(Trip^ trip, [Out] String^% errorMessage) {
     TripValidator^ validator = gcnew TripValidator();
     return validator->ValidateTrip(trip, errorMessage);
+}
+
+bool TripValidator::ValidateDateStringStatic(String^ dateString, [Out] String^% errorMessage) {
+    TripValidator^ validator = gcnew TripValidator();
+    return validator->ValidateDateString(dateString, errorMessage);
 }
 
 bool TripValidator::ValidateNewTripStatic(String^ startPoint, String^ finishPoint,

@@ -1,171 +1,65 @@
 #include "User.hpp"
-#include "Ticket.hpp"
+#include "Order.hpp"
 
 using namespace InfSystBusStation;
 using namespace System;
-using namespace System::Collections::Generic;
 
-// Основной конструктор со ВСЕМИ параметрами
-User::User(String^ fioFormatted, String^ gender, String^ passportSeries,
+// Конструктор - вызывает конструктор People
+User::User(String^ fullName, String^ gender, String^ passportSeries,
     String^ passportNumber, String^ email, String^ phone)
-    : People(fioFormatted, gender, passportSeries, passportNumber, email),
+    : People(fullName, gender, passportSeries, passportNumber, email),  // Вызов конструктора People
     phoneNumber(phone),
     registrationDate(DateTime::Now),
-    isRegistered(true),
-    shoppingCart(nullptr) {
+    currentOrder(nullptr) {
 
-    Console::WriteLine("[User] Создан новый пользователь: {0}", GetFullName());
+    Console::WriteLine("[User] Создан: {0}", GetFullName());
 }
 
-// Деструктор
 User::~User() {
-    if (shoppingCart != nullptr) {
-        delete shoppingCart;
-    }
+    // Order удаляется в форме, которая его создала
 }
 
-// Создание User из формы регистрации
-User^ User::CreateFromRegistrationForm(String^ fioFormatted, String^ gender,
+// Создание из формы
+User^ User::CreateFromRegistrationForm(String^ fullName, String^ gender,
     String^ passportSeries, String^ passportNumber, String^ email, String^ phone) {
 
-    return gcnew User(fioFormatted, gender, passportSeries, passportNumber, email, phone);
+    return gcnew User(fullName, gender, passportSeries, passportNumber, email, phone);
 }
 
-// === РАБОТА С КОРЗИНОЙ ===
-
-void User::AddTicketToCart(Ticket^ ticket) {
-    if (ticket == nullptr) return;
-
-    ShoppingCart->AddTicket(ticket);
-    Console::WriteLine("[User] {0} добавил билет (место №{1}) в корзину",
-        GetFullName(), ticket->PlaceNumber);
+// === РЕАЛИЗАЦИЯ АБСТРАКТНОГО МЕТОДА ===
+double User::CalculateDiscount() {
+    // Простая реализация - например, 10% скидка для зарегистрированных пользователей
+    return 10.0;  // 10% скидка
 }
 
-void User::RemoveTicketFromCart(Ticket^ ticket) {
-    if (shoppingCart != nullptr) {
-        shoppingCart->RemoveTicket(ticket);
-    }
-}
+// === ПЕРЕОПРЕДЕЛЕНИЕ ВИРТУАЛЬНЫХ МЕТОДОВ ===
 
-void User::RemoveTicketFromCart(int placeNumber) {
-    if (shoppingCart != nullptr) {
-        shoppingCart->RemoveTicketByPlaceNumber(placeNumber);
-    }
-}
-
-void User::ClearCart() {
-    if (shoppingCart != nullptr) {
-        shoppingCart->Clear();
-    }
-}
-
-void User::CheckoutCart() {
-    if (shoppingCart == nullptr || shoppingCart->IsEmpty) {
-        throw gcnew InvalidOperationException("Корзина пуста!");
-    }
-
-    // Оплачиваем корзину
-    shoppingCart->PayOrder();
-
-    Console::WriteLine("[User] {0} оформил заказ #{1} на сумму {2:F2} руб.",
-        GetFullName(), shoppingCart->OrderId, shoppingCart->TotalPrice);
-
-    // После оформления можно очистить корзину или оставить для истории
-    // ClearCart(); // Если нужно очистить после покупки
-}
-
-bool User::HasTicketsInCart() {
-    return shoppingCart != nullptr && !shoppingCart->IsEmpty;
-}
-
-// === ИНФОРМАЦИЯ О КОРЗИНЕ ===
-
-String^ User::GetCartSummary() {
-    if (shoppingCart == nullptr || shoppingCart->IsEmpty) {
-        return "Корзина пуста";
-    }
-
-    return String::Format(
-        "Корзина ({0} билетов): {1:F2} руб.\n{2}",
-        shoppingCart->TicketCount,
-        shoppingCart->TotalPrice,
-        shoppingCart->GetOrderSummary()
-    );
-}
-
-int User::GetCartTicketCount() {
-    return shoppingCart != nullptr ? shoppingCart->TicketCount : 0;
-}
-
-double User::GetCartTotalPrice() {
-    return shoppingCart != nullptr ? shoppingCart->TotalPrice : 0.0;
-}
-
-List<Ticket^>^ User::GetCartTickets() {
-    if (shoppingCart == nullptr) {
-        return gcnew List<Ticket^>();
-    }
-    return shoppingCart->Tickets;
-}
-
-// === ВИРТУАЛЬНЫЕ МЕТОДЫ ===
-
-void User::PrintInfo() {
-    People::PrintInfo();
-    Console::WriteLine("Телефон: {0}", phoneNumber);
-    Console::WriteLine("Дата регистрации: {0:dd.MM.yyyy}", registrationDate);
-    if (HasItemsInCart) {
-        Console::WriteLine("В корзине: {0} билетов на {1:F2} руб.",
-            GetCartTicketCount(), GetCartTotalPrice());
-    }
-}
 
 String^ User::GetFullInfo() {
-    String^ passportInfo = "";
-    if (!String::IsNullOrEmpty(GetPassportSeries()) && !String::IsNullOrEmpty(GetPassportNumber())) {
-        passportInfo = String::Format("\nПаспорт: {0} {1}", GetPassportSeries(), GetPassportNumber());
-    }
-
-    return String::Format(
-        "Пользователь: {0}\n"
-        "Email: {1}\n"
-        "Телефон: {2}\n"
-        "Дата регистрации: {3:dd.MM.yyyy}{4}",
-        GetFullName(),
-        GetEmail(),
-        phoneNumber,
-        registrationDate,
-        passportInfo
+    // Расширяем базовую информацию
+    String^ baseInfo = People::GetFullInfo();  // Базовая информация из People
+    return baseInfo + String::Format(
+        "\nТелефон: {0}\nДата регистрации: {1:dd.MM.yyyy}",
+        phoneNumber, registrationDate
     );
 }
 
-double User::CalculateDiscount() {
-    // Базовая скидка 5% для зарегистрированных пользователей
-    return isRegistered ? 5.0 : 0.0;
-}
-
-// === ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ===
-
+// === НОВЫЕ МЕТОДЫ ===
 bool User::ValidateUserData() {
-    // Проверка телефона
+    // Проверяем данные People + телефон
     if (String::IsNullOrEmpty(phoneNumber) || phoneNumber->Length < 10) {
-        Console::WriteLine("[User] Ошибка валидации: неверный номер телефона");
         return false;
     }
 
-    // Проверка email
-    if (String::IsNullOrEmpty(GetEmail()) || !GetEmail()->Contains("@")) {
-        Console::WriteLine("[User] Ошибка валидации: неверный email");
-        return false;
-    }
-
-    // Проверка ФИО
+    // Можно добавить базовую проверку
     if (String::IsNullOrEmpty(GetFullName()) || GetFullName()->Length < 5) {
-        Console::WriteLine("[User] Ошибка валидации: неверное ФИО");
         return false;
     }
 
-    Console::WriteLine("[User] Данные пользователя {0} прошли валидацию", GetFullName());
+    if (String::IsNullOrEmpty(GetEmail()) || !GetEmail()->Contains("@")) {
+        return false;
+    }
+
     return true;
 }
 

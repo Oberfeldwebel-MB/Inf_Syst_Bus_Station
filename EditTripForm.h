@@ -1,9 +1,10 @@
-// EditTripForm.h
 #pragma once
 
 #include "TripList.hpp"
 #include "BusList.hpp"
 #include "DriversList.hpp"
+#include "TripValidator.hpp"
+#include "BusValidator.hpp"
 
 namespace InfSystBusStation {
 
@@ -21,6 +22,10 @@ namespace InfSystBusStation {
             this->tripList = tripList;
             this->busList = busList;
             this->driverList = driverList;
+            currentTrip = nullptr;
+            LoadTripComboBox();
+            LoadDriverComboBox();
+            LoadBusComboBox();
         }
 
     protected:
@@ -46,7 +51,6 @@ namespace InfSystBusStation {
         int NewPrice;
         Driver^ NewDriver;
         Bus^ NewBus;
-
         int tripIndex;
 
         // CheckBox для выбора полей к редактированию
@@ -72,6 +76,7 @@ namespace InfSystBusStation {
         // Методы
     private:
         void LoadTripInfo();
+        void LoadTripComboBox();
         void LoadDriverComboBox();
         void LoadBusComboBox();
 
@@ -98,7 +103,7 @@ namespace InfSystBusStation {
             this->label5 = (gcnew System::Windows::Forms::Label());
             this->label6 = (gcnew System::Windows::Forms::Label());
             this->label7 = (gcnew System::Windows::Forms::Label());
-            this->tripIndexBox = (gcnew System::Windows::Forms::TextBox());
+            this->tripComboBox = (gcnew System::Windows::Forms::ComboBox());
             this->label8 = (gcnew System::Windows::Forms::Label());
             this->btnLoad = (gcnew System::Windows::Forms::Button());
             this->btnEdit = (gcnew System::Windows::Forms::Button());
@@ -114,6 +119,7 @@ namespace InfSystBusStation {
             this->startPointCheckBox->Name = L"startPointCheckBox";
             this->startPointCheckBox->Size = System::Drawing::Size(18, 17);
             this->startPointCheckBox->TabIndex = 0;
+            this->startPointCheckBox->CheckedChanged += gcnew System::EventHandler(this, &EditTripForm::startPointCheckBox_CheckedChanged);
             // 
             // finishPointCheckBox
             // 
@@ -122,6 +128,7 @@ namespace InfSystBusStation {
             this->finishPointCheckBox->Name = L"finishPointCheckBox";
             this->finishPointCheckBox->Size = System::Drawing::Size(18, 17);
             this->finishPointCheckBox->TabIndex = 1;
+            this->finishPointCheckBox->CheckedChanged += gcnew System::EventHandler(this, &EditTripForm::finishPointCheckBox_CheckedChanged);
             // 
             // depDateCheckBox
             // 
@@ -130,6 +137,7 @@ namespace InfSystBusStation {
             this->depDateCheckBox->Name = L"depDateCheckBox";
             this->depDateCheckBox->Size = System::Drawing::Size(18, 17);
             this->depDateCheckBox->TabIndex = 2;
+            this->depDateCheckBox->CheckedChanged += gcnew System::EventHandler(this, &EditTripForm::depDateCheckBox_CheckedChanged);
             // 
             // arrDateCheckBox
             // 
@@ -138,6 +146,7 @@ namespace InfSystBusStation {
             this->arrDateCheckBox->Name = L"arrDateCheckBox";
             this->arrDateCheckBox->Size = System::Drawing::Size(18, 17);
             this->arrDateCheckBox->TabIndex = 3;
+            this->arrDateCheckBox->CheckedChanged += gcnew System::EventHandler(this, &EditTripForm::arrDateCheckBox_CheckedChanged);
             // 
             // priceCheckBox
             // 
@@ -146,6 +155,7 @@ namespace InfSystBusStation {
             this->priceCheckBox->Name = L"priceCheckBox";
             this->priceCheckBox->Size = System::Drawing::Size(18, 17);
             this->priceCheckBox->TabIndex = 4;
+            this->priceCheckBox->CheckedChanged += gcnew System::EventHandler(this, &EditTripForm::priceCheckBox_CheckedChanged);
             // 
             // driverCheckBox
             // 
@@ -154,6 +164,7 @@ namespace InfSystBusStation {
             this->driverCheckBox->Name = L"driverCheckBox";
             this->driverCheckBox->Size = System::Drawing::Size(18, 17);
             this->driverCheckBox->TabIndex = 5;
+            this->driverCheckBox->CheckedChanged += gcnew System::EventHandler(this, &EditTripForm::driverCheckBox_CheckedChanged);
             // 
             // busCheckBox
             // 
@@ -162,6 +173,7 @@ namespace InfSystBusStation {
             this->busCheckBox->Name = L"busCheckBox";
             this->busCheckBox->Size = System::Drawing::Size(18, 17);
             this->busCheckBox->TabIndex = 6;
+            this->busCheckBox->CheckedChanged += gcnew System::EventHandler(this, &EditTripForm::busCheckBox_CheckedChanged);
             // 
             // startPointBox
             // 
@@ -290,26 +302,28 @@ namespace InfSystBusStation {
             this->label7->TabIndex = 20;
             this->label7->Text = L"Автобус";
             // 
-            // tripIndexBox
+            // tripComboBox
             // 
-            this->tripIndexBox->Location = System::Drawing::Point(288, 60);
-            this->tripIndexBox->Name = L"tripIndexBox";
-            this->tripIndexBox->Size = System::Drawing::Size(100, 22);
-            this->tripIndexBox->TabIndex = 21;
+            this->tripComboBox->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
+            this->tripComboBox->FormattingEnabled = true;
+            this->tripComboBox->Location = System::Drawing::Point(208, 60);
+            this->tripComboBox->Name = L"tripComboBox";
+            this->tripComboBox->Size = System::Drawing::Size(300, 24);
+            this->tripComboBox->TabIndex = 21;
             // 
             // label8
             // 
             this->label8->AutoSize = true;
             this->label8->Location = System::Drawing::Point(20, 63);
             this->label8->Name = L"label8";
-            this->label8->Size = System::Drawing::Size(136, 16);
+            this->label8->Size = System::Drawing::Size(77, 16);
             this->label8->TabIndex = 22;
-            this->label8->Text = L"Номер поездки (№):";
+            this->label8->Text = L"Поездка:";
             // 
             // btnLoad
             // 
             this->btnLoad->BackColor = System::Drawing::SystemColors::InactiveCaption;
-            this->btnLoad->Location = System::Drawing::Point(415, 58);
+            this->btnLoad->Location = System::Drawing::Point(530, 58);
             this->btnLoad->Name = L"btnLoad";
             this->btnLoad->Size = System::Drawing::Size(90, 26);
             this->btnLoad->TabIndex = 23;
@@ -370,7 +384,7 @@ namespace InfSystBusStation {
             this->Controls->Add(this->btnEdit);
             this->Controls->Add(this->btnLoad);
             this->Controls->Add(this->label8);
-            this->Controls->Add(this->tripIndexBox);
+            this->Controls->Add(this->tripComboBox);
             this->Controls->Add(this->label7);
             this->Controls->Add(this->label6);
             this->Controls->Add(this->label5);
@@ -405,7 +419,7 @@ namespace InfSystBusStation {
 #pragma endregion
 
     private:
-        System::Windows::Forms::TextBox^ tripIndexBox;
+        System::Windows::Forms::ComboBox^ tripComboBox;
         System::Windows::Forms::Label^ label1;
         System::Windows::Forms::Label^ label2;
         System::Windows::Forms::Label^ label3;

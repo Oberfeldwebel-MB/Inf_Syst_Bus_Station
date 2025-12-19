@@ -24,7 +24,7 @@ int main(array<System::String^>^ args)
     Admin^ admin = gcnew Admin("admin123", "Иванов Иван Иванович",
         "4500", "123456", 50000, "admin@busstation.com");
 
-    // Инициализируем систему (Admin сам создаст свои внутренние списки)
+    // Инициализируем систему
     admin->InitializeSystem();
 
     // Передаем ВСЕ объекты в StartForm

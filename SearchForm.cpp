@@ -3,6 +3,7 @@
 #include "TripList.hpp"
 #include "BusList.hpp"
 #include "DriversList.hpp"
+#include "TripValidator.hpp"
 
 using namespace InfSystBusStation;
 using namespace System;
@@ -94,7 +95,7 @@ System::Void SearchForm::SearchButton_Click(System::Object^ sender, System::Even
         // === ПОДГОТОВКА ПАРАМЕТРОВ ===
         String^ startPoint = nullptr;
         String^ finishPoint = nullptr;
-        DateTime^ date = nullptr;
+        String^ date = nullptr;
         int minPrice = 0, maxPrice = 0;
         String^ driverName = nullptr;
         String^ busCode = nullptr;
@@ -109,17 +110,20 @@ System::Void SearchForm::SearchButton_Click(System::Object^ sender, System::Even
             finishPoint = FinishPointBox->Text->Trim();
         }
 
-        // Дата
+        // Дата - используем TripValidator
         if (checkDateStartBox->Checked && !String::IsNullOrEmpty(DepDateBox->Text)) {
-            try {
-                date = gcnew DateTime(DateTime::ParseExact(
-                    DepDateBox->Text, "dd/MM/yyyy HH:mm", nullptr).Date);
-            }
-            catch (Exception^) {
-                MessageBox::Show("Неверный формат даты! Используйте ДД/ММ/ГГГГ ЧЧ:ММ",
-                    "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+            String^ dateText = DepDateBox->Text->Trim();
+            String^ errorMessage;
+
+            // Создаем экземпляр TripValidator и вызываем метод
+            TripValidator^ validator = gcnew TripValidator();
+            if (!validator->ValidateDateString(dateText, errorMessage)) {
+                MessageBox::Show("Ошибка в дате: " + errorMessage, "Ошибка",
+                    MessageBoxButtons::OK, MessageBoxIcon::Warning);
                 return;
             }
+
+            date = dateText;  // Сохраняем валидную дату
         }
 
         // Цена
@@ -175,8 +179,7 @@ System::Void SearchForm::SearchButton_Click(System::Object^ sender, System::Even
             this->Close();
         }
         else {
-            MessageBox::Show("По указанным критериям ничего не найдено.\n"
-                "Попробуйте изменить параметры поиска или сбросить критерии.",
+            MessageBox::Show("По указанным критериям ничего не найдено.",
                 "Результат поиска", MessageBoxButtons::OK, MessageBoxIcon::Information);
         }
     }

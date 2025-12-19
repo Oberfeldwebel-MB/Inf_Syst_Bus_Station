@@ -27,13 +27,11 @@ namespace InfSystBusStation {
 
         // === РАБОТА С БИЛЕТАМИ ===
         bool AddSelectedTicketsToOrder();             // Добавить выбранные билеты в заказ
-        bool RemoveTicketFromOrder(int seatNumber);   // Удалить билет из заказа
-        void ReturnSeatToAvailable(int seatNumber);   // Вернуть место в доступные
+
 
         // === ИНФОРМАЦИОННЫЕ МЕТОДЫ ===
         String^ GetTripInfo();                        // Получить инфо о поездке
-        List<int>^ GetAvailableSeats();               // Получить список свободных мест
-        List<int>^ GetSelectedSeats();                // Получить выбранные места
+        //List<int>^ GetAvailableSeats();               // Получить список свободных мест
         int GetSelectedSeatsCount();                  // Количество выбранных мест
         Decimal GetTotalPrice();                      // Общая стоимость выбранных мест
 

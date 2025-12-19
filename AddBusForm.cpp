@@ -1,4 +1,3 @@
-// AddBusForm.cpp
 #include "AddBusForm.h"
 
 using namespace InfSystBusStation;
@@ -18,7 +17,8 @@ System::Void AddBusForm::AddBusButton_Click(System::Object^ sender, System::Even
         String^ model = ModelBox->Text->Trim();
         String^ code = BusNumBox->Text->Trim();
 
-        if (String::IsNullOrEmpty(code) || code->Contains("_")) {
+        // Проверяем заполненность маски
+        if (!BusNumBox->MaskCompleted) {
             MessageBox::Show("Введите полный код автобуса в формате А/888/АА!", "Ошибка",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             BusNumBox->Focus();
@@ -26,6 +26,10 @@ System::Void AddBusForm::AddBusButton_Click(System::Object^ sender, System::Even
             return;
         }
 
+       
+        String^ codeForValidation = code->Replace("/", "");
+
+        // === 3. Проверка числовые поля ===
         int placeCount;
         if (!Int32::TryParse(CountPlaceBox->Text, placeCount)) {
             MessageBox::Show("Количество мест должно быть целым числом!", "Ошибка",
@@ -38,29 +42,61 @@ System::Void AddBusForm::AddBusButton_Click(System::Object^ sender, System::Even
         String^ techCondition = TechSostBox->Text->Trim();
         String^ lastMaintenance = DateTOAddBox->Text->Trim();
 
-        // === 3. Вызов метода BusList для добавления ===
-        if (busList->InternalAddBus(brand, model, placeCount, code,
-            techCondition, lastMaintenance)) {
-            // Успешно добавлено
-            MessageBox::Show("Автобус успешно добавлен в систему!", "Успех",
-                MessageBoxButtons::OK, MessageBoxIcon::Information);
+        // === 4. Создаем Bus через конструктор и сразу валидируем ===
+        try {
+            // Создаем объект Bus 
+            Bus^ tempBus = gcnew Bus(brand, model, placeCount,
+                codeForValidation, techCondition,
+                lastMaintenance);
 
-            // Очистка формы
-            BrandBox->Clear();
-            ModelBox->Clear();
-            CountPlaceBox->Clear();
-            BusNumBox->Clear();
-            TechSostBox->Clear();
-            DateTOAddBox->Clear();
-            BrandBox->Focus();
+            // Валидируем весь объект
+            String^ validationError;
+            if (!BusValidator::ValidateBusStatic(tempBus, validationError)) {
+                MessageBox::Show("Ошибка валидации: " + validationError, "Ошибка",
+                    MessageBoxButtons::OK, MessageBoxIcon::Warning);
+                return;
+            }
 
-            // Генерация события
-            DataAdded(this, EventArgs::Empty);
+            String^ additionError;
+            if (!BusValidator::ValidateForAdditionStatic(tempBus, busList, additionError)) {
+                MessageBox::Show("Ошибка: " + additionError, "Ошибка",
+                    MessageBoxButtons::OK, MessageBoxIcon::Warning);
+                BusNumBox->Focus();
+                BusNumBox->SelectAll();
+                return;
+            }
 
-            // Закрываем форму с результатом OK
-            this->DialogResult = System::Windows::Forms::DialogResult::OK;
+            // === 5. Вызов метода BusList для добавления ===
+            // (Если InternalAddBus принимает Bus^ объект, а не отдельные поля)
+            if (busList->InternalAddBus(brand, model, placeCount, codeForValidation,
+                techCondition, lastMaintenance)) {
+                // Успешно добавлено
+                MessageBox::Show("Автобус успешно добавлен в систему!", "Успех",
+                    MessageBoxButtons::OK, MessageBoxIcon::Information);
+
+                // Очистка формы
+                BrandBox->Clear();
+                ModelBox->Clear();
+                CountPlaceBox->Clear();
+                BusNumBox->Clear();
+                TechSostBox->Clear();
+                DateTOAddBox->Clear();
+                BrandBox->Focus();
+
+                // Генерация события
+                DataAdded(this, EventArgs::Empty);
+
+                // Закрываем форму с результатом OK
+                this->DialogResult = System::Windows::Forms::DialogResult::OK;
+            }
+        }
+        catch (ArgumentException^ ex) {
+            // Ловим исключения из конструктора Bus
+            MessageBox::Show("Ошибка данных: " + ex->Message, "Ошибка",
+                MessageBoxButtons::OK, MessageBoxIcon::Warning);
         }
     }
+    
     catch (Exception^ ex) {
         MessageBox::Show("Ошибка: " + ex->Message, "Ошибка системы",
             MessageBoxButtons::OK, MessageBoxIcon::Error);

@@ -70,13 +70,18 @@ bool BusValidator::ValidatePlaceCount(int places, [Out] String^% errorMessage) {
 }
 
 bool BusValidator::ValidateCode(String^ code, [Out] String^% errorMessage) {
+    // ФИКС: Сохраняем результат Replace
+    String^ cleanedCode = code->Replace(".", "");
+
     // Сначала базовая проверка длины
-    if (!ValidateString(code, "Код автобуса", 6, 6, errorMessage)) {
+    if (!ValidateString(cleanedCode, "Код автобуса", 6, 6, errorMessage)) {
         return false;
     }
 
-    // Затем проверка формата
-    return ValidateRegex(code, "^[А-ЯA-Z]\\d{3}[А-ЯA-Z]{2}$",
+    String^ normalizedCode = cleanedCode->ToUpperInvariant();
+
+    // проверка формата
+    return ValidateRegex(normalizedCode, "^[А-ЯA-Z]\\d{3}[А-ЯA-Z]{2}$",
         "Неверный формат кода! Пример: А888АА, В123МН", errorMessage);
 }
 
@@ -111,25 +116,77 @@ bool BusValidator::ValidateMaintenanceDate(String^ date, [Out] String^% errorMes
         return true;
     }
 
-    // Проверяем формат даты DD/MM/YYYY
-    Regex^ pattern = gcnew Regex("^\\d{2}/\\d{2}/\\d{4}$");
-    if (!pattern->IsMatch(date)) {
-        errorMessage = "Неверный формат даты! Используйте DD/MM/YYYY";
+    // Проверяем, что маска заполнена полностью (если используется MaskedTextBox)
+    // Но в валидаторе мы не знаем об элементе управления, так что просто проверяем формат
+
+    date = date->Trim();
+
+    // Проверяем разделитель - у вас в коде точка ('.'), но в маске обычно '/'
+    // Определяем разделитель
+    Char separator = '/';
+    if (date->Contains(".")) separator = '.';
+    else if (date->Contains("-")) separator = '-';
+    else if (date->Contains("/")) separator = '/';
+    else {
+        errorMessage = "Некорректный формат даты. Используйте ДД.ММ.ГГГГ или ДД/ММ/ГГГГ";
         return false;
     }
 
-    // Проверяем корректность даты
-    try {
-        DateTime maintenanceDate = DateTime::ParseExact(date, "dd/MM/yyyy",
-            System::Globalization::CultureInfo::InvariantCulture);
+    // Разделяем дату на день, месяц и год
+    array<String^>^ dateParts = date->Split(separator);
 
-        if (maintenanceDate > DateTime::Now) {
-            errorMessage = "Дата ТО не может быть в будущем!";
+    if (dateParts->Length != 3) {
+        errorMessage = "Некорректный формат даты. Используйте ДД.ММ.ГГГГ";
+        return false;
+    }
+
+    // Проверяем, что все части - числа
+    int day, month, year;
+    if (!Int32::TryParse(dateParts[0], day) ||
+        !Int32::TryParse(dateParts[1], month) ||
+        !Int32::TryParse(dateParts[2], year)) {
+        errorMessage = "Дата должна содержать только числа";
+        return false;
+    }
+
+    // Проверяем год (например, с 2000 по текущий)
+    int currentYear = DateTime::Now.Year;
+    if (year < 2000 || year > currentYear) {
+        errorMessage = String::Format("Год должен быть между 2000 и {0}", currentYear);
+        return false;
+    }
+
+    // Список с количеством дней в каждом месяце
+    array<int>^ daysInMonth = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+    // Проверка на високосный год для февраля
+    if (DateTime::IsLeapYear(year)) {
+        daysInMonth[1] = 29; // Февраль - 29 дней
+    }
+
+    // Проверяем месяц
+    if (month < 1 || month > 12) {
+        errorMessage = "Месяц должен быть между 1 и 12";
+        return false;
+    }
+
+    // Проверяем день
+    if (day < 1 || day > daysInMonth[month - 1]) {
+        errorMessage = String::Format("День должен быть между 1 и {0} для выбранного месяца",
+            daysInMonth[month - 1]);
+        return false;
+    }
+
+    // Проверяем, что дата не в будущем
+    try {
+        DateTime parsedDate(year, month, day);
+        if (parsedDate > DateTime::Now) {
+            errorMessage = "Дата ТО не может быть в будущем";
             return false;
         }
     }
-    catch (Exception^) {
-        errorMessage = "Некорректная дата! Пример: 15/03/2023";
+    catch (Exception^ ex) {
+        errorMessage = "Некорректная дата: " + ex->Message;
         return false;
     }
 

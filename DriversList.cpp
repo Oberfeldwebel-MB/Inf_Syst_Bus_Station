@@ -1,4 +1,3 @@
-// DriversList.cpp
 #include "DriversList.hpp"
 #include <algorithm>
 #include <vector>
@@ -90,7 +89,7 @@ int DriversList::Count::get() {
 List<Driver^>^ DriversList::GetAvailableDrivers() {
     List<Driver^>^ result = gcnew List<Driver^>();
     for each (Driver ^ driver in drivers) {
-        if (driver->IsAvailable()) { // Этот метод нужно добавить в Driver!
+        if (driver->IsAvailable()) {
             result->Add(driver);
         }
     }

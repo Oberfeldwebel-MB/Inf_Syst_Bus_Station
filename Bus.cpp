@@ -67,32 +67,3 @@ void Bus::PrintInfo() {
     Console::WriteLine("Статус: {0}", isAvailable ? "Доступен" : "Не доступен");
     Console::WriteLine("=======================");
 }
-
-bool Bus::NeedsMaintenance() {
-    // Если ТО было больше 3 лет назад
-    if (String::IsNullOrEmpty(lastMaintenance)) {
-        return true; // Никогда не было ТО
-    }
-
-    try {
-        // Разбираем дату формата "DD/MM/YYYY"
-        array<String^>^ parts = lastMaintenance->Split('/');
-        if (parts->Length >= 3) {
-            int lastMaintenanceYear = Int32::Parse(parts[2]);
-            int currentYear = DateTime::Now.Year;
-
-            return (currentYear - lastMaintenanceYear) >= 3;
-        }
-    }
-    catch (...) {
-        // Если не удалось распарсить дату
-    }
-
-    return true; // Неизвестная дата - требуется ТО
-}
-
-bool Bus::IsInCriticalCondition() {
-    return techCondition == "Аварийное" ||
-        techCondition == "Неудовлетворительное" ||
-        techCondition == "На обслуживании";
-}

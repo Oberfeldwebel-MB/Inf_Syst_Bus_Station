@@ -69,7 +69,7 @@ namespace InfSystBusStation {
             return true;
         }
 
-        // === СПЕЦИФИЧЕСКИЕ методы (реализация по умолчанию возвращает true) ===
+
 
         // Для BusValidator
         virtual bool ValidateBrand(System::String^ brand, [System::Runtime::InteropServices::Out] System::String^% errorMessage) {

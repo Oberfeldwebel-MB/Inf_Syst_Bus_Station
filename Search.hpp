@@ -9,7 +9,7 @@ namespace InfSystBusStation {
 
     ref class SearchForm;
 
-    public ref class Search abstract sealed {
+    public ref class Search{
     public:
         // ================= ПОИСК ПОЕЗДОК =================
 
@@ -18,7 +18,7 @@ namespace InfSystBusStation {
             TripList^ tripList,
             String^ startPoint,
             String^ finishPoint,
-            DateTime^ date,
+            String^ date,  // Строка вместо DateTime
             int minPrice,
             int maxPrice,
             String^ driverName,
@@ -46,7 +46,7 @@ namespace InfSystBusStation {
             TripList^ tripList,
             String^ from,
             String^ to,
-            DateTime^ date,
+            String^ date,
             int minPrice,
             int maxPrice,
             String^ busModel,

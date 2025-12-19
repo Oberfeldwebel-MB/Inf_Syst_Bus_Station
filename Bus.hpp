@@ -74,8 +74,5 @@ namespace InfSystBusStation {
         void ChangeTechCondition(String^ newState);
         void PrintInfo();
 
-        // === ПРОВЕРКИ ===
-        bool NeedsMaintenance();           // Нуждается ли в ТО
-        bool IsInCriticalCondition();      // В критическом состоянии
     };
 }

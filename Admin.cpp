@@ -25,7 +25,7 @@ Admin::Admin(String^ password, String^ fullName,
 
 // Деструктор
 Admin::~Admin() {
-    // Управление памятью автоматическое
+
 }
 
 // Инициализация системы

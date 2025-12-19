@@ -2,7 +2,7 @@
 #include "StartForm.h"
 #include "AdminLoginForm.h"
 #include "AdminForm.h"
-#include "TimingForm.h"
+#include "PassengerForm.h"
 
 using namespace System::Windows::Forms;  // Для MessageBox
 
@@ -11,37 +11,43 @@ namespace InfSystBusStation {
     System::Void StartForm::buttonAdmin_Click(System::Object^ sender, System::EventArgs^ e)
     {
         try {
-            // Создаем форму входа администратора и передаем Admin
+            // Создаем форму входа администратора
             AdminLoginForm^ adminLoginForm = gcnew AdminLoginForm(admin);
 
-            if (adminLoginForm->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
-                // Если вход успешен, открываем панель администратора
-                AdminForm^ adminForm = gcnew AdminForm(admin);
-                this->Hide();  // Скрываем стартовую форму
-                adminForm->ShowDialog();  // Показываем форму администратора
-                this->Show();  // Показываем стартовую форму снова
-            }
+            adminLoginForm->Show();
+
+            // Скрываем стартовую форму
+            this->Hide();
+
+            
+
         }
         catch (Exception^ ex) {
             MessageBox::Show("Ошибка при входе администратора: " + ex->Message,
                 "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            
         }
     }
 
     System::Void StartForm::buttonUser_Click(System::Object^ sender, System::EventArgs^ e)
     {
         try {
-            // Создаем форму расписания для пользователя, передаем TripList
-            TimingForm^ timingForm = gcnew TimingForm(tripList);
-            timingForm->SetCurrentOrder(nullptr);  // Режим пользователя (без текущего заказа)
+            // Открываем форму регистрации пассажира
+            PassengerForm^ passengerForm = gcnew PassengerForm(tripList, busList, driversList);
 
             this->Hide();  // Скрываем стартовую форму
-            timingForm->ShowDialog();  // Показываем расписание
-            this->Show();  // Возвращаемся на стартовую форму
+
+            if (passengerForm->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
+                // Если регистрация успешна, пассажир переходит в UserForm через PassengerForm
+                // PassengerForm сам откроет UserForm после успешной регистрации
+            }
+
+            this->Show();  // Показываем стартовую форму снова
         }
         catch (Exception^ ex) {
-            MessageBox::Show("Ошибка при открытии расписания: " + ex->Message,
+            MessageBox::Show("Ошибка при открытии регистрации: " + ex->Message,
                 "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            this->Show();  // В случае ошибки показываем стартовую форму
         }
     }
 

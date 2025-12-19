@@ -136,28 +136,31 @@ void OrderForm::UpdateButtonsState() {
 
     bool hasTickets = !currentOrder->IsEmpty;
     int selectedCount = 0;
-    bool hasUnpaidTickets = false;
+    bool hasUnpaidSelectedTickets = false; // Переименуем для ясности
 
-    // Считаем выбранные и проверяем наличие неоплаченных билетов
+    // Считаем выбранные и проверяем статус только выбранных билетов
     for (int i = 0; i < dgvTickets->Rows->Count; i++) {
-        if (dgvTickets->Rows[i]->Cells[0]->Value != nullptr &&
-            safe_cast<bool>(dgvTickets->Rows[i]->Cells[0]->Value)) {
-            selectedCount++;
-        }
+        bool isSelected = (dgvTickets->Rows[i]->Cells[0]->Value != nullptr &&
+            safe_cast<bool>(dgvTickets->Rows[i]->Cells[0]->Value));
 
-        // Проверяем статус билета в 8-й колонке (индекс 7)
-        if (dgvTickets->Rows[i]->Cells[7]->Value != nullptr &&
-            safe_cast<String^>(dgvTickets->Rows[i]->Cells[7]->Value) != "Оплачен") {
-            hasUnpaidTickets = true;
+        if (isSelected) {
+            selectedCount++;
+
+            // Проверяем статус только выбранных билетов
+            if (dgvTickets->Rows[i]->Cells[7]->Value != nullptr &&
+                safe_cast<String^>(dgvTickets->Rows[i]->Cells[7]->Value) != "Оплачен") {
+                hasUnpaidSelectedTickets = true;
+            }
         }
     }
 
-    // Кнопка "Оплатить выбранные"
-    btnPaySelected->Enabled = (selectedCount > 0) && hasUnpaidTickets;
+    // Кнопка "Оплатить выбранные" - должна быть активна, 
+    // если есть выбранные И хотя бы один из них не оплачен
+    btnPaySelected->Enabled = (selectedCount > 0) && hasUnpaidSelectedTickets;
     btnPaySelected->BackColor = btnPaySelected->Enabled ?
         Color::LightGreen : Color::LightGray;
 
-    // Кнопка "Удалить выбранные"
+    // Кнопка "Удалить выбранные" - активна если есть выбранные
     btnRemoveSelected->Enabled = (selectedCount > 0);
     btnRemoveSelected->BackColor = btnRemoveSelected->Enabled ?
         Color::LightCoral : Color::LightGray;
@@ -208,7 +211,7 @@ System::Void OrderForm::btnPaySelected_Click(System::Object^ sender, System::Eve
         System::Windows::Forms::DialogResult result = MessageBox::Show(
             String::Format("Оплатить {0} билет(ов) на сумму {1:F2} руб.?",
                 ticketsToPay->Count, totalToPay),
-            "Подтверждение оплаты",
+            "Подтверждение оплата",
             MessageBoxButtons::YesNo,
             MessageBoxIcon::Question
         );
@@ -230,7 +233,10 @@ System::Void OrderForm::btnPaySelected_Click(System::Object^ sender, System::Eve
 
             // Если все билеты оплачены, меняем статус заказа
             if (allPaid) {
-                currentOrder->PayOrder();
+                if (currentOrder->PayOrder()) {
+                    MessageBox::Show("Заказ полностью оплачен!", "Успех",
+                        MessageBoxButtons::OK, MessageBoxIcon::Information);
+                }
             }
 
             MessageBox::Show(
@@ -341,8 +347,19 @@ System::Void OrderForm::dgvTickets_CellContentClick(System::Object^ sender,
     System::Windows::Forms::DataGridViewCellEventArgs^ e) {
 
     if (e->ColumnIndex == 0 && e->RowIndex >= 0) {
-        // Обновляем счетчик выбранных при клике на галочку
-        UpdateSelectedCount();
-        UpdateButtonsState();
+        // Ждем немного, чтобы значение обновилось
+        dgvTickets->CommitEdit(DataGridViewDataErrorContexts::Commit);
+
+        // Даем время на обновление значения
+        System::Threading::Thread::Sleep(30);
+
+        // Теперь проверяем
+        DataGridViewCell^ cell = dgvTickets->Rows[e->RowIndex]->Cells[0];
+
+        if (cell->Value != nullptr) {
+            // Обновляем счетчик выбранных
+            UpdateSelectedCount();
+            UpdateButtonsState();
+        }
     }
 }

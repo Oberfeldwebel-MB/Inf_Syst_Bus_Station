@@ -55,6 +55,7 @@ namespace InfSystBusStation {
         // Добавленные поля
         bool isAdminMode;
         Order^ currentOrder;
+        User^ currentUser;
 
         // Элементы формы
     private:
@@ -264,6 +265,7 @@ namespace InfSystBusStation {
 #pragma endregion
 
     public:
+        void SetCurrentUser(User^ user) { currentUser = user; }
         void UpdateDataGridView();
         void UpdateButtonsVisibility();
 

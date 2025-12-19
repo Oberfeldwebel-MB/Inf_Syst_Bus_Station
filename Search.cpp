@@ -1,5 +1,6 @@
 #include "Search.hpp"
 #include "BusValidator.hpp"
+#include "TripValidator.hpp"
 
 using namespace InfSystBusStation;
 using namespace System;
@@ -13,9 +14,10 @@ Bus^ Search::FindBusByCode(BusList^ busList, String^ code) {
         return nullptr;
     }
 
-    // Используем BusValidator для проверки кода
-    auto validationResult = BusValidator::ValidateCode(code);
-    if (!validationResult.isValid) {
+    // Используем статический метод с errorMessage
+    String^ errorMessage;
+    if (!BusValidator::ValidateCodeStatic(code, errorMessage)) {
+        // Код невалидный, возвращаем nullptr
         return nullptr;
     }
 
@@ -60,7 +62,7 @@ List<Trip^>^ Search::SearchTrips(
     TripList^ tripList,
     String^ startPoint,
     String^ finishPoint,
-    DateTime^ date,
+    String^ date,  // Строка вместо DateTime
     int minPrice,
     int maxPrice,
     String^ driverName,
@@ -76,7 +78,7 @@ List<Trip^>^ Search::SearchTrips(
         bool hasCriteria =
             (startPoint != nullptr && !String::IsNullOrEmpty(startPoint)) ||
             (finishPoint != nullptr && !String::IsNullOrEmpty(finishPoint)) ||
-            (date != nullptr) ||
+            (date != nullptr && !String::IsNullOrEmpty(date)) ||
             (minPrice > 0 || maxPrice > 0) ||
             (driverName != nullptr && !String::IsNullOrEmpty(driverName)) ||
             (busCode != nullptr && !String::IsNullOrEmpty(busCode));
@@ -87,19 +89,45 @@ List<Trip^>^ Search::SearchTrips(
         }
 
         // === 3. ВАЛИДАЦИЯ КРИТЕРИЕВ ===
-        // Подготавливаем строки для валидатора (пустые если nullptr)
-        String^ startPointForValidation = startPoint != nullptr ? startPoint : String::Empty;
-        String^ finishPointForValidation = finishPoint != nullptr ? finishPoint : String::Empty;
+        // Проверяем цены
+        if (minPrice < 0) {
+            throw gcnew ArgumentException("Минимальная цена не может быть отрицательной!");
+        }
+        if (maxPrice < 0) {
+            throw gcnew ArgumentException("Максимальная цена не может быть отрицательной!");
+        }
+        if (maxPrice > 0 && maxPrice < minPrice) {
+            throw gcnew ArgumentException("Максимальная цена не может быть меньше минимальной!");
+        }
 
-        auto validationResult = TripValidator::ValidateSearchCriteria(
-            startPointForValidation,
-            finishPointForValidation,
-            date,
-            minPrice,
-            maxPrice);
+        // Проверяем дату (если указана)
+        if (!String::IsNullOrEmpty(date)) {
+            try {
+                // Пробуем распарсить дату для проверки формата
+                DateTime parsedDate = DateTime::ParseExact(date, "dd/MM/yyyy HH:mm", nullptr);
+                // Если не выбрасывает исключение - дата корректна
+            }
+            catch (FormatException^) {
+                throw gcnew ArgumentException("Неверный формат даты! Используйте ДД/ММ/ГГГГ ЧЧ:ММ");
+            }
+            catch (Exception^ ex) {
+                throw gcnew ArgumentException("Ошибка при обработке даты: " + ex->Message);
+            }
+        }
 
-        if (!validationResult->isValid) {
-            throw gcnew ArgumentException(validationResult->errorMessage);
+        // Проверяем точки маршрута (если есть TripValidator)
+        String^ errorMessage;
+        if (!String::IsNullOrEmpty(startPoint)) {
+            // Если есть TripValidator::ValidateStartPointStatic, используем его
+            // if (!TripValidator::ValidateStartPointStatic(startPoint, errorMessage)) {
+            //     throw gcnew ArgumentException("Пункт отправления: " + errorMessage);
+            // }
+        }
+
+        if (!String::IsNullOrEmpty(finishPoint)) {
+            // if (!TripValidator::ValidateFinishPointStatic(finishPoint, errorMessage)) {
+            //     throw gcnew ArgumentException("Пункт назначения: " + errorMessage);
+            // }
         }
 
         // === 4. ВЫПОЛНЕНИЕ ПОИСКА ===
@@ -110,7 +138,7 @@ List<Trip^>^ Search::SearchTrips(
             tripList,
             startPoint,                    // from
             finishPoint,                   // to
-            date,                          // date
+            date,                          // date (строка)
             minPrice,                      // minPrice
             (maxPrice > 0) ? maxPrice : Int32::MaxValue, // maxPrice
             nullptr,                       // busModel (не используем)
@@ -150,7 +178,7 @@ List<Trip^>^ Search::AdvancedTripSearch(
     TripList^ tripList,
     String^ from,
     String^ to,
-    DateTime^ date,
+    String^ date,  // Строка вместо DateTime
     int minPrice,
     int maxPrice,
     String^ busModel,
@@ -183,10 +211,19 @@ List<Trip^>^ Search::AdvancedTripSearch(
             }
         }
 
-        // Фильтр по дате
-        if (date != nullptr) {
-            if (trip->GetTripDate().Date != date->Date) {
-                matches = false;
+        // Фильтр по дате - СТРОГОЕ РАВЕНСТВО
+        if (!String::IsNullOrEmpty(date)) {
+            try {
+                DateTime searchDate = DateTime::ParseExact(date, "dd/MM/yyyy HH:mm", nullptr);
+                DateTime tripDate = trip->GetTripDate();
+
+                // Сравниваем дату и время (строгое равенство)
+                if (tripDate != searchDate) {
+                    matches = false;
+                }
+            }
+            catch (Exception^) {
+                // Если не удалось распарсить - пропускаем фильтр по дате
             }
         }
 

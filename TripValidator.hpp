@@ -25,8 +25,11 @@ namespace InfSystBusStation {
             System::String^ finishPoint, System::DateTime date, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
         bool CheckBusAvailability(Bus^ bus, TripList^ tripList, System::DateTime date, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
         bool CheckDriverAvailability(Driver^ driver, TripList^ tripList, System::DateTime date, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
+        virtual bool ValidateDateString(System::String^ dateString, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
+
 
         // Статические методы
+        static bool ValidateDateStringStatic(String^ dateString, [System::Runtime::InteropServices::Out] String^% errorMessage);
         static bool ValidateStartPointStatic(System::String^ startPoint, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
         static bool ValidateFinishPointStatic(System::String^ finishPoint, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
         static bool ValidatePriceStatic(int price, [System::Runtime::InteropServices::Out] System::String^% errorMessage);

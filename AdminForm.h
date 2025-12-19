@@ -22,18 +22,12 @@ namespace InfSystBusStation {
     public ref class AdminForm : public System::Windows::Forms::Form
     {
     public:
-        // Конструктор принимает объект Admin
         AdminForm(Admin^ admin)
         {
             InitializeComponent();
             this->admin = admin;
             this->Text = L"Панель администратора - " + admin->GetFullName();
-
-            // Инициализируем систему при открытии формы
             admin->InitializeSystem();
-
-            // Показываем информацию о системе
-            labelSystemInfo->Text = GetSystemInfo();
         }
 
     protected:
@@ -53,13 +47,9 @@ namespace InfSystBusStation {
         System::Windows::Forms::Button^ buttonBuses;
         System::Windows::Forms::Button^ buttonLogout;
         System::Windows::Forms::Button^ buttonBack;
-        System::Windows::Forms::Label^ labelSystemInfo;
 
     private:
         System::ComponentModel::Container^ components;
-
-        // Вспомогательный метод для получения информации о системе
-        String^ GetSystemInfo();
 
 #pragma region Windows Form Designer generated code
         void InitializeComponent(void)
@@ -70,14 +60,13 @@ namespace InfSystBusStation {
             this->buttonBuses = (gcnew System::Windows::Forms::Button());
             this->buttonLogout = (gcnew System::Windows::Forms::Button());
             this->buttonBack = (gcnew System::Windows::Forms::Button());
-            this->labelSystemInfo = (gcnew System::Windows::Forms::Label());
             this->SuspendLayout();
             // 
             // labelTitle
             // 
             this->labelTitle->AutoSize = true;
             this->labelTitle->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 16, System::Drawing::FontStyle::Bold));
-            this->labelTitle->Location = System::Drawing::Point(150, 20);
+            this->labelTitle->Location = System::Drawing::Point(214, 21);
             this->labelTitle->Name = L"labelTitle";
             this->labelTitle->Size = System::Drawing::Size(344, 31);
             this->labelTitle->TabIndex = 0;
@@ -89,7 +78,7 @@ namespace InfSystBusStation {
             this->buttonSchedule->BackColor = System::Drawing::Color::LightSkyBlue;
             this->buttonSchedule->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
             this->buttonSchedule->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12));
-            this->buttonSchedule->Location = System::Drawing::Point(150, 70);
+            this->buttonSchedule->Location = System::Drawing::Point(214, 74);
             this->buttonSchedule->Name = L"buttonSchedule";
             this->buttonSchedule->Size = System::Drawing::Size(344, 50);
             this->buttonSchedule->TabIndex = 1;
@@ -102,7 +91,7 @@ namespace InfSystBusStation {
             this->buttonDrivers->BackColor = System::Drawing::Color::LightGreen;
             this->buttonDrivers->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
             this->buttonDrivers->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12));
-            this->buttonDrivers->Location = System::Drawing::Point(150, 130);
+            this->buttonDrivers->Location = System::Drawing::Point(214, 147);
             this->buttonDrivers->Name = L"buttonDrivers";
             this->buttonDrivers->Size = System::Drawing::Size(344, 50);
             this->buttonDrivers->TabIndex = 2;
@@ -115,7 +104,7 @@ namespace InfSystBusStation {
             this->buttonBuses->BackColor = System::Drawing::Color::LightGoldenrodYellow;
             this->buttonBuses->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
             this->buttonBuses->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12));
-            this->buttonBuses->Location = System::Drawing::Point(150, 190);
+            this->buttonBuses->Location = System::Drawing::Point(214, 203);
             this->buttonBuses->Name = L"buttonBuses";
             this->buttonBuses->Size = System::Drawing::Size(344, 50);
             this->buttonBuses->TabIndex = 3;
@@ -128,7 +117,7 @@ namespace InfSystBusStation {
             this->buttonLogout->BackColor = System::Drawing::Color::LightCoral;
             this->buttonLogout->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
             this->buttonLogout->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10));
-            this->buttonLogout->Location = System::Drawing::Point(405, 301);
+            this->buttonLogout->Location = System::Drawing::Point(557, 389);
             this->buttonLogout->Name = L"buttonLogout";
             this->buttonLogout->Size = System::Drawing::Size(150, 54);
             this->buttonLogout->TabIndex = 4;
@@ -141,7 +130,7 @@ namespace InfSystBusStation {
             this->buttonBack->BackColor = System::Drawing::Color::LightGray;
             this->buttonBack->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
             this->buttonBack->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10));
-            this->buttonBack->Location = System::Drawing::Point(50, 320);
+            this->buttonBack->Location = System::Drawing::Point(12, 399);
             this->buttonBack->Name = L"buttonBack";
             this->buttonBack->Size = System::Drawing::Size(150, 35);
             this->buttonBack->TabIndex = 5;
@@ -149,24 +138,12 @@ namespace InfSystBusStation {
             this->buttonBack->UseVisualStyleBackColor = false;
             this->buttonBack->Click += gcnew System::EventHandler(this, &AdminForm::buttonBack_Click);
             // 
-            // labelSystemInfo
-            // 
-            this->labelSystemInfo->AutoSize = true;
-            this->labelSystemInfo->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9, System::Drawing::FontStyle::Italic));
-            this->labelSystemInfo->Location = System::Drawing::Point(150, 260);
-            this->labelSystemInfo->Name = L"labelSystemInfo";
-            this->labelSystemInfo->Size = System::Drawing::Size(344, 18);
-            this->labelSystemInfo->TabIndex = 6;
-            this->labelSystemInfo->Text = L"Система загружена";
-            this->labelSystemInfo->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
-            // 
             // AdminForm
             // 
             this->AutoScaleDimensions = System::Drawing::SizeF(8, 16);
             this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
             this->BackColor = System::Drawing::Color::White;
-            this->ClientSize = System::Drawing::Size(600, 380);
-            this->Controls->Add(this->labelSystemInfo);
+            this->ClientSize = System::Drawing::Size(719, 455);
             this->Controls->Add(this->buttonBack);
             this->Controls->Add(this->buttonLogout);
             this->Controls->Add(this->buttonBuses);

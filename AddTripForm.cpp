@@ -83,216 +83,81 @@ String^ ExtractBusCodeFromInfo(String^ busInfo) {
     return String::Empty;
 }
 
-// Вспомогательная функция для поиска автобуса по коду
-Bus^ FindBusByCode(BusList^ busList, String^ code) {
-    if (busList == nullptr || String::IsNullOrEmpty(code)) {
-        return nullptr;
-    }
-
-    for each (Bus ^ bus in busList->AllBuses) {
-        if (bus->GetCode() == code) {
-            return bus;
-        }
-    }
-    return nullptr;
-}
-
-// Вспомогательная функция для поиска водителя по имени
-Driver^ FindDriverByName(DriversList^ driverList, String^ name) {
-    if (driverList == nullptr || String::IsNullOrEmpty(name)) {
-        return nullptr;
-    }
-
-    for each (Driver ^ driver in driverList->AllDrivers) {
-        if (driver->GetFullName() == name) {
-            return driver;
-        }
-    }
-    return nullptr;
-}
-
 System::Void AddTripForm::add_button_Click(System::Object^ sender, System::EventArgs^ e) {
     try {
-        // === 1. Проверка инициализации ===
-        if (tripList == nullptr) {
-            MessageBox::Show("Ошибка: список поездок не инициализирован!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Error);
-            return;
-        }
-
-        if (busList == nullptr || driverList == nullptr) {
-            MessageBox::Show("Ошибка: списки автобусов или водителей не инициализированы!", "Ошибка",
+        // === 1. Быстрая проверка инициализации ===
+        if (tripList == nullptr || busList == nullptr || driverList == nullptr) {
+            MessageBox::Show("Ошибка: данные не загружены!", "Ошибка",
                 MessageBoxButtons::OK, MessageBoxIcon::Error);
             return;
         }
 
         // === 2. Получение данных из формы ===
-
-        // Пункт отправления
         String^ startPoint = StartPointBox->Text->Trim();
-        if (String::IsNullOrEmpty(startPoint)) {
-            MessageBox::Show("Введите пункт отправления!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            StartPointBox->Focus();
-            StartPointBox->SelectAll();
-            return;
-        }
-
-        // Пункт прибытия
         String^ finishPoint = FinishPointBox->Text->Trim();
-        if (String::IsNullOrEmpty(finishPoint)) {
-            MessageBox::Show("Введите пункт прибытия!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            FinishPointBox->Focus();
-            FinishPointBox->SelectAll();
-            return;
-        }
-
-        // Дата и время отправления
         String^ depDateStr = DepDateBox->Text->Trim();
-        if (String::IsNullOrEmpty(depDateStr) || depDateStr->Contains("_")) {
-            MessageBox::Show("Введите полную дату и время отправления!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            DepDateBox->Focus();
-            DepDateBox->SelectAll();
-            return;
-        }
-
-        // Дата и время прибытия
         String^ arrDateStr = ArrDateBox->Text->Trim();
-        if (String::IsNullOrEmpty(arrDateStr) || arrDateStr->Contains("_")) {
-            MessageBox::Show("Введите полную дату и время прибытия!", "Ошибка",
+        String^ priceStr = PriceBox->Text->Trim();
+
+        // Проверка на пустые поля
+        if (String::IsNullOrEmpty(startPoint) || String::IsNullOrEmpty(finishPoint) ||
+            String::IsNullOrEmpty(depDateStr) || String::IsNullOrEmpty(arrDateStr) ||
+            String::IsNullOrEmpty(priceStr)) {
+            MessageBox::Show("Заполните все поля!", "Внимание",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            ArrDateBox->Focus();
-            ArrDateBox->SelectAll();
             return;
         }
 
-        // Цена
-        if (String::IsNullOrEmpty(PriceBox->Text)) {
-            MessageBox::Show("Введите цену билета!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            PriceBox->Focus();
-            PriceBox->SelectAll();
-            return;
-        }
-
+        // === 3. Парсинг дат и цены ===
+        DateTime depDate, arrDate;
         int price;
+
         try {
-            price = Int32::Parse(PriceBox->Text);
-            if (price <= 0) {
-                MessageBox::Show("Цена должна быть больше 0!", "Ошибка",
-                    MessageBoxButtons::OK, MessageBoxIcon::Warning);
-                PriceBox->Focus();
-                PriceBox->SelectAll();
-                return;
-            }
+            depDate = DateTime::ParseExact(depDateStr, "dd/MM/yyyy HH:mm", nullptr);
+            arrDate = DateTime::ParseExact(arrDateStr, "dd/MM/yyyy HH:mm", nullptr);
+            price = Int32::Parse(priceStr);
         }
         catch (Exception^) {
-            MessageBox::Show("Цена должна быть целым числом!", "Ошибка",
+            MessageBox::Show("Неверный формат данных!", "Ошибка",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            PriceBox->Focus();
-            PriceBox->SelectAll();
             return;
         }
 
-        // Водитель
-        if (driverComboBox->SelectedIndex < 0) {
-            MessageBox::Show("Выберите водителя!", "Ошибка",
+        // Проверка времени прибытия
+        if (arrDate <= depDate) {
+            MessageBox::Show("Время прибытия должно быть позже отправления!", "Ошибка",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            driverComboBox->Focus();
+            return;
+        }
+
+        // === 4. Получение выбранных автобуса и водителя ===
+        if (driverComboBox->SelectedIndex < 0 || busComboBox->SelectedIndex < 0) {
+            MessageBox::Show("Выберите автобус и водителя!", "Ошибка",
+                MessageBoxButtons::OK, MessageBoxIcon::Warning);
             return;
         }
 
         String^ selectedDriverName = safe_cast<String^>(driverComboBox->SelectedItem);
-        if (selectedDriverName == "Нет доступных водителей" ||
-            selectedDriverName == "Список водителей не загружен") {
-            MessageBox::Show("Нет доступных водителей!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            return;
-        }
-
-        // Поиск водителя по имени
-        Driver^ selectedDriver = FindDriverByName(driverList, selectedDriverName);
-        if (selectedDriver == nullptr) {
-            MessageBox::Show("Водитель не найден!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            return;
-        }
-
-        if (!selectedDriver->IsAvailable()) {
-            MessageBox::Show("Выбранный водитель недоступен!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            return;
-        }
-
-        // Автобус
-        if (busComboBox->SelectedIndex < 0) {
-            MessageBox::Show("Выберите автобус!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            busComboBox->Focus();
-            return;
-        }
-
         String^ selectedBusInfo = safe_cast<String^>(busComboBox->SelectedItem);
-        if (selectedBusInfo == "Нет доступных автобусов" ||
-            selectedBusInfo == "Список автобусов не загружен") {
-            MessageBox::Show("Нет доступных автобусов!", "Ошибка",
+
+        // Быстрая проверка на доступность
+        if (selectedDriverName->Contains("не доступ") || selectedBusInfo->Contains("не доступ")) {
+            MessageBox::Show("Нет доступных ресурсов!", "Ошибка",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             return;
         }
 
-        // Извлекаем код автобуса из строки
+        Driver^ selectedDriver = Search::FindDriverByName(driverList, selectedDriverName);
         String^ busCode = ExtractBusCodeFromInfo(selectedBusInfo);
-        if (String::IsNullOrEmpty(busCode)) {
-            MessageBox::Show("Не удалось определить код автобуса!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
+        Bus^ selectedBus = Search::FindBusByCode(busList, busCode);
+
+        if (selectedDriver == nullptr || selectedBus == nullptr) {
+            MessageBox::Show("Ошибка при выборе ресурсов!", "Ошибка",
+                MessageBoxButtons::OK, MessageBoxIcon::Error);
             return;
         }
 
-        // Поиск автобуса по коду
-        Bus^ selectedBus = FindBusByCode(busList, busCode);
-        if (selectedBus == nullptr) {
-            MessageBox::Show("Автобус не найден!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            return;
-        }
-
-        if (!selectedBus->CheckAvailability()) {
-            MessageBox::Show("Выбранный автобус недоступен!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            return;
-        }
-
-        // === 3. Проверка дат ===
-        DateTime depDate;
-        DateTime arrDate;
-
-        try {
-            // Парсим даты (формат: "dd/MM/yyyy HH:mm")
-            depDate = DateTime::ParseExact(depDateStr, "dd/MM/yyyy HH:mm", nullptr);
-            arrDate = DateTime::ParseExact(arrDateStr, "dd/MM/yyyy HH:mm", nullptr);
-
-            if (arrDate <= depDate) {
-                MessageBox::Show("Дата прибытия должна быть позже даты отправления!", "Ошибка",
-                    MessageBoxButtons::OK, MessageBoxIcon::Warning);
-                ArrDateBox->Focus();
-                ArrDateBox->SelectAll();
-                return;
-            }
-        }
-        catch (Exception^) {
-            MessageBox::Show("Неверный формат даты! Используйте формат: ДД/ММ/ГГГГ ЧЧ:ММ", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Warning);
-            DepDateBox->Focus();
-            DepDateBox->SelectAll();
-            return;
-        }
-
-        // Извлекаем время из строки даты (последние 5 символов "HH:mm")
-        String^ departureTime = depDateStr->Substring(11, 5);
-
-        // === 4. ВАЛИДАЦИЯ ЧЕРЕЗ TRIPVALIDATOR ===
+        // === 5. ВАЛИДАЦИЯ (ОСНОВНОЙ ВЫЗОВ) ===
         String^ validationError;
         bool isValid = TripValidator::ValidateNewTripStatic(
             startPoint,
@@ -301,9 +166,9 @@ System::Void AddTripForm::add_button_Click(System::Object^ sender, System::Event
             selectedBus,
             selectedDriver,
             depDate,
-            departureTime,
+            depDateStr->Substring(11, 5),  // Время отправления
             tripList,
-            validationError  // out-параметр для ошибки
+            validationError
         );
 
         if (!isValid) {
@@ -312,39 +177,37 @@ System::Void AddTripForm::add_button_Click(System::Object^ sender, System::Event
             return;
         }
 
-        // === 5. Вызов метода TripList для добавления ===
+        // === 6. Добавление поездки ===
         if (tripList->InternalAddTrip(startPoint, finishPoint, price,
-            selectedBus, selectedDriver, depDate, departureTime)) {
+            selectedBus, selectedDriver, depDate, depDateStr->Substring(11, 5))) {
 
-            // Успешно добавлено
-            MessageBox::Show("Поездка успешно добавлена в расписание!", "Успех",
+            MessageBox::Show("Поездка успешно добавлена!", "Успех",
                 MessageBoxButtons::OK, MessageBoxIcon::Information);
 
-            // Очистка формы
-            StartPointBox->Clear();
-            FinishPointBox->Clear();
-            DepDateBox->Clear();
-            ArrDateBox->Clear();
-            PriceBox->Clear();
-            driverComboBox->SelectedIndex = -1;
-            busComboBox->SelectedIndex = -1;
-            StartPointBox->Focus();
-
-            // Обновление списков (на случай если изменилась доступность)
+            // Очистка и обновление
+            ClearForm();
             LoadDriverComboBox();
             LoadBusComboBox();
 
-            // Генерация события
             DataAdded(this, EventArgs::Empty);
-            
-
-            // Закрываем форму с результатом OK
             this->DialogResult = System::Windows::Forms::DialogResult::OK;
             this->Close();
         }
     }
     catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при добавлении поездки: " + ex->Message, "Ошибка системы",
+        MessageBox::Show("Ошибка: " + ex->Message, "Ошибка системы",
             MessageBoxButtons::OK, MessageBoxIcon::Error);
     }
+}
+
+// Новый метод для очистки формы
+void AddTripForm::ClearForm() {
+    StartPointBox->Clear();
+    FinishPointBox->Clear();
+    DepDateBox->Clear();
+    ArrDateBox->Clear();
+    PriceBox->Clear();
+    driverComboBox->SelectedIndex = -1;
+    busComboBox->SelectedIndex = -1;
+    StartPointBox->Focus();
 }

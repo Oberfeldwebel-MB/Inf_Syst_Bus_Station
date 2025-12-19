@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "TripList.hpp"
@@ -41,7 +40,6 @@ namespace InfSystBusStation {
         System::ComponentModel::Container^ components;
 
         void InitializeForm() {
-            // Очищаем поля
             StartPointBox->Clear();
             FinishPointBox->Clear();
             DepDateBox->Clear();
@@ -50,9 +48,9 @@ namespace InfSystBusStation {
             driverComboBox->SelectedIndex = -1;
             busComboBox->SelectedIndex = -1;
 
-            // Устанавливаем фокус
             StartPointBox->Focus();
         }
+        void ClearForm();
 
     public:
         // Методы для установки списков

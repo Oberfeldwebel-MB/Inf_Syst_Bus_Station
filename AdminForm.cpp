@@ -5,25 +5,20 @@ using namespace System::Windows::Forms;
 
 namespace InfSystBusStation {
 
-    String^ AdminForm::GetSystemInfo()
-    {
-        if (admin != nullptr && admin->IsSystemInitialized) {
-            return admin->GetSystemStatistics();
-        }
-        return L"Система инициализирована. Все функции доступны.";
-    }
-
     System::Void AdminForm::buttonSchedule_Click(System::Object^ sender, System::EventArgs^ e)
     {
         try {
-            // Получаем TripList из Admin и создаем форму расписания
             TripList^ tripList = admin->TripSystem;
-            TimingForm^ timingForm = gcnew TimingForm(tripList);
+            BusList^ busList = admin->BusSystem;           
+            DriversList^ driverList = admin->DriverSystem; 
+
+            // Создаем TimingForm со ВСЕМИ тремя параметрами
+            TimingForm^ timingForm = gcnew TimingForm(tripList, busList, driverList, true);
             timingForm->SetCurrentOrder(nullptr);  // Режим администратора
 
-            this->Hide();  // Скрываем текущую форму
-            timingForm->ShowDialog();  // Показываем форму расписания
-            this->Show();  // Показываем текущую форму снова
+            this->Hide();  
+            timingForm->ShowDialog(); 
+            this->Show();  
         }
         catch (Exception^ ex) {
             MessageBox::Show("Ошибка при открытии расписания: " + ex->Message,
@@ -34,13 +29,13 @@ namespace InfSystBusStation {
     System::Void AdminForm::buttonDrivers_Click(System::Object^ sender, System::EventArgs^ e)
     {
         try {
-            // Получаем DriversList из Admin и создаем форму водителей
+            
             DriversList^ driversList = admin->DriverSystem;
             DriversListForm^ driversForm = gcnew DriversListForm(driversList);
 
-            this->Hide();  // Скрываем текущую форму
-            driversForm->ShowDialog();  // Показываем форму водителей
-            this->Show();  // Показываем текущую форму снова
+            this->Hide();  
+            driversForm->ShowDialog();  
+            this->Show();  
         }
         catch (Exception^ ex) {
             MessageBox::Show("Ошибка при открытии списка водителей: " + ex->Message,
@@ -51,13 +46,13 @@ namespace InfSystBusStation {
     System::Void AdminForm::buttonBuses_Click(System::Object^ sender, System::EventArgs^ e)
     {
         try {
-            // Получаем BusList из Admin и создаем форму автобусов
+            
             BusList^ busList = admin->BusSystem;
             BusListForm^ busForm = gcnew BusListForm(busList);
 
-            this->Hide();  // Скрываем текущую форму
-            busForm->ShowDialog();  // Показываем форму автобусов
-            this->Show();  // Показываем текущую форму снова
+            this->Hide();  
+            busForm->ShowDialog();  
+            this->Show();  
         }
         catch (Exception^ ex) {
             MessageBox::Show("Ошибка при открытии списка автобусов: " + ex->Message,
@@ -73,7 +68,7 @@ namespace InfSystBusStation {
             MessageBoxButtons::YesNo,
             MessageBoxIcon::Question) == System::Windows::Forms::DialogResult::Yes)
         {
-            this->Close();  // Закрываем форму администратора
+            this->Close();  
         }
     }
 
@@ -86,7 +81,19 @@ namespace InfSystBusStation {
                 MessageBoxButtons::YesNo,
                 MessageBoxIcon::Question) == System::Windows::Forms::DialogResult::Yes)
             {
-                this->Close();  // Закрываем форму администратора
+                // Извлекаем все обновленные списки из admin
+                TripList^ updatedTripList = admin->TripSystem;
+                BusList^ updatedBusList = admin->BusSystem;
+                DriversList^ updatedDriversList = admin->DriverSystem;
+
+
+                this->Close();
+
+                StartForm^ startForm = gcnew StartForm(admin, updatedBusList,
+                    updatedDriversList, updatedTripList);
+
+
+                startForm->Show();
             }
         }
         catch (Exception^ ex) {

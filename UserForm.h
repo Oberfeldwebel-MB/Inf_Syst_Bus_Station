@@ -1,6 +1,9 @@
 ﻿#pragma once
 
-#include "Order.hpp"
+#include "User.hpp"           // Вместо Order.hpp
+#include "TripList.hpp"
+#include "BusList.hpp"
+#include "DriversList.hpp"
 
 namespace InfSystBusStation {
 
@@ -13,10 +16,19 @@ namespace InfSystBusStation {
 
     public ref class UserForm : public System::Windows::Forms::Form {
     public:
-        // Конструктор принимает Order
-        UserForm(Order^ order) {
+        // Упрощенный конструктор - только User и списки данных
+        UserForm(User^ user, TripList^ tripList, BusList^ busList, DriversList^ driverList) {
             InitializeComponent();
-            currentOrder = order;
+            this->currentUser = user;
+            this->tripList = tripList;
+            this->busList = busList;
+            this->driverList = driverList;
+
+            // Показываем имя пользователя
+            lblWelcome->Text = "Добро пожаловать, " + currentUser->GetFullName() + "!";
+
+
+            // Обновляем информацию о заказе
             UpdateOrderInfo();
         }
 
@@ -26,7 +38,10 @@ namespace InfSystBusStation {
         }
 
     private:
-        Order^ currentOrder;
+        User^ currentUser;          // Основной объект пользователя
+        TripList^ tripList;         // Список рейсов
+        BusList^ busList;           // Список автобусов
+        DriversList^ driverList;    // Список водителей
         System::ComponentModel::Container^ components;
 
         // Элементы формы
@@ -94,7 +109,7 @@ namespace InfSystBusStation {
             this->btnBack->Name = L"btnBack";
             this->btnBack->Size = System::Drawing::Size(380, 40);
             this->btnBack->TabIndex = 3;
-            this->btnBack->Text = L"Назад в главное меню";
+            this->btnBack->Text = L"Выйти из системы";
             this->btnBack->UseVisualStyleBackColor = false;
             this->btnBack->Click += gcnew System::EventHandler(this, &UserForm::btnBack_Click);
 
@@ -123,12 +138,13 @@ namespace InfSystBusStation {
             this->StartPosition = System::Windows::Forms::FormStartPosition::CenterScreen;
             this->Text = L"Пользовательский режим";
             this->ResumeLayout(false);
-
         }
 #pragma endregion
 
     private:
         void UpdateOrderInfo();
+
+        // Обработчики событий
         System::Void btnSelectTrip_Click(System::Object^ sender, System::EventArgs^ e);
         System::Void btnMyTickets_Click(System::Object^ sender, System::EventArgs^ e);
         System::Void btnBack_Click(System::Object^ sender, System::EventArgs^ e);

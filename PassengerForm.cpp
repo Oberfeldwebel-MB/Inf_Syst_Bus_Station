@@ -2,6 +2,7 @@
 #include "User.hpp"
 #include "UserForm.h"
 #include "DriverValidator.hpp"
+#include "Order.hpp"
 
 using namespace InfSystBusStation;
 using namespace System;
@@ -95,25 +96,26 @@ System::Void PassengerForm::SaveButton_Click(System::Object^ sender, System::Eve
             return;
         }
 
-        // 7. Получаем Order из User (ShoppingCart создастся автоматически)
-        Order^ userOrder = createdUser->ShoppingCart;
+        // 2. Создаем Order отдельно
+        Order^ userOrder = gcnew Order();
         userOrder->PassengerName = createdUser->GetFullName();
 
-        // 8. Открываем UserForm
-        UserForm^ userForm = gcnew UserForm(userOrder, tripList, busList, driverList);
+        // 3. Связываем Order с User
+        createdUser->CurrentOrder = userOrder;
 
-        MessageBox::Show("Пользователь успешно зарегистрирован!\n" +
-            createdUser->GetFullInfo(), "Успех",
+        // 4. Открываем UserForm с User и Order
+        UserForm^ userForm = gcnew UserForm(createdUser, tripList, busList, driverList);
+
+        MessageBox::Show("Регистрация успешна!", "Успех",
             MessageBoxButtons::OK, MessageBoxIcon::Information);
 
-        this->Hide();  // Скрываем форму регистрации
-        userForm->ShowDialog();  // Показываем главное меню пользователя
-        this->Close();  // Закрываем форму регистрации
+        this->Hide();
+        userForm->ShowDialog();
+        this->Close();
     }
     catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при регистрации: " + ex->Message,
-            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-        createdUser = nullptr;
+        MessageBox::Show("Ошибка: " + ex->Message, "Ошибка",
+            MessageBoxButtons::OK, MessageBoxIcon::Error);
     }
 }
 

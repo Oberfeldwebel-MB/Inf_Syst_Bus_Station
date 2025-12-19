@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Order.hpp"
+#include "Trip.hpp"
 
 namespace InfSystBusStation {
 
@@ -357,7 +358,6 @@ namespace InfSystBusStation {
         System::Void btnSelectAll_Click(System::Object^ sender, System::EventArgs^ e);
         System::Void btnDeselectAll_Click(System::Object^ sender, System::EventArgs^ e);
         System::Void btnBack_Click(System::Object^ sender, System::EventArgs^ e);
-        System::Void dgvTickets_CellContentClick(System::Object^ sender,
-            System::Windows::Forms::DataGridViewCellEventArgs^ e);
+        System::Void dgvTickets_CellContentClick(System::Object^ sender, System::Windows::Forms::DataGridViewCellEventArgs^ e);
     };
 }

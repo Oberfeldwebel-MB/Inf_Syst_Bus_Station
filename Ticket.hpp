@@ -1,8 +1,11 @@
 #pragma once
+
 #include "Trip.hpp"
-#include "User.hpp"
 
 namespace InfSystBusStation {
+
+    // Предварительное объявление вместо включения
+    ref class User;
 
     public enum class TicketType {
         ADULT,      // Взрослый
@@ -14,7 +17,7 @@ namespace InfSystBusStation {
     private:
         int placeNumber;
         Trip^ tripData;
-        Passenger^ passengerData;
+        User^ passengerData;
         bool ticketAvail;
         System::String^ ticketStatus;
         double finalPrice;
@@ -22,13 +25,14 @@ namespace InfSystBusStation {
 
     public:
         // Конструктор
-        Ticket(int placeNumber, Trip^ trip, Passenger^ passenger, TicketType type);
+        Ticket(int placeNumber, Trip^ trip, User^ passenger, TicketType type);
 
         // Деструктор
         ~Ticket() {}
 
         void PrintTicketInfo();
         void CalculateFinalPrice();
+
         void MarkAsPaid() {
             ticketStatus = "Оплачен";
             System::Console::WriteLine("Билет оплачен");
@@ -69,8 +73,8 @@ namespace InfSystBusStation {
             Trip^ get() { return tripData; }
         }
 
-        property Passenger^ PassengerData {
-            Passenger^ get() { return passengerData; }
+        property User^ PassengerData {
+            User^ get() { return passengerData; }
         }
 
         property TicketType Type {

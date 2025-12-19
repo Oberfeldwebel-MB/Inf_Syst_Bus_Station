@@ -28,7 +28,7 @@ namespace InfSystBusStation {
             this->textBoxPassword->Text = L"admin123";  // ѕароль по умолчанию
         }
 
-        // —войство дл€ проверки успешной аутентификации
+  
         property bool IsAuthenticated {
             bool get() { return isAuthenticated; }
         }
@@ -40,7 +40,7 @@ namespace InfSystBusStation {
 
     private:
         System::ComponentModel::Container^ components;
-        Admin^ admin;  // —сылка на переданный Admin
+        Admin^ admin;  
         bool isAuthenticated = false;
 
         // Ёлементы формы

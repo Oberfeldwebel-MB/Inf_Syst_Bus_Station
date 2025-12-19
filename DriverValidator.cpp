@@ -66,7 +66,26 @@ bool DriverValidator::ValidateForAddition(Object^ item, Object^ container) {
 
 // Специфичные методы
 bool DriverValidator::ValidateFIO(String^ fio, [Out] String^% errorMessage) {
-    return ValidateString(fio, "ФИО водителя", 5, 100, errorMessage);
+    // Если fio приходит из MaskedTextBox, просто проверяем длину
+    if (String::IsNullOrEmpty(fio)) {
+        errorMessage = "ФИО не может быть пустым!";
+        return false;
+    }
+
+    // Проверяем, что маска заполнена (нет символов '_')
+    if (fio->Contains("_")) {
+        errorMessage = "Заполните ФИО полностью!";
+        return false;
+    }
+
+    // Дополнительно: минимальная длина (например, "Иванов И.И." - 10 символов)
+    if (fio->Length < 5) {
+        errorMessage = "ФИО слишком короткое!";
+        return false;
+    }
+
+    errorMessage = "";
+    return true;
 }
 
 bool DriverValidator::ValidateSalary(int salary, [Out] String^% errorMessage) {
@@ -99,25 +118,71 @@ bool DriverValidator::ValidateLicense(String^ license, [Out] String^% errorMessa
         "Неверный формат прав! Пример: АБ123456", errorMessage);
 }
 
-bool DriverValidator::ValidatePassport(String^ series, String^ number, [Out] String^% errorMessage) {
-    // Если ничего не введено - это нормально (необязательное поле)
-    if (String::IsNullOrEmpty(series) && String::IsNullOrEmpty(number)) {
+bool DriverValidator::ValidatePassport(String^ passport, [Out] String^% errorMessage) {
+    if (String::IsNullOrEmpty(passport)) {
         errorMessage = "";
         return true;
     }
 
-    // Проверка серии (4 цифры)
-    if (!String::IsNullOrEmpty(series)) {
-        if (!ValidateRegex(series, "^\\d{4}$",
-            "Серия паспорта должна содержать 4 цифры!", errorMessage)) {
-            return false;
-        }
+    // Убираем пробелы и другие разделители
+    String^ cleanPassport = passport->Replace(".", "");
+
+    Console::WriteLine("Паспорт после очистки: '{0}'", cleanPassport);
+    Console::WriteLine("Длина: {0}", cleanPassport->Length);
+
+    // Проверяем длину (4 цифры серии + 6 цифр номера)
+    if (cleanPassport->Length != 10) {
+        errorMessage = "Паспорт должен содержать 10 цифр (серия 4 + номер 6)!";
+        return false;
     }
 
-    // Проверка номера (6 цифр)
-    if (!String::IsNullOrEmpty(number)) {
-        if (!ValidateRegex(number, "^\\d{6}$",
-            "Номер паспорта должен содержать 6 цифр!", errorMessage)) {
+    // Проверяем, что все символы - цифры
+    return ValidateRegex(cleanPassport, "^\\d{10}$",
+        "Паспорт должен содержать только цифры! Пример: 4500123456", errorMessage);
+}
+
+
+bool DriverValidator::ValidateAllFields(
+    String^ fio,
+    int salary,
+    String^ gender,
+    String^ license,
+    String^ passport,
+    [Out] String^% errorMessage) {
+
+    // Проверяем ФИО
+    String^ fioError;
+    if (!ValidateFIO(fio, fioError)) {
+        errorMessage = fioError;
+        return false;
+    }
+
+    // Проверяем зарплату
+    String^ salaryError;
+    if (!ValidateSalary(salary, salaryError)) {
+        errorMessage = salaryError;
+        return false;
+    }
+
+    // Проверяем пол
+    String^ genderError;
+    if (!ValidateGender(gender, genderError)) {
+        errorMessage = genderError;
+        return false;
+    }
+
+    // Проверяем права
+    String^ licenseError;
+    if (!ValidateLicense(license, licenseError)) {
+        errorMessage = licenseError;
+        return false;
+    }
+
+    // Проверяем паспорт (если передан)
+    if (!String::IsNullOrEmpty(passport)) {
+        String^ passportError;
+        if (!ValidatePassport(passport, passportError)) {
+            errorMessage = passportError;
             return false;
         }
     }
@@ -126,43 +191,20 @@ bool DriverValidator::ValidatePassport(String^ series, String^ number, [Out] Str
     return true;
 }
 
-bool DriverValidator::ValidateDriver(Driver^ driver, [Out] String^% errorMessage) {
-    if (driver == nullptr) {
-        errorMessage = "Водитель не указан!";
-        return false;
-    }
-
-    // Проверяем все обязательные поля
-    String^ fioError, ^ salaryError, ^ genderError, ^ licenseError;
-
-    bool isValid =
-        ValidateFIO(driver->GetFullName(), fioError) &&
-        ValidateSalary(driver->GetSalary(), salaryError) &&
-        ValidateGender(driver->GetGender(), genderError) &&
-        ValidateLicense(driver->GetLicense(), licenseError);
-
-    if (!isValid) {
-        // Возвращаем первую найденную ошибку
-        if (!String::IsNullOrEmpty(fioError)) errorMessage = fioError;
-        else if (!String::IsNullOrEmpty(salaryError)) errorMessage = salaryError;
-        else if (!String::IsNullOrEmpty(genderError)) errorMessage = genderError;
-        else if (!String::IsNullOrEmpty(licenseError)) errorMessage = licenseError;
-
-        return false;
-    }
-
-    // Проверка паспорта (необязательное поле)
-    String^ passportError;
-    if (!ValidatePassport(driver->GetPassportSeries(), driver->GetPassportNumber(), passportError)) {
-        errorMessage = passportError;
-        return false;
-    }
-
-    errorMessage = "";
-    return true;
-}
 
 // Статические методы
+bool DriverValidator::ValidateAllFieldsStatic(
+    String^ fio,
+    int salary,
+    String^ gender,
+    String^ license,
+    String^ passport,
+    [Out] String^% errorMessage) {
+
+    DriverValidator^ validator = gcnew DriverValidator();
+    return validator->ValidateAllFields(fio, salary, gender, license, passport, errorMessage);
+}
+
 bool DriverValidator::ValidateFIOStatic(String^ fio, [Out] String^% errorMessage) {
     DriverValidator^ validator = gcnew DriverValidator();
     return validator->ValidateFIO(fio, errorMessage);

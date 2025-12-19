@@ -146,7 +146,7 @@ bool TripList::ShowDeleteTripForm(Form^ owner) {
 
 void TripList::ShowTripListForm(Form^ owner, BusList^ busList, DriversList^ driverList) {
     try {
-        TimingForm^ form = gcnew TimingForm(this, busList, driverList);
+        TimingForm^ form = gcnew TimingForm(this, busList, driverList, false);
         form->ShowDialog(owner);
     }
     catch (Exception^ ex) {

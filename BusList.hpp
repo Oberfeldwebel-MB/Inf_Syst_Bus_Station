@@ -34,7 +34,6 @@ namespace InfSystBusStation {
 
         // === онксвемхе дюммшу ===
         List<Bus^>^ GetAvailableBuses();
-        List<Bus^>^ GetBusesNeedingMaintenance();
         List<Bus^>^ GetBusesByBrand(String^ brand);
         void DisplayAllBuses();
 
@@ -42,8 +41,7 @@ namespace InfSystBusStation {
         List<Bus^>^ GetBusesReadyForTrip();
         bool UpdateBusCondition(String^ code, String^ newCondition);
         bool UpdateMaintenanceDate(String^ code, String^ newDate);
-        void GetStatistics(int% total, int% available, int% needMaintenance, int% critical);
-        List<Bus^>^ GetBusesInCriticalCondition();
+  
 
         // === опнбепйх ===
         bool HasAvailableBuses();
@@ -63,7 +61,7 @@ namespace InfSystBusStation {
                 int count = 0;
                 if (buses != nullptr) {
                     for each (Bus ^ bus in buses) {
-                        if (bus->GetAvailability() && !bus->IsInCriticalCondition()) {
+                        if (bus->GetAvailability()) {
                             count++;
                         }
                     }

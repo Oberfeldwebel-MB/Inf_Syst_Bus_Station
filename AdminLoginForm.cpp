@@ -34,14 +34,13 @@ namespace InfSystBusStation {
             }
 
             // Разбираем паспорт на серию и номер
-            array<String^>^ passportParts = passport->Split('/');
-            if (passportParts->Length != 2) {
-                MessageBox::Show("Неверный формат паспорта (XXXX/XXXXXX)", "Ошибка",
+            if (!PassportPassBox->MaskCompleted) {
+                MessageBox::Show("Паспортные данные заполнены не полностью", "Ошибка",
                     MessageBoxButtons::OK, MessageBoxIcon::Warning);
+                PassportPassBox->Focus();
                 return;
             }
 
-            // Проверяем аутентификацию с переданным Admin
             if (admin->Authenticate(email, password)) {
                 MessageBox::Show("Успешный вход в систему", "Успех",
                     MessageBoxButtons::OK, MessageBoxIcon::Information);
@@ -91,12 +90,11 @@ namespace InfSystBusStation {
                 return;
             }
 
-            // Создаем форму смены пароля и передаем Admin
+
             ChangePasswordForm^ changePassForm = gcnew ChangePasswordForm(admin);
 
             if (changePassForm->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
-                // Пароль уже изменен в ChangePasswordForm через SetPassword
-                // Обновляем поле пароля в форме входа
+
                 textBoxPassword->Text = changePassForm->NewPassword;
 
                 MessageBox::Show("Пароль успешно изменен", "Успех",

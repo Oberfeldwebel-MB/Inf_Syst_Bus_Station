@@ -1,5 +1,5 @@
 #include "DeleteDriverForm.h"
-#include "Search.hpp"  // ДОБАВИТЬ эту строку
+#include "Search.hpp" 
 
 using namespace InfSystBusStation;
 using namespace System::Windows::Forms;
@@ -63,8 +63,6 @@ void DeleteDriverForm::UpdateDriverInfo(Driver^ driver) {
 System::Void DeleteDriverForm::driverComboBox_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
     if (driverComboBox->SelectedIndex >= 0) {
         String^ selectedFio = safe_cast<String^>(driverComboBox->SelectedItem);
-
-        // ИЗМЕНЕНО: Используем Search класс вместо прямого вызова
         Driver^ selectedDriver = Search::FindDriverByName(driversList, selectedFio);
 
         UpdateDriverInfo(selectedDriver);
@@ -79,8 +77,6 @@ System::Void DeleteDriverForm::deleteButton_Click(System::Object^ sender, System
     }
 
     String^ selectedFio = safe_cast<String^>(driverComboBox->SelectedItem);
-
-    // ИЗМЕНЕНО: Используем Search класс вместо прямого вызова
     Driver^ selectedDriver = Search::FindDriverByName(driversList, selectedFio);
 
     if (selectedDriver == nullptr) {
@@ -109,14 +105,12 @@ System::Void DeleteDriverForm::deleteButton_Click(System::Object^ sender, System
 
     if (result == System::Windows::Forms::DialogResult::Yes) {
         try {
-            // Удаляем водителя
             bool success = driversList->RemoveDriver(selectedFio);
 
             if (success) {
                 MessageBox::Show("Водитель успешно удален!", "Успех",
                     MessageBoxButtons::OK, MessageBoxIcon::Information);
 
-                // Закрываем форму с OK
                 this->DialogResult = System::Windows::Forms::DialogResult::OK;
                 this->Close();
             }

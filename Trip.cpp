@@ -1,82 +1,130 @@
-﻿#include "Trip.hpp"
+﻿// Trip.cpp
+#include "Trip.hpp"
 
 using namespace InfSystBusStation;
 using namespace System;
 using namespace System::Collections::Generic;
 
-// Конструктор 1
-Trip::Trip(System::String^ start, System::String^ finish, int price, Bus^ bus, Driver^ driver)
-    : startPoint(start), finishPoint(finish), priceTicket(price),
-    bus(bus), driver(driver), tripDate(DateTime::Now) {
+// Конструктор 1: Без даты и времени (использует текущие)
+Trip::Trip(String^ start, String^ finish, int price, Bus^ bus, Driver^ driver)
+    : startPoint(start),
+    finishPoint(finish),
+    priceTicket(price),
+    bus(bus),
+    driver(driver),
+    tripDate(DateTime::Now),
+    tripTime("12:00"), // значение по умолчанию
+    status("Запланирована")
+{
+    // Проверки
+    if (String::IsNullOrEmpty(start)) {
+        throw gcnew ArgumentException("Начальный пункт не может быть пустым!");
+    }
 
-    if (System::String::IsNullOrEmpty(start)) {
-        throw gcnew System::ArgumentException("Пункт отправления не может быть пустым!");
+    if (String::IsNullOrEmpty(finish)) {
+        throw gcnew ArgumentException("Конечный пункт не может быть пустым!");
     }
-    if (System::String::IsNullOrEmpty(finish)) {
-        throw gcnew System::ArgumentException("Пункт назначения не может быть пустым!");
-    }
+
     if (price <= 0) {
-        throw gcnew System::ArgumentException("Цена должна быть больше 0!");
+        throw gcnew ArgumentException("Цена должна быть положительной!");
     }
+
     if (bus == nullptr) {
-        throw gcnew System::ArgumentNullException("Автобус не может быть null!");
+        throw gcnew ArgumentNullException("Автобус не может быть null!");
     }
+
     if (driver == nullptr) {
-        throw gcnew System::ArgumentNullException("Водитель не может быть null!");
+        throw gcnew ArgumentNullException("Водитель не может быть null!");
     }
 
-    status = "Запланирована";
-    tripTime = "10:00"; // Время по умолчанию
-    totalTrips++;
-
-    // Инициализируем списки мест
+    // Инициализация списков мест
     occupiedSeats = gcnew List<int>();
     availableSeats = gcnew List<int>();
 
-    // Занимаем автобус и водителя
-    bus->ChangeAvailability(false);
-
-    // Инициализируем места
+    // Инициализация мест
     InitializeSeats();
+
+    totalTrips++;
+
+    Console::WriteLine("[Trip] Создана поездка: {0} → {1}", start, finish);
 }
 
-// Конструктор 2 (с датой и временем)
-Trip::Trip(System::String^ start, System::String^ finish, int price, Bus^ bus, Driver^ driver,
-    System::DateTime date, System::String^ time)
-    : Trip(start, finish, price, bus, driver) {
-    tripDate = date;
-    tripTime = time;
+// Конструктор 2: С датой и временем
+Trip::Trip(String^ start, String^ finish, int price, Bus^ bus, Driver^ driver,
+    DateTime date, String^ time)
+    : startPoint(start),
+    finishPoint(finish),
+    priceTicket(price),
+    bus(bus),
+    driver(driver),
+    tripDate(date),
+    tripTime(time),
+    status("Запланирована")
+{
+    // Проверки (такие же как в первом конструкторе)
+    if (String::IsNullOrEmpty(start)) {
+        throw gcnew ArgumentException("Начальный пункт не может быть пустым!");
+    }
+
+    if (String::IsNullOrEmpty(finish)) {
+        throw gcnew ArgumentException("Конечный пункт не может быть пустым!");
+    }
+
+    if (price <= 0) {
+        throw gcnew ArgumentException("Цена должна быть положительной!");
+    }
+
+    if (bus == nullptr) {
+        throw gcnew ArgumentNullException("Автобус не может быть null!");
+    }
+
+    if (driver == nullptr) {
+        throw gcnew ArgumentNullException("Водитель не может быть null!");
+    }
+
+    if (String::IsNullOrEmpty(time)) {
+        throw gcnew ArgumentException("Время не может быть пустым!");
+    }
+
+    // Инициализация списков мест
+    occupiedSeats = gcnew List<int>();
+    availableSeats = gcnew List<int>();
+
+    // Инициализация мест
+    InitializeSeats();
+
+    totalTrips++;
+
+    Console::WriteLine("[Trip] Создана поездка: {0} → {1} на {2}",
+        start, finish, date.ToString("dd.MM.yyyy"));
 }
 
 // Деструктор
 Trip::~Trip() {
-    // Освобождаем автобус при удалении поездки
-    if (bus != nullptr && (status == "Запланирована" || status == "В пути")) {
-        bus->ChangeAvailability(true);
-    }
+    // Очистка ресурсов
+    occupiedSeats = nullptr;
+    availableSeats = nullptr;
+    bus = nullptr;
+    driver = nullptr;
 }
 
-// === МЕТОДЫ ДЛЯ РАБОТЫ С МЕСТАМИ ===
-
-// Инициализировать места при создании поездки
+// Инициализация мест
 void Trip::InitializeSeats() {
-    if (occupiedSeats == nullptr) occupiedSeats = gcnew List<int>();
-    if (availableSeats == nullptr) availableSeats = gcnew List<int>();
-
-    occupiedSeats->Clear();
-    availableSeats->Clear();
-
-    if (bus == nullptr) {
-        return;
-    }
+    if (bus == nullptr) return;
 
     int totalSeats = bus->GetSeatCount();
 
-    // Все места изначально свободны
+    // Очищаем списки
+    occupiedSeats->Clear();
+    availableSeats->Clear();
+
+    // Заполняем список доступных мест
     for (int i = 1; i <= totalSeats; i++) {
         availableSeats->Add(i);
     }
 }
+
+// Другие методы, которые нужно реализовать минимум:
 
 // Забронировать место
 bool Trip::BookSeat(int seatNumber) {
@@ -84,102 +132,165 @@ bool Trip::BookSeat(int seatNumber) {
         return false;
     }
 
-    // Перемещаем место из свободных в занятые
-    if (availableSeats->Remove(seatNumber)) {
-        occupiedSeats->Add(seatNumber);
-        occupiedSeats->Sort();
-        System::Console::WriteLine("[Trip] Место {0} забронировано на поездку {1}",
-            seatNumber, GetRoute());
-        return true;
-    }
-
-    return false;
+    availableSeats->Remove(seatNumber);
+    occupiedSeats->Add(seatNumber);
+    return true;
 }
 
-// Отменить бронирование места
+// Отменить бронирование
 bool Trip::CancelSeatBooking(int seatNumber) {
     if (!IsSeatOccupied(seatNumber)) {
         return false;
     }
 
-    // Перемещаем место из занятых в свободные
-    if (occupiedSeats->Remove(seatNumber)) {
-        availableSeats->Add(seatNumber);
-        availableSeats->Sort();
-        System::Console::WriteLine("[Trip] Бронирование места {0} отменено для поездки {1}",
-            seatNumber, GetRoute());
-        return true;
-    }
-
-    return false;
+    occupiedSeats->Remove(seatNumber);
+    availableSeats->Add(seatNumber);
+    return true;
 }
 
 // Проверить свободно ли место
 bool Trip::IsSeatAvailable(int seatNumber) {
-    if (availableSeats == nullptr) return false;
     return availableSeats->Contains(seatNumber);
 }
 
 // Проверить занято ли место
 bool Trip::IsSeatOccupied(int seatNumber) {
-    if (occupiedSeats == nullptr) return false;
     return occupiedSeats->Contains(seatNumber);
 }
 
-// Получить список свободных мест
-System::Collections::Generic::List<int>^ Trip::GetAvailableSeats() {
-    // Возвращаем копию списка
-    List<int>^ result = gcnew List<int>();
-    if (availableSeats != nullptr) {
-        for each (int seat in availableSeats) {
-            result->Add(seat);
-        }
-    }
-    return result;
+// Получить свободные места
+List<int>^ Trip::GetAvailableSeats() {
+    return availableSeats;
 }
 
-// Получить список занятых мест
-System::Collections::Generic::List<int>^ Trip::GetOccupiedSeats() {
-    // Возвращаем копию списка
-    List<int>^ result = gcnew List<int>();
-    if (occupiedSeats != nullptr) {
-        for each (int seat in occupiedSeats) {
-            result->Add(seat);
-        }
-    }
-    return result;
+// Получить занятые места
+List<int>^ Trip::GetOccupiedSeats() {
+    return occupiedSeats;
 }
 
 // Всего мест в автобусе
 int Trip::GetTotalSeatsCount() {
-    if (bus == nullptr) {
-        return 0;
-    }
-    return bus->GetSeatCount();
+    return (bus != nullptr) ? bus->GetSeatCount() : 0;
 }
 
 // Количество свободных мест
 int Trip::GetAvailableSeatsCount() {
-    if (availableSeats == nullptr) return 0;
     return availableSeats->Count;
 }
 
 // Количество занятых мест
 int Trip::GetOccupiedSeatsCount() {
-    if (occupiedSeats == nullptr) return 0;
     return occupiedSeats->Count;
 }
 
-// Получить информацию о местах
-System::String^ Trip::GetSeatsInfo() {
-    return System::String::Format("Места: {0}/{1} свободно",
-        GetAvailableSeatsCount(), GetTotalSeatsCount());
+// Начать поездку
+void Trip::StartTrip() {
+    if (status != "Запланирована") {
+        throw gcnew InvalidOperationException("Поездка не в состоянии 'Запланирована'!");
+    }
+
+    status = "В пути";
+    Console::WriteLine("[Trip] Поездка начата: {0}", GetRoute());
 }
 
-// === ПРОВЕРКИ ===
+// Завершить поездку
+void Trip::CompleteTrip() {
+    if (status != "В пути") {
+        throw gcnew InvalidOperationException("Поездка не в состоянии 'В пути'!");
+    }
 
+    status = "Завершена";
+    Console::WriteLine("[Trip] Поездка завершена: {0}", GetRoute());
+}
+
+// Отменить поездку
+void Trip::CancelTrip() {
+    if (status == "Завершена" || status == "Отменена") {
+        throw gcnew InvalidOperationException("Нельзя отменить завершенную или отмененную поездку!");
+    }
+
+    status = "Отменена";
+
+    // Освобождаем все забронированные места
+    for each (int seat in occupiedSeats) {
+        availableSeats->Add(seat);
+    }
+    occupiedSeats->Clear();
+
+    Console::WriteLine("[Trip] Поездка отменена: {0}", GetRoute());
+
+
+
+}
+
+
+// Trip.cpp - добавьте эти методы:
+
+// Изменить водителя
+void Trip::ChangeDriver(Driver^ newDriver) {
+    if (newDriver == nullptr) {
+        throw gcnew ArgumentNullException("Новый водитель не может быть null!");
+    }
+
+    if (!IsAvailableForChanges()) {
+        throw gcnew InvalidOperationException("Нельзя изменить водителя в текущем статусе поездки!");
+    }
+
+    driver = newDriver;
+    Console::WriteLine("[Trip] Водитель изменен на: {0}", newDriver->GetFullName());
+}
+
+// Изменить автобус
+void Trip::ChangeBus(Bus^ newBus) {
+    if (newBus == nullptr) {
+        throw gcnew ArgumentNullException("Новый автобус не может быть null!");
+    }
+
+    if (!IsAvailableForChanges()) {
+        throw gcnew InvalidOperationException("Нельзя изменить автобус в текущем статусе поездки!");
+    }
+
+    bus = newBus;
+
+    // Переинициализируем места при смене автобуса
+    InitializeSeats();
+
+    Console::WriteLine("[Trip] Автобус изменен на: {0}", newBus->GetFullName());
+}
+
+// Изменить маршрут
+void Trip::ChangeRoute(String^ newStart, String^ newFinish) {
+    if (String::IsNullOrEmpty(newStart) || String::IsNullOrEmpty(newFinish)) {
+        throw gcnew ArgumentException("Начальный и конечный пункты не могут быть пустыми!");
+    }
+
+    if (!IsAvailableForChanges()) {
+        throw gcnew InvalidOperationException("Нельзя изменить маршрут в текущем статусе поездки!");
+    }
+
+    startPoint = newStart;
+    finishPoint = newFinish;
+
+    Console::WriteLine("[Trip] Маршрут изменен на: {0} → {1}", newStart, newFinish);
+}
+
+// Изменить цену
+void Trip::ChangePrice(int newPrice) {
+    if (newPrice <= 0) {
+        throw gcnew ArgumentException("Цена должна быть положительной!");
+    }
+
+    if (!IsAvailableForChanges()) {
+        throw gcnew InvalidOperationException("Нельзя изменить цену в текущем статусе поездки!");
+    }
+
+    priceTicket = newPrice;
+    Console::WriteLine("[Trip] Цена изменена на: {0} руб.", newPrice);
+}
+
+// Проверки статусов
 bool Trip::IsAvailableForChanges() {
-    return IsPlanned(); // Изменять можно только запланированные поездки
+    return IsPlanned(); // Только запланированные поездки можно изменять
 }
 
 bool Trip::IsCompleted() {
@@ -198,160 +309,63 @@ bool Trip::IsCancelled() {
     return status == "Отменена";
 }
 
-// === МЕТОДЫ УПРАВЛЕНИЯ СТАТУСОМ ===
-
-void Trip::StartTrip() {
-    if (!IsPlanned()) {
-        throw gcnew System::InvalidOperationException(
-            "Можно начать только запланированную поездку!");
-    }
-
-    if (bus == nullptr) {
-        throw gcnew System::InvalidOperationException("Не назначен автобус!");
-    }
-    if (driver == nullptr) {
-        throw gcnew System::InvalidOperationException("Не назначен водитель!");
-    }
-
-    status = "В пути";
-    System::Console::WriteLine("Поездка началась: {0} → {1}", startPoint, finishPoint);
-}
-
-void Trip::CompleteTrip() {
-    if (!IsInProgress()) {
-        throw gcnew System::InvalidOperationException(
-            "Можно завершить только поездку в пути!");
-    }
-
-    status = "Завершена";
-
-    // Освобождаем автобус
-    if (bus != nullptr) {
-        bus->ChangeAvailability(true);
-    }
-
-    System::Console::WriteLine("Поездка завершена: {0} → {1}", startPoint, finishPoint);
-}
-
-void Trip::CancelTrip() {
-    if (IsCompleted()) {
-        throw gcnew System::InvalidOperationException(
-            "Нельзя отменить завершенную поездку!");
-    }
-
-    status = "Отменена";
-
-    // Освобождаем автобус
-    if (bus != nullptr) {
-        bus->ChangeAvailability(true);
-    }
-
-    System::Console::WriteLine("Поездка отменена: {0} → {1}", startPoint, finishPoint);
-}
-
-// === МЕТОДЫ ИЗМЕНЕНИЯ ===
-
-void Trip::ChangeDriver(Driver^ newDriver) {
-    if (newDriver == nullptr) {
-        throw gcnew System::ArgumentNullException("Новый водитель не может быть null!");
-    }
-
-    if (!newDriver->GetAvailability()) {
-        throw gcnew System::InvalidOperationException("Водитель недоступен!");
-    }
-
-    driver = newDriver;
-    System::Console::WriteLine("Водитель изменен на: {0}", driver->GetFullName());
-}
-
-void Trip::ChangeBus(Bus^ newBus) {
-    if (newBus == nullptr) {
-        throw gcnew System::ArgumentNullException("Новый автобус не может быть null!");
-    }
-
-    if (!newBus->GetAvailability()) {
-        throw gcnew System::InvalidOperationException("Автобус недоступен!");
-    }
-
-    // Освобождаем старый автобус
-    if (bus != nullptr) {
-        bus->ChangeAvailability(true);
-    }
-
-    // Занимаем новый автобус
-    bus = newBus;
-    bus->ChangeAvailability(false);
-
-    System::Console::WriteLine("Автобус изменен на: {0} [{1}]",
-        bus->GetBrand(), bus->GetFormattedCode());
-
-    // Переинициализируем места для нового автобуса
-    InitializeSeats();
-}
-
-void Trip::ChangeRoute(System::String^ newStart, System::String^ newFinish) {
-    if (IsInProgress() || IsCompleted()) {
-        throw gcnew System::InvalidOperationException(
-            "Нельзя изменить маршрут поездки в процессе или завершенной!");
-    }
-
-    startPoint = newStart;
-    finishPoint = newFinish;
-    System::Console::WriteLine("Маршрут изменен на: {0} → {1}", newStart, newFinish);
-}
-
-void Trip::ChangePrice(int newPrice) {
-    if (newPrice <= 0) {
-        throw gcnew System::ArgumentException("Цена должна быть больше 0!");
-    }
-
-    priceTicket = newPrice;
-    System::Console::WriteLine("Цена изменена на: {0} руб.", newPrice);
-}
-
-// === ИНФОРМАЦИОННЫЕ МЕТОДЫ ===
-
+// Информационные методы
 void Trip::PrintInfo() {
-    System::Console::WriteLine("=== Информация о поездке ===");
-    System::Console::WriteLine("Маршрут: {0} → {1}", startPoint, finishPoint);
-    System::Console::WriteLine("Дата: {0:dd.MM.yyyy}", tripDate);
-    System::Console::WriteLine("Время: {0}", tripTime);
-    System::Console::WriteLine("Статус: {0}", status);
-    System::Console::WriteLine("Цена билета: {0} руб.", priceTicket);
-    System::Console::WriteLine("Места: {0}/{1} свободно",
-        GetAvailableSeatsCount(), GetTotalSeatsCount());
+    Console::WriteLine("=== Информация о поездке ===");
+    Console::WriteLine("Маршрут: {0}", GetRoute());
+    Console::WriteLine("Статус: {0}", status);
+    Console::WriteLine("Цена: {0} руб.", priceTicket);
 
     if (bus != nullptr) {
-        System::Console::WriteLine("Автобус: {0} [{1}]",
-            bus->GetBrand(), bus->GetFormattedCode());
+        Console::WriteLine("Автобус: {0}", bus->GetFullName());
     }
 
     if (driver != nullptr) {
-        System::Console::WriteLine("Водитель: {0}", driver->GetFullName());
+        Console::WriteLine("Водитель: {0}", driver->GetFullName());
     }
-    System::Console::WriteLine("=============================");
+
+    Console::WriteLine("Дата: {0}", tripDate.ToString("dd.MM.yyyy"));
+    Console::WriteLine("Время: {0}", tripTime);
+    Console::WriteLine("Места: свободно {0}/{1}", GetAvailableSeatsCount(), GetTotalSeatsCount());
+    Console::WriteLine("==========================");
 }
 
-System::String^ Trip::GetFullInfo() {
-    return System::String::Format(
-        "Поездка: {0} → {1} ({2:dd.MM.yyyy} {3})\nСтатус: {4}\nЦена: {5} руб.\n{6}\nАвтобус: {7}\nВодитель: {8}",
-        startPoint, finishPoint, tripDate, tripTime, status, priceTicket,
-        GetSeatsInfo(),
+String^ Trip::GetFullInfo() {
+    return String::Format(
+        "Маршрут: {0}\n"
+        "Статус: {1}\n"
+        "Цена: {2} руб.\n"
+        "Автобус: {3}\n"
+        "Водитель: {4}\n"
+        "Дата: {5}\n"
+        "Время: {6}\n"
+        "Места: {7}/{8} свободно",
+        GetRoute(),
+        status,
+        priceTicket,
         bus != nullptr ? bus->GetFullName() : "Не назначен",
-        driver != nullptr ? driver->GetFullName() : "Не назначен"
+        driver != nullptr ? driver->GetFullName() : "Не назначен",
+        tripDate.ToString("dd.MM.yyyy"),
+        tripTime,
+        GetAvailableSeatsCount(),
+        GetTotalSeatsCount()
     );
 }
 
-System::String^ Trip::GetShortInfo() {
-    return System::String::Format("{0} → {1} ({2:dd.MM} {3}) - {4} руб.",
-        startPoint, finishPoint, tripDate, tripTime, priceTicket);
+String^ Trip::GetShortInfo() {
+    return String::Format("{0} - {1} руб. ({2} мест свободно)",
+        GetRoute(), priceTicket, GetAvailableSeatsCount());
 }
 
-// === СТАТИЧЕСКИЕ МЕТОДЫ ===
+String^ Trip::GetSeatsInfo() {
+    return String::Format("Всего мест: {0}\nСвободно: {1}\nЗанято: {2}",
+        GetTotalSeatsCount(), GetAvailableSeatsCount(), GetOccupiedSeatsCount());
+}
 
-System::String^ Trip::GetStatusDescription(System::String^ status) {
+// Статический метод
+String^ Trip::GetStatusDescription(String^ status) {
     if (status == "Запланирована") return "Поездка запланирована";
-    if (status == "В пути") return "Поездка в процессе";
+    if (status == "В пути") return "Поездка выполняется";
     if (status == "Завершена") return "Поездка завершена";
     if (status == "Отменена") return "Поездка отменена";
     return "Неизвестный статус";

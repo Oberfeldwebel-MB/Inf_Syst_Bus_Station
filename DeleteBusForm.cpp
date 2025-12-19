@@ -77,11 +77,8 @@ void DeleteBusForm::UpdateBusInfo(Bus^ bus) {
 
     // Статус
     String^ statusText = "Статус: ";
-    if (bus->GetAvailability() && !bus->IsInCriticalCondition()) {
+    if (bus->GetAvailability()) {
         statusText += "Доступен";
-    }
-    else if (bus->IsInCriticalCondition()) {
-        statusText += "Требует ремонта";
     }
     else {
         statusText += "Не доступен";

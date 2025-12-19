@@ -1,4 +1,4 @@
-#include "TicketSelectionForm.h"
+п»ї#include "TicketSelectionForm.h"
 #include "Trip.hpp"
 #include "Order.hpp"
 
@@ -8,58 +8,61 @@ using namespace System::Windows::Forms;
 using namespace System::Drawing;
 using namespace System::Collections::Generic;
 
-// Инициализация данных формы
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РґР°РЅРЅС‹С… С„РѕСЂРјС‹
 System::Void TicketSelectionForm::InitializeFormData() {
     if (selectedTrip == nullptr) {
-        lblTripInfo->Text = "Ошибка: поездка не выбрана!";
+        lblTripInfo->Text = "РћС€РёР±РєР°: РїРѕРµР·РґРєР° РЅРµ РІС‹Р±СЂР°РЅР°!";
         return;
     }
 
-    // Устанавливаем информацию о поездке
+    // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РїРѕРµР·РґРєРµ
     lblTripInfo->Text = String::Format(
-        "МАРШРУТ: {0}\n"
-        "ДАТА: {1:dd.MM.yyyy}\n"
-        "ВРЕМЯ: {2}\n"
-        "АВТОБУС: {3}\n"
-        "ВОДИТЕЛЬ: {4}",
+        "РњРђР РЁР РЈРў: {0}\n"
+        "Р”РђРўРђ: {1:dd.MM.yyyy}\n"
+        "Р’Р Р•РњРЇ: {2}\n"
+        "РђР’РўРћР‘РЈРЎ: {3}\n"
+        "Р’РћР”РРўР•Р›Р¬: {4}",
         selectedTrip->GetRoute(),
         selectedTrip->GetTripDate(),
         selectedTrip->GetTripTime(),
         selectedTrip->GetBus() != nullptr ?
-        selectedTrip->GetBus()->GetBrand() + " " + selectedTrip->GetBus()->GetModel() : "Не указан",
+        selectedTrip->GetBus()->GetBrand() + " " + selectedTrip->GetBus()->GetModel() : "РќРµ СѓРєР°Р·Р°РЅ",
         selectedTrip->GetDriver() != nullptr ?
-        selectedTrip->GetDriver()->GetFullName() : "Не назначен"
+        selectedTrip->GetDriver()->GetFullName() : "РќРµ РЅР°Р·РЅР°С‡РµРЅ"
     );
 
-    // Обновляем информацию о цене
+    // РћР±РЅРѕРІР»СЏРµРј РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ С†РµРЅРµ
     UpdatePriceInfo();
 
-    // Обновляем состояние кнопок
+    // Р—РђР“Р РЈР–РђР•Рњ РЎР’РћР‘РћР”РќР«Р• РњР•РЎРўРђ Р’ COMBOBOX в†ђ Р­РўРћ РЎРђРњРћР• Р’РђР–РќРћР•!
+    LoadAvailableSeats();
+
+    // РћР±РЅРѕРІР»СЏРµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РєРЅРѕРїРѕРє
     UpdateButtonsState();
 }
 
-// Загрузить свободные места в ComboBox
+// Р—Р°РіСЂСѓР·РёС‚СЊ СЃРІРѕР±РѕРґРЅС‹Рµ РјРµСЃС‚Р° РІ ComboBox
 System::Void TicketSelectionForm::LoadAvailableSeats() {
     cmbSeats->Items->Clear();
 
     if (selectedTrip == nullptr) {
-        cmbSeats->Items->Add("Ошибка: поездка не выбрана");
+        cmbSeats->Items->Add("РћС€РёР±РєР°: РїРѕРµР·РґРєР° РЅРµ РІС‹Р±СЂР°РЅР°");
         cmbSeats->Enabled = false;
         return;
     }
 
-    // Получаем список свободных мест из Trip
+    // РџРѕР»СѓС‡Р°РµРј СЃРїРёСЃРѕРє СЃРІРѕР±РѕРґРЅС‹С… РјРµСЃС‚ РёР· Trip
     List<int>^ availableSeats = selectedTrip->GetAvailableSeats();
 
     if (availableSeats == nullptr || availableSeats->Count == 0) {
-        cmbSeats->Items->Add("Нет свободных мест");
+        cmbSeats->Items->Add("РќРµС‚ СЃРІРѕР±РѕРґРЅС‹С… РјРµСЃС‚");
         cmbSeats->Enabled = false;
-        lblSelectedSeat->Text = "Все места заняты";
+        lblSelectedSeat->Text = "Р’СЃРµ РјРµСЃС‚Р° Р·Р°РЅСЏС‚С‹";
         lblSelectedSeat->ForeColor = Color::Red;
     }
     else {
         for each (int seat in availableSeats) {
-            cmbSeats->Items->Add("Место " + seat.ToString());
+            cmbSeats->Items->Add("РњРµСЃС‚Рѕ " + seat.ToString());
         }
         if (cmbSeats->Items->Count > 0) {
             cmbSeats->SelectedIndex = 0;
@@ -67,18 +70,18 @@ System::Void TicketSelectionForm::LoadAvailableSeats() {
     }
 }
 
-// Обновить информацию о цене
+// РћР±РЅРѕРІРёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ С†РµРЅРµ
 System::Void TicketSelectionForm::UpdatePriceInfo() {
     if (selectedTrip == nullptr) {
-        lblPriceInfo->Text = "Цена: 0 руб.";
+        lblPriceInfo->Text = "Р¦РµРЅР°: 0 СЂСѓР±.";
         return;
     }
 
     int price = selectedTrip->GetPrice();
-    lblPriceInfo->Text = String::Format("Цена билета: {0} руб.", price);
+    lblPriceInfo->Text = String::Format("Р¦РµРЅР° Р±РёР»РµС‚Р°: {0} СЂСѓР±.", price);
 }
 
-// Обновить состояние кнопок
+// РћР±РЅРѕРІРёС‚СЊ СЃРѕСЃС‚РѕСЏРЅРёРµ РєРЅРѕРїРѕРє
 System::Void TicketSelectionForm::UpdateButtonsState() {
     bool hasSelection = cmbSeats->SelectedIndex >= 0 && cmbSeats->Enabled;
 
@@ -94,9 +97,9 @@ System::Void TicketSelectionForm::UpdateButtonsState() {
     }
 }
 
-// === ОБРАБОТЧИКИ СОБЫТИЙ ===
+// === РћР‘Р РђР‘РћРўР§РРљР РЎРћР‘Р«РўРР™ ===
 
-// Изменение выбранного места
+// РР·РјРµРЅРµРЅРёРµ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РјРµСЃС‚Р°
 System::Void TicketSelectionForm::cmbSeats_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
     if (cmbSeats->SelectedItem != nullptr) {
         String^ selectedItem = cmbSeats->SelectedItem->ToString();
@@ -106,86 +109,117 @@ System::Void TicketSelectionForm::cmbSeats_SelectedIndexChanged(System::Object^ 
     UpdateButtonsState();
 }
 
-// Добавить в заказ
+// Р”РѕР±Р°РІРёС‚СЊ РІ Р·Р°РєР°Р·
 System::Void TicketSelectionForm::btnAddToOrder_Click(System::Object^ sender, System::EventArgs^ e) {
     try {
+        // РџСЂРѕРІРµСЂРєРё
         if (selectedTrip == nullptr) {
-            MessageBox::Show("Ошибка: поездка не выбрана!", "Ошибка",
+            MessageBox::Show("РћС€РёР±РєР°: РїРѕРµР·РґРєР° РЅРµ РІС‹Р±СЂР°РЅР°!", "РћС€РёР±РєР°",
                 MessageBoxButtons::OK, MessageBoxIcon::Error);
             return;
         }
 
         if (cmbSeats->SelectedItem == nullptr || !cmbSeats->Enabled) {
-            MessageBox::Show("Выберите место!", "Внимание",
+            MessageBox::Show("Р’С‹Р±РµСЂРёС‚Рµ РјРµСЃС‚Рѕ!", "Р’РЅРёРјР°РЅРёРµ",
                 MessageBoxButtons::OK, MessageBoxIcon::Warning);
             return;
         }
 
-        // Извлекаем номер места
+        // РР·РІР»РµРєР°РµРј РЅРѕРјРµСЂ РјРµСЃС‚Р°
         String^ selectedItem = cmbSeats->SelectedItem->ToString();
-        String^ seatStr = selectedItem->Substring(6); // "Место X" -> "X"
+        String^ seatStr = selectedItem->Substring(6); // "РњРµСЃС‚Рѕ X" -> "X"
         int seatNumber = Convert::ToInt32(seatStr);
 
-        // Проверяем доступность места
+        // РџСЂРѕРІРµСЂСЏРµРј РґРѕСЃС‚СѓРїРЅРѕСЃС‚СЊ РјРµСЃС‚Р°
         if (!selectedTrip->IsSeatAvailable(seatNumber)) {
-            MessageBox::Show("Это место уже занято! Выберите другое место.",
-                "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Warning);
-
-            // Обновляем список мест
+            MessageBox::Show("Р­С‚Рѕ РјРµСЃС‚Рѕ СѓР¶Рµ Р·Р°РЅСЏС‚Рѕ! Р’С‹Р±РµСЂРёС‚Рµ РґСЂСѓРіРѕРµ РјРµСЃС‚Рѕ.",
+                "РћС€РёР±РєР°", MessageBoxButtons::OK, MessageBoxIcon::Warning);
             LoadAvailableSeats();
             return;
         }
 
-        // Бронируем место
-        if (!selectedTrip->BookSeat(seatNumber)) {
-            MessageBox::Show("Не удалось забронировать место!", "Ошибка",
-                MessageBoxButtons::OK, MessageBoxIcon::Error);
-            return;
-        }
-
-        // Получаем цену
-        int price = selectedTrip->GetPrice();
-
-        // TODO: Создать объект Ticket и добавить его в Order
-        // Пока просто проверяем, что Order существует
+        // РџСЂРѕРІРµСЂСЏРµРј Order
         if (currentOrder == nullptr) {
-            MessageBox::Show("Ошибка: заказ не инициализирован!", "Ошибка",
+            MessageBox::Show("РћС€РёР±РєР°: Р·Р°РєР°Р· РЅРµ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅ!", "РћС€РёР±РєР°",
                 MessageBoxButtons::OK, MessageBoxIcon::Error);
             return;
         }
 
-        // Пока просто показываем сообщение (вместо создания Ticket)
-        ticketAdded = true;
+        // РџСЂРѕРІРµСЂСЏРµРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+        if (currentUser == nullptr) {
+            MessageBox::Show("РћС€РёР±РєР°: РґР°РЅРЅС‹Рµ РїР°СЃСЃР°Р¶РёСЂР° РЅРµ Р·Р°РїРѕР»РЅРµРЅС‹!", "РћС€РёР±РєР°",
+                MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return;
+        }
 
-        MessageBox::Show(
-            String::Format(
-                "Билет успешно добавлен в заказ!\n\n"
-                "Маршрут: {0}\n"
-                "Место: {1}\n"
-                "Цена: {2} руб.\n"
-                "Осталось свободных мест: {3}\n\n"
-                "Перейдите в раздел 'Мои билеты' для оплаты.",
-                selectedTrip->GetRoute(),
-                seatNumber,
-                price,
-                selectedTrip->GetAvailableSeatsCount()
-            ),
-            "Успех",
-            MessageBoxButtons::OK,
-            MessageBoxIcon::Information
-        );
+        // Р‘СЂРѕРЅРёСЂСѓРµРј РјРµСЃС‚Рѕ
+        if (!selectedTrip->BookSeat(seatNumber)) {
+            MessageBox::Show("РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°Р±СЂРѕРЅРёСЂРѕРІР°С‚СЊ РјРµСЃС‚Рѕ!", "РћС€РёР±РєР°",
+                MessageBoxButtons::OK, MessageBoxIcon::Error);
+            return;
+        }
 
-        this->DialogResult = System::Windows::Forms::DialogResult::OK;
-        this->Close();
+        // РЎРћР—Р”РђР•Рњ Р‘РР›Р•Рў РЎ Р Р•РђР›Р¬РќР«Рњ РџРћР›Р¬Р—РћР’РђРўР•Р›Р•Рњ
+        try {
+            Ticket^ ticket = gcnew Ticket(
+                seatNumber,          // РЅРѕРјРµСЂ РјРµСЃС‚Р°
+                selectedTrip,        // РїРѕРµР·РґРєР°
+                currentUser,         // в†ђ Р Р•РђР›Р¬РќР«Р™ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РёР· С„РѕСЂРјС‹
+                TicketType::ADULT    // С‚РёРї Р±РёР»РµС‚Р°
+            );
+
+            // Р”РѕР±Р°РІР»СЏРµРј Р±РёР»РµС‚ РІ Р·Р°РєР°Р·
+            currentOrder->AddTicket(ticket);
+            ticketAdded = true;
+
+            Console::WriteLine("[TicketSelectionForm] Р‘РёР»РµС‚ СЃРѕР·РґР°РЅ:");
+            Console::WriteLine("  РњРµСЃС‚Рѕ: в„–{0}", seatNumber);
+            Console::WriteLine("  РџР°СЃСЃР°Р¶РёСЂ: {0}", currentUser->GetFullName());
+            Console::WriteLine("  Р¦РµРЅР°: {0:F2} СЂСѓР±.", ticket->FinalPrice);
+
+            MessageBox::Show(
+                String::Format(
+                    "вњ… Р‘РёР»РµС‚ СѓСЃРїРµС€РЅРѕ РґРѕР±Р°РІР»РµРЅ РІ Р·Р°РєР°Р·!\n\n"
+                    "РњР°СЂС€СЂСѓС‚: {0}\n"
+                    "РњРµСЃС‚Рѕ: в„–{1}\n"
+                    "РџР°СЃСЃР°Р¶РёСЂ: {2}\n"
+                    "Р¦РµРЅР°: {3:F2} СЂСѓР±.\n"
+                    "Email: {4}\n"
+                    "РўРµР»РµС„РѕРЅ: {5}\n"
+                    "РЎРІРѕР±РѕРґРЅС‹С… РјРµСЃС‚ РѕСЃС‚Р°Р»РѕСЃСЊ: {6}",
+                    selectedTrip->GetRoute(),
+                    seatNumber,
+                    currentUser->GetFullName(),
+                    ticket->FinalPrice,
+                    currentUser->GetEmail(),
+                    currentUser->PhoneNumber,
+                    selectedTrip->GetAvailableSeatsCount()
+                ),
+                "РЈСЃРїРµС…!",
+                MessageBoxButtons::OK,
+                MessageBoxIcon::Information
+            );
+
+            this->DialogResult = System::Windows::Forms::DialogResult::OK;
+            this->Close();
+
+        }
+        catch (Exception^ ex) {
+            // РћС‚РјРµРЅСЏРµРј Р±СЂРѕРЅРёСЂРѕРІР°РЅРёРµ РµСЃР»Рё РѕС€РёР±РєР°
+            selectedTrip->CancelSeatBooking(seatNumber);
+            MessageBox::Show("РћС€РёР±РєР° РїСЂРё СЃРѕР·РґР°РЅРёРё Р±РёР»РµС‚Р°: " + ex->Message,
+                "РћС€РёР±РєР°", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            throw;
+        }
 
     }
     catch (Exception^ ex) {
-        MessageBox::Show("Ошибка при добавлении билета: " + ex->Message,
-            "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+        MessageBox::Show("РћС€РёР±РєР° РїСЂРё РґРѕР±Р°РІР»РµРЅРёРё Р±РёР»РµС‚Р°: " + ex->Message,
+            "РћС€РёР±РєР°", MessageBoxButtons::OK, MessageBoxIcon::Error);
     }
 }
 
-// Отмена
+// РћС‚РјРµРЅР°
 System::Void TicketSelectionForm::btnCancel_Click(System::Object^ sender, System::EventArgs^ e) {
     this->DialogResult = System::Windows::Forms::DialogResult::Cancel;
     this->Close();

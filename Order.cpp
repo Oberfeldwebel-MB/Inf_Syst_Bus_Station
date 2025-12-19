@@ -1,10 +1,11 @@
 #include "Order.hpp"
+#include "User.hpp"    // Добавляем для доступа к User
 
 using namespace InfSystBusStation;
 using namespace System;
 using namespace System::Collections::Generic;
 
-// Конструкторы
+// Конструкторы (без изменений)
 Order::Order() {
     tickets = gcnew List<Ticket^>();
     orderId = GenerateOrderId();
@@ -22,10 +23,8 @@ Order::Order(String^ orderId, String^ passengerName) : Order(passengerName) {
     this->orderId = orderId;
 }
 
-// Деструктор
+// Деструктор (без изменений)
 Order::~Order() {
-    // Не очищаем tickets, так как они могут использоваться другими объектами
-    // Просто обнуляем ссылку
     tickets = nullptr;
 }
 
@@ -46,6 +45,12 @@ void Order::AddTicket(Ticket^ ticket) {
 
     tickets->Add(ticket);
     CalculateTotalPrice();
+
+    // Обновляем имя пассажира в заказе, если не указано
+    if (ticket->PassengerData != nullptr && passengerName == "Не указан") {
+        passengerName = ticket->PassengerData->GetFullName();
+    }
+
     Console::WriteLine("[Order] Билет добавлен в заказ {0}: место №{1}", orderId, ticket->PlaceNumber);
 }
 
@@ -88,6 +93,7 @@ void Order::Clear() {
     tickets->Clear();
     totalPrice = 0.0;
     status = "Отменен";
+    passengerName = "Не указан";
     Console::WriteLine("[Order] Заказ {0} очищен", orderId);
 }
 
@@ -104,9 +110,12 @@ Ticket^ Order::FindTicketByPlaceNumber(int placeNumber) {
 
 Ticket^ Order::FindTicketByPassenger(String^ passengerName) {
     for each (Ticket ^ ticket in tickets) {
-        if (ticket->PassengerData != nullptr &&
-            ticket->PassengerData->GetFullName() == passengerName) {
-            return ticket;
+        if (ticket->PassengerData != nullptr) {
+            // Теперь PassengerData - это User^, поэтому используем GetFullName()
+            String^ fullName = ticket->PassengerData->GetFullName();
+            if (fullName == passengerName) {
+                return ticket;
+            }
         }
     }
     return nullptr;
@@ -208,6 +217,16 @@ void Order::PrintOrderInfo() {
     Console::WriteLine("Статус: {0}", status);
     Console::WriteLine("Количество билетов: {0}", tickets->Count);
     Console::WriteLine("Общая сумма: {0:F2} руб.", totalPrice);
+
+    // Выводим информацию о пассажирах
+    if (tickets->Count > 0 && tickets[0]->PassengerData != nullptr) {
+        Console::WriteLine("Данные пассажира:");
+        User^ user = tickets[0]->PassengerData;
+        Console::WriteLine("  ФИО: {0}", user->GetFullName());
+        Console::WriteLine("  Email: {0}", user->GetEmail());
+        Console::WriteLine("  Телефон: {0}", user->PhoneNumber);
+    }
+
     Console::WriteLine("===========================");
 }
 
@@ -230,10 +249,16 @@ String^ Order::GetOrderSummary() {
 
     int index = 1;
     for each (Ticket ^ ticket in tickets) {
-        summary += String::Format("{0}. Место №{1}: {2} - {3:F2} руб.\n",
+        String^ passengerInfo = "Не указан";
+        if (ticket->PassengerData != nullptr) {
+            passengerInfo = ticket->PassengerData->GetFullName();
+        }
+
+        summary += String::Format("{0}. Место №{1}: {2} ({3}) - {4:F2} руб.\n",
             index++,
             ticket->PlaceNumber,
             ticket->TicketTypeName,
+            passengerInfo,
             ticket->FinalPrice
         );
     }
@@ -252,10 +277,16 @@ String^ Order::GetReceipt() {
 
     int itemNumber = 1;
     for each (Ticket ^ ticket in tickets) {
-        receipt += String::Format("{0}. Билет {1} (место {2}): {3:F2} руб.\n",
+        String^ passengerInfo = "";
+        if (ticket->PassengerData != nullptr) {
+            passengerInfo = String::Format(" ({0})", ticket->PassengerData->GetFullName());
+        }
+
+        receipt += String::Format("{0}. Билет {1} (место {2}){3}: {4:F2} руб.\n",
             itemNumber++,
             ticket->TicketTypeName,
             ticket->PlaceNumber,
+            passengerInfo,
             ticket->FinalPrice
         );
     }
@@ -278,12 +309,18 @@ void Order::DisplayTickets() {
     else {
         int index = 1;
         for each (Ticket ^ ticket in tickets) {
-            Console::WriteLine("{0}. Место №{1}: {2} - {3:F2} руб. ({4})",
+            String^ passengerInfo = "Не указан";
+            if (ticket->PassengerData != nullptr) {
+                passengerInfo = ticket->PassengerData->GetFullName();
+            }
+
+            Console::WriteLine("{0}. Место №{1}: {2} - {3:F2} руб. ({4}) [Пассажир: {5}]",
                 index++,
                 ticket->PlaceNumber,
                 ticket->TicketTypeName,
                 ticket->FinalPrice,
-                ticket->Status
+                ticket->Status,
+                passengerInfo
             );
         }
     }
@@ -349,7 +386,6 @@ Order^ Order::operator-(Order^ order, Ticket^ ticket) {
 // === СТАТИЧЕСКИЕ МЕТОДЫ ===
 
 String^ Order::GenerateOrderId() {
-    // Генератор ID заказа: ORD-дата-случайное число
     Random^ random = gcnew Random();
     int randomNum = random->Next(1000, 9999);
     return String::Format("ORD-{0}-{1}",

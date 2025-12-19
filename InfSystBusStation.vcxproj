@@ -149,7 +149,6 @@
     <ClCompile Include="Ticket.cpp" />
     <ClCompile Include="TicketChose.cpp" />
     <ClCompile Include="TicketSelectionForm.cpp" />
-    <ClCompile Include="TicketForm.cpp" />
     <ClCompile Include="TripList.cpp" />
     <ClCompile Include="TimingForm.cpp" />
     <ClCompile Include="Trip.cpp" />
@@ -285,6 +284,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AdminForm.resx">
       <DependentUpon>AdminForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BusListForm.resx">
+      <DependentUpon>BusListForm.h</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ChangePasswordForm.resx">
       <DependentUpon>ChangePasswordForm.h</DependentUpon>

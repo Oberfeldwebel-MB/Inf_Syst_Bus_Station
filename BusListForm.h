@@ -40,6 +40,7 @@ namespace InfSystBusStation {
         System::Windows::Forms::ToolStripMenuItem^ backMenuItem;
 
         System::Windows::Forms::DataGridView^ busesDataGridView;
+        System::Windows::Forms::DataGridViewCheckBoxColumn^ selectColumn; // Новая колонка
         System::Windows::Forms::DataGridViewTextBoxColumn^ numColumn;
         System::Windows::Forms::DataGridViewTextBoxColumn^ codeColumn;
         System::Windows::Forms::DataGridViewTextBoxColumn^ brandColumn;
@@ -52,6 +53,7 @@ namespace InfSystBusStation {
         System::Windows::Forms::Label^ busesCountLabel;
         System::Windows::Forms::Label^ availableLabel;
         System::Windows::Forms::Button^ btnRefresh;
+        System::Windows::Forms::Button^ btnSendToMaintenance; // Новая кнопка
         System::Windows::Forms::Label^ label1;
 
 #pragma region Windows Form Designer generated code
@@ -62,6 +64,7 @@ namespace InfSystBusStation {
             this->deleteBusMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->backMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
             this->busesDataGridView = (gcnew System::Windows::Forms::DataGridView());
+            this->selectColumn = (gcnew System::Windows::Forms::DataGridViewCheckBoxColumn());
             this->numColumn = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
             this->codeColumn = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
             this->brandColumn = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
@@ -73,43 +76,39 @@ namespace InfSystBusStation {
             this->busesCountLabel = (gcnew System::Windows::Forms::Label());
             this->availableLabel = (gcnew System::Windows::Forms::Label());
             this->btnRefresh = (gcnew System::Windows::Forms::Button());
+            this->btnSendToMaintenance = (gcnew System::Windows::Forms::Button());
             this->label1 = (gcnew System::Windows::Forms::Label());
             this->menuStrip->SuspendLayout();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->busesDataGridView))->BeginInit();
             this->SuspendLayout();
-
             // 
             // menuStrip
             // 
             this->menuStrip->BackColor = System::Drawing::SystemColors::ActiveBorder;
             this->menuStrip->ImageScalingSize = System::Drawing::Size(20, 20);
             this->menuStrip->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(3) {
-                this->addBusMenuItem,
-                    this->deleteBusMenuItem,
+                this->addBusMenuItem, this->deleteBusMenuItem,
                     this->backMenuItem
             });
             this->menuStrip->Location = System::Drawing::Point(0, 0);
             this->menuStrip->Name = L"menuStrip";
-            this->menuStrip->Size = System::Drawing::Size(1000, 28);
+            this->menuStrip->Size = System::Drawing::Size(1139, 28);
             this->menuStrip->TabIndex = 0;
             this->menuStrip->Text = L"menuStrip1";
-
             // 
             // addBusMenuItem
             // 
             this->addBusMenuItem->Name = L"addBusMenuItem";
-            this->addBusMenuItem->Size = System::Drawing::Size(164, 24);
+            this->addBusMenuItem->Size = System::Drawing::Size(148, 24);
             this->addBusMenuItem->Text = L"Добавить автобус";
             this->addBusMenuItem->Click += gcnew System::EventHandler(this, &BusListForm::AddBus_Click);
-
             // 
             // deleteBusMenuItem
             // 
             this->deleteBusMenuItem->Name = L"deleteBusMenuItem";
-            this->deleteBusMenuItem->Size = System::Drawing::Size(152, 24);
+            this->deleteBusMenuItem->Size = System::Drawing::Size(137, 24);
             this->deleteBusMenuItem->Text = L"Удалить автобус";
             this->deleteBusMenuItem->Click += gcnew System::EventHandler(this, &BusListForm::DeleteBus_Click);
-
             // 
             // backMenuItem
             // 
@@ -117,26 +116,30 @@ namespace InfSystBusStation {
             this->backMenuItem->Size = System::Drawing::Size(65, 24);
             this->backMenuItem->Text = L"Назад";
             this->backMenuItem->Click += gcnew System::EventHandler(this, &BusListForm::Back_Click);
-
             // 
             // busesDataGridView
             // 
             this->busesDataGridView->AllowUserToAddRows = false;
             this->busesDataGridView->AllowUserToDeleteRows = false;
             this->busesDataGridView->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
-            this->busesDataGridView->Columns->AddRange(gcnew cli::array< System::Windows::Forms::DataGridViewColumn^  >(8) {
-                this->numColumn,
-                    this->codeColumn, this->brandColumn, this->modelColumn, this->placesColumn,
-                    this->conditionColumn, this->lastMaintenanceColumn, this->statusColumn
+            this->busesDataGridView->Columns->AddRange(gcnew cli::array< System::Windows::Forms::DataGridViewColumn^  >(9) {
+                this->selectColumn,
+                    this->numColumn, this->codeColumn, this->brandColumn, this->modelColumn, this->placesColumn, this->conditionColumn, this->lastMaintenanceColumn,
+                    this->statusColumn
             });
-            this->busesDataGridView->Location = System::Drawing::Point(12, 40);
+            this->busesDataGridView->Location = System::Drawing::Point(12, 44);
             this->busesDataGridView->Name = L"busesDataGridView";
-            this->busesDataGridView->ReadOnly = true;
             this->busesDataGridView->RowHeadersWidth = 51;
             this->busesDataGridView->RowTemplate->Height = 24;
-            this->busesDataGridView->Size = System::Drawing::Size(976, 350);
+            this->busesDataGridView->Size = System::Drawing::Size(1115, 350);
             this->busesDataGridView->TabIndex = 1;
-
+            // 
+            // selectColumn
+            // 
+            this->selectColumn->HeaderText = L"Выбрать";
+            this->selectColumn->MinimumWidth = 6;
+            this->selectColumn->Name = L"selectColumn";
+            this->selectColumn->Width = 70;
             // 
             // numColumn
             // 
@@ -145,7 +148,6 @@ namespace InfSystBusStation {
             this->numColumn->Name = L"numColumn";
             this->numColumn->ReadOnly = true;
             this->numColumn->Width = 50;
-
             // 
             // codeColumn
             // 
@@ -154,7 +156,6 @@ namespace InfSystBusStation {
             this->codeColumn->Name = L"codeColumn";
             this->codeColumn->ReadOnly = true;
             this->codeColumn->Width = 120;
-
             // 
             // brandColumn
             // 
@@ -163,7 +164,6 @@ namespace InfSystBusStation {
             this->brandColumn->Name = L"brandColumn";
             this->brandColumn->ReadOnly = true;
             this->brandColumn->Width = 120;
-
             // 
             // modelColumn
             // 
@@ -172,7 +172,6 @@ namespace InfSystBusStation {
             this->modelColumn->Name = L"modelColumn";
             this->modelColumn->ReadOnly = true;
             this->modelColumn->Width = 120;
-
             // 
             // placesColumn
             // 
@@ -181,7 +180,6 @@ namespace InfSystBusStation {
             this->placesColumn->Name = L"placesColumn";
             this->placesColumn->ReadOnly = true;
             this->placesColumn->Width = 120;
-
             // 
             // conditionColumn
             // 
@@ -190,7 +188,6 @@ namespace InfSystBusStation {
             this->conditionColumn->Name = L"conditionColumn";
             this->conditionColumn->ReadOnly = true;
             this->conditionColumn->Width = 150;
-
             // 
             // lastMaintenanceColumn
             // 
@@ -199,7 +196,6 @@ namespace InfSystBusStation {
             this->lastMaintenanceColumn->Name = L"lastMaintenanceColumn";
             this->lastMaintenanceColumn->ReadOnly = true;
             this->lastMaintenanceColumn->Width = 120;
-
             // 
             // statusColumn
             // 
@@ -207,8 +203,6 @@ namespace InfSystBusStation {
             this->statusColumn->MinimumWidth = 6;
             this->statusColumn->Name = L"statusColumn";
             this->statusColumn->ReadOnly = true;
-            this->statusColumn->Width = 100;
-
             // 
             // busesCountLabel
             // 
@@ -216,10 +210,9 @@ namespace InfSystBusStation {
             this->busesCountLabel->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Bold));
             this->busesCountLabel->Location = System::Drawing::Point(12, 400);
             this->busesCountLabel->Name = L"busesCountLabel";
-            this->busesCountLabel->Size = System::Drawing::Size(186, 20);
+            this->busesCountLabel->Size = System::Drawing::Size(187, 20);
             this->busesCountLabel->TabIndex = 2;
             this->busesCountLabel->Text = L"Всего автобусов: 0";
-
             // 
             // availableLabel
             // 
@@ -227,21 +220,29 @@ namespace InfSystBusStation {
             this->availableLabel->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Bold));
             this->availableLabel->Location = System::Drawing::Point(12, 430);
             this->availableLabel->Name = L"availableLabel";
-            this->availableLabel->Size = System::Drawing::Size(107, 20);
+            this->availableLabel->Size = System::Drawing::Size(119, 20);
             this->availableLabel->TabIndex = 3;
             this->availableLabel->Text = L"Доступно: 0";
-
             // 
             // btnRefresh
             // 
-            this->btnRefresh->Location = System::Drawing::Point(870, 400);
+            this->btnRefresh->Location = System::Drawing::Point(866, 400);
             this->btnRefresh->Name = L"btnRefresh";
             this->btnRefresh->Size = System::Drawing::Size(118, 30);
             this->btnRefresh->TabIndex = 4;
             this->btnRefresh->Text = L"Обновить список";
             this->btnRefresh->UseVisualStyleBackColor = true;
             this->btnRefresh->Click += gcnew System::EventHandler(this, &BusListForm::Refresh_Click);
-
+            // 
+            // btnSendToMaintenance
+            // 
+            this->btnSendToMaintenance->Location = System::Drawing::Point(1009, 400);
+            this->btnSendToMaintenance->Name = L"btnSendToMaintenance";
+            this->btnSendToMaintenance->Size = System::Drawing::Size(118, 50);
+            this->btnSendToMaintenance->TabIndex = 5;
+            this->btnSendToMaintenance->Text = L"Отправить на ТО";
+            this->btnSendToMaintenance->UseVisualStyleBackColor = true;
+            this->btnSendToMaintenance->Click += gcnew System::EventHandler(this, &BusListForm::SendToMaintenance_Click);
             // 
             // label1
             // 
@@ -249,18 +250,18 @@ namespace InfSystBusStation {
             this->label1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Italic));
             this->label1->Location = System::Drawing::Point(12, 460);
             this->label1->Name = L"label1";
-            this->label1->Size = System::Drawing::Size(336, 20);
-            this->label1->TabIndex = 5;
+            this->label1->Size = System::Drawing::Size(430, 20);
+            this->label1->TabIndex = 6;
             this->label1->Text = L"Для добавления или удаления используйте меню";
-
             // 
             // BusListForm
             // 
             this->AutoScaleDimensions = System::Drawing::SizeF(8, 16);
             this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
             this->BackColor = System::Drawing::SystemColors::InactiveCaption;
-            this->ClientSize = System::Drawing::Size(1000, 490);
+            this->ClientSize = System::Drawing::Size(1139, 490);
             this->Controls->Add(this->label1);
+            this->Controls->Add(this->btnSendToMaintenance);
             this->Controls->Add(this->btnRefresh);
             this->Controls->Add(this->availableLabel);
             this->Controls->Add(this->busesCountLabel);
@@ -288,5 +289,6 @@ namespace InfSystBusStation {
         System::Void DeleteBus_Click(System::Object^ sender, System::EventArgs^ e);
         System::Void Back_Click(System::Object^ sender, System::EventArgs^ e);
         System::Void Refresh_Click(System::Object^ sender, System::EventArgs^ e);
+        System::Void SendToMaintenance_Click(System::Object^ sender, System::EventArgs^ e); 
     };
 }

@@ -2,6 +2,7 @@
 
 #include "Trip.hpp"
 #include "Order.hpp"
+#include "User.hpp"
 
 namespace InfSystBusStation {
 
@@ -15,13 +16,11 @@ namespace InfSystBusStation {
 
     public ref class TicketSelectionForm : public System::Windows::Forms::Form {
     public:
-        TicketSelectionForm(Trip^ trip, Order^ order) {
+        TicketSelectionForm(Trip^ trip, Order^ order, User^ user) : selectedTrip(trip), currentOrder(order), currentUser(user), ticketAdded(false) {
+
             InitializeComponent();
-            selectedTrip = trip;
-            currentOrder = order;
             InitializeFormData();
-            LoadAvailableSeats();
-        }
+        };
 
         property bool TicketAdded {
             bool get() { return ticketAdded; }
@@ -36,6 +35,7 @@ namespace InfSystBusStation {
         Trip^ selectedTrip;
         Order^ currentOrder;
         bool ticketAdded = false;
+        User^ currentUser;
         System::ComponentModel::Container^ components;
 
         // Ёлементы формы

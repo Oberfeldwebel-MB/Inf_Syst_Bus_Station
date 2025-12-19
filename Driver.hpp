@@ -1,10 +1,8 @@
 #pragma once
-
-// ВАЖНО: Сначала стандартные заголовки, потом Windows
 #include <string>
 #include <vector>
 
-// Отключим некоторые макросы Windows, которые конфликтуют
+
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
@@ -16,8 +14,8 @@ namespace InfSystBusStation {
 
     public ref class Driver : public Workers {
     private:
-        String^ driverLicense;         // Водительские права
-        String^ currentDriverTrip;     // Текущий рейс
+        String^ driverLicense;         
+        String^ currentDriverTrip;     
 
     public:
         // Основной конструктор
@@ -25,7 +23,7 @@ namespace InfSystBusStation {
             String^ passportSeries, String^ passportNumber,
             int salary, String^ license)
             : Workers(fullName, gender, passportSeries,
-                passportNumber, salary),  // Базовый конструктор Workers
+                passportNumber, salary),  
             driverLicense(license),
             currentDriverTrip("") {
         }
@@ -46,8 +44,6 @@ namespace InfSystBusStation {
 
         void ReleaseFromTrip() {
             currentDriverTrip = String::Empty;
-            // Если есть SetAvailable() в Workers
-            // SetAvailable();
         }
 
         // === ГЕТТЕРЫ И СЕТТЕРЫ ===
@@ -60,6 +56,16 @@ namespace InfSystBusStation {
             if (!String::IsNullOrEmpty(value)) {
                 SetUnavailable("На рейсе: " + value);
             }
+        }
+
+        String^ GetPassportSeries() {
+
+            return Workers::GetPassportSeries(); 
+        }
+
+        String^ GetPassportNumber() {
+
+            return Workers::GetPassportNumber();
         }
 
         // === ПЕРЕОПРЕДЕЛЕНИЕ ВИРТУАЛЬНЫХ МЕТОДОВ ===

@@ -13,12 +13,22 @@ namespace InfSystBusStation {
         virtual bool ValidateForAddition(System::Object^ item, System::Object^ container) override;
 
         // Специфичные методы
-        virtual bool ValidateFIO(System::String^ fio, [System::Runtime::InteropServices::Out] System::String^% errorMessage) override;
-        virtual bool ValidateSalary(int salary, [System::Runtime::InteropServices::Out] System::String^% errorMessage) override;
-        virtual bool ValidateGender(System::String^ gender, [System::Runtime::InteropServices::Out] System::String^% errorMessage) override;
-        virtual bool ValidateLicense(System::String^ license, [System::Runtime::InteropServices::Out] System::String^% errorMessage) override;
-        virtual bool ValidatePassport(System::String^ series, System::String^ number, [System::Runtime::InteropServices::Out] System::String^% errorMessage) override;
-        virtual bool ValidateDriver(Driver^ driver, [System::Runtime::InteropServices::Out] System::String^% errorMessage) override;
+        bool ValidateFIO(System::String^ fio, [System::Runtime::InteropServices::Out] System::String^% errorMessage) override;
+        bool ValidateSalary(int salary, [System::Runtime::InteropServices::Out] System::String^% errorMessage) override;
+        bool ValidateGender(System::String^ gender, [System::Runtime::InteropServices::Out] System::String^% errorMessage) override;
+        bool ValidateLicense(System::String^ license, [System::Runtime::InteropServices::Out] System::String^% errorMessage) override;
+        bool ValidatePassport(String^ passport, [System::Runtime::InteropServices::Out] String^% errorMessage);
+ 
+        bool ValidateAllFields(
+            String^ fio,
+            int salary,
+            String^ gender,
+            String^ license,
+            String^ passport,
+            [System::Runtime::InteropServices::Out] String^% errorMessage);
+
+
+
 
         // Статические методы
         static bool ValidateFIOStatic(System::String^ fio, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
@@ -28,5 +38,13 @@ namespace InfSystBusStation {
         static bool ValidatePassportStatic(System::String^ series, System::String^ number, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
         static bool ValidateDriverStatic(Driver^ driver, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
         static bool ValidateForAdditionStatic(Driver^ driver, DriversList^ driversList, [System::Runtime::InteropServices::Out] System::String^% errorMessage);
+        static bool ValidateAllFieldsStatic(
+            String^ fio,
+            int salary,
+            String^ gender,
+            String^ license,
+            String^ passport,
+            [System::Runtime::InteropServices::Out] String^% errorMessage);
+    
     };
 }
