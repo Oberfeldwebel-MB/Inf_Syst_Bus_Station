@@ -1,30 +1,49 @@
-#pragma once
+п»ї#pragma once
+
 #include "People.hpp"
-#include "Order.hpp"
-#include "Search.hpp"
-#include "Timing.hpp"
-#include "TicketChose.hpp"
 
-class User : public People {
-private:
-    Order* userOrder;    // Обычный указатель на заказ
-    Search search;       // Объект для поиска
-    Timing* timing;      // Указатель на расписание
+namespace InfSystBusStation {
+    ref class Order;
 
-public:
-    User(const std::string& surname = "",
-        const std::string& name = "",
-        const std::string& fatName = "",
-        const std::string& psprt_ser = "",
-        const std::string& psprt_num = "",
-        const std::string& email = "",
-        Timing* timingPtr = nullptr);
+    public ref class User : public People {
+    private:
+        String^ phoneNumber;
+        DateTime registrationDate;
+        Order^ currentOrder;
 
-    ~User() = default;  
+    public:
+        // РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ - РІС‹Р·С‹РІР°РµС‚ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ People
+        User(String^ fullName, String^ gender, String^ passportSeries,
+            String^ passportNumber, String^ email, String^ phone);
 
-    
-    void SearchAndBookTicket();  // Поиск и бронирование билета
-    void ViewMyOrder() const;    // Просмотр своего заказа
-    void InitializeOrder(TicketChose* ticketChose);
-    Order* GetOrder() const { return userOrder; }
-};
+        ~User();
+
+        // РЎС‚Р°С‚РёС‡РµСЃРєРёР№ РјРµС‚РѕРґ СЃРѕР·РґР°РЅРёСЏ
+        static User^ CreateFromRegistrationForm(
+            String^ fullName, String^ gender, String^ passportSeries,
+            String^ passportNumber, String^ email, String^ phone);
+
+        // === Р Р•РђР›РР—РђР¦РРЇ РђР‘РЎРўР РђРљРўРќРћР“Рћ РњР•РўРћР”Рђ ===
+        virtual double CalculateDiscount() override;  // РћР±СЏР·Р°С‚РµР»СЊРЅРѕ!
+
+        // === РќРћР’Р«Р• РњР•РўРћР”Р« ===
+        virtual String^ GetFullInfo() override;  // РџРµСЂРµРѕРїСЂРµРґРµР»СЏРµРј
+        bool ValidateUserData();
+        String^ GetShortInfo();
+
+        // === РЎР’РћР™РЎРўР’Рђ ===
+        property String^ PhoneNumber {
+            String^ get() { return phoneNumber; }
+            void set(String^ value) { phoneNumber = value; }
+        }
+
+        property DateTime RegistrationDate {
+            DateTime get() { return registrationDate; }
+        }
+
+        property Order^ CurrentOrder {
+            Order^ get() { return currentOrder; }
+            void set(Order^ value) { currentOrder = value; }
+        }
+    };
+}

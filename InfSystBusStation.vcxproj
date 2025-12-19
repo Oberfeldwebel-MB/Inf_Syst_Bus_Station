@@ -118,25 +118,82 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AddBusForm.cpp" />
+    <ClCompile Include="AddDriverForm.cpp" />
+    <ClCompile Include="AddTripForm.cpp" />
     <ClCompile Include="Admin.cpp" />
+    <ClCompile Include="AdminForm.cpp" />
     <ClCompile Include="Bus.cpp" />
     <ClCompile Include="BusList.cpp" />
+    <ClCompile Include="BusListForm.cpp" />
+    <ClCompile Include="BusValidator.cpp" />
+    <ClCompile Include="ChangePasswordForm.cpp" />
+    <ClCompile Include="DeleteBusForm.cpp" />
+    <ClCompile Include="DeleteDriverForm.cpp" />
+    <ClCompile Include="DeleteTripForm.cpp" />
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="DriversList.cpp" />
+    <ClCompile Include="DriversListForm.cpp" />
+    <ClCompile Include="DriverValidator.cpp" />
+    <ClCompile Include="EditTripForm.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Order.cpp" />
-    <ClCompile Include="Passenger.cpp" />
+    <ClCompile Include="OrdersForm.cpp" />
+    <ClCompile Include="AdminLoginForm.cpp" />
+    <ClCompile Include="PassengerForm.cpp" />
     <ClCompile Include="People.cpp" />
+    <ClCompile Include="ResultForm.cpp" />
     <ClCompile Include="Search.cpp" />
+    <ClCompile Include="SearchForm.cpp" />
+    <ClCompile Include="StartForm.cpp" />
     <ClCompile Include="Ticket.cpp" />
     <ClCompile Include="TicketChose.cpp" />
-    <ClCompile Include="Timing.cpp" />
+    <ClCompile Include="TicketSelectionForm.cpp" />
+    <ClCompile Include="TripList.cpp" />
+    <ClCompile Include="TimingForm.cpp" />
     <ClCompile Include="Trip.cpp" />
+    <ClCompile Include="TripValidator.cpp" />
     <ClCompile Include="User.cpp" />
+    <ClCompile Include="UserForm.cpp" />
     <ClCompile Include="Workers.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AddBusForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="AddDriverForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="AddTripForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="Admin.hpp">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="AdminForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="BusListForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="BusValidator.hpp" />
+    <ClInclude Include="ChangePasswordForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="DeleteBusForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="DeleteDriverForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="DeleteTripForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="DriversListForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="DriverValidator.hpp" />
+    <ClInclude Include="EditTripForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="Bus.hpp">
@@ -151,16 +208,34 @@
     <ClInclude Include="DriversList.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="BaseValidator.hpp">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="Order.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="Passenger.hpp">
+    <ClInclude Include="OrdersForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="AdminLoginForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="PassengerForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="People.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="ResultForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="Search.hpp">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="SearchForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="StartForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="Ticket.hpp">
@@ -169,18 +244,86 @@
     <ClInclude Include="TicketChose.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="Timing.hpp">
+    <ClInclude Include="TicketSelectionForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="TicketForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="TripList.hpp">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="TimingForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="Trip.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="TripValidator.hpp">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="User.hpp">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="UserForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
     <ClInclude Include="Workers.hpp">
       <FileType>CppForm</FileType>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="AddBusForm.resx">
+      <DependentUpon>AddBusForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddDriverForm.resx">
+      <DependentUpon>AddDriverForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddTripForm.resx">
+      <DependentUpon>AddTripForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdminForm.resx">
+      <DependentUpon>AdminForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BusListForm.resx">
+      <DependentUpon>BusListForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ChangePasswordForm.resx">
+      <DependentUpon>ChangePasswordForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DriversListForm.resx">
+      <DependentUpon>DriversListForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditTripForm.resx">
+      <DependentUpon>EditTripForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdminLoginForm.resx">
+      <DependentUpon>AdminLoginForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OrdersForm.resx">
+      <DependentUpon>OrdersForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PassengerForm.resx">
+      <DependentUpon>PassengerForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ResultForm.resx">
+      <DependentUpon>ResultForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SearchForm.resx">
+      <DependentUpon>SearchForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="StartForm.resx">
+      <DependentUpon>StartForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TicketSelectionForm.resx">
+      <DependentUpon>TicketSelectionForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TimingForm.resx">
+      <DependentUpon>TimingForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UserForm.resx">
+      <DependentUpon>UserForm.h</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

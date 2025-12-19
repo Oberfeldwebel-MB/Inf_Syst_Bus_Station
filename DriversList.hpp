@@ -1,21 +1,37 @@
+// DriversList.h
 #pragma once
-
-#include <vector>
 #include "Driver.hpp"
 
-class DriverList {
-private:
-    std::vector<Driver> drivers;
+namespace InfSystBusStation {
 
-public:
-    DriverList() = default;
-    ~DriverList() = default;
+    public ref class DriversList {
+    private:
+        System::Collections::Generic::List<Driver^>^ drivers;
 
-    std::vector<Driver>& GetDrivers() { return drivers; }
+    public:
+        DriversList();
+        ~DriversList();
 
+    public:
+        System::Collections::Generic::List<Driver^>^ GetAvailableDrivers();
+        System::Collections::Generic::List<System::String^>^ GetAvailableDriverNames();
 
-    void AddDriver(const Driver& driver);
-    Driver* FindDriverByName(const std::string& fullName);
-    bool RemoveDriver(const std::string& fullName);
-    void DisplayAllDrivers();
-};
+        // Старые методы
+        void AddDriver(Driver^ driver);
+        void AddDriver(System::String^ fullName, int salary, System::String^ gender,
+            System::String^ license, System::String^ passportSeries,
+            System::String^ passportNumber);
+        Driver^ FindDriverByName(System::String^ fullName);
+        bool RemoveDriver(System::String^ fullName);
+        void DisplayAllDrivers();
+
+        // Свойства
+        property System::Collections::Generic::List<Driver^>^ AllDrivers {
+            System::Collections::Generic::List<Driver^>^ get();
+        }
+
+        property int Count {
+            int get();
+        }
+    };
+}

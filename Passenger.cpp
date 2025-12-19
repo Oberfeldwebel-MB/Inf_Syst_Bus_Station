@@ -1,10 +1,27 @@
+// Passenger.cpp
 #include "Passenger.hpp"
-#include <iostream>
 
-void Passenger::PrintPassengerInfo() const {
-    std::cout << "=== Информация о пассажире ===\n";
-    std::cout << "ФИО: " << GetFullName() << "\n";
-    std::cout << "Паспорт: " << PsprtSer << " " << PsprtNum << "\n";
-    std::cout << "Email: " << Email << "\n";
-    std::cout << "==============================\n";
+namespace InfSystBusStation {
+
+    Passenger::Passenger(System::String^ fullName, System::String^ gender,
+        System::String^ passportSeries, System::String^ passportNumber,
+        System::String^ email, System::String^ phone)
+        : People(fullName, gender, passportSeries, passportNumber, email),
+        phoneNumber(phone) {
+    }
+
+    void Passenger::PrintInfo() {
+        People::PrintInfo(); // Вызов базового метода
+        System::Console::WriteLine("Телефон: {0}", phoneNumber);
+    }
+
+    System::String^ Passenger::GetFullInfo() {
+        return "Пассажир: " + GetFullName() +
+            " | Паспорт: " + GetPassportSeries() + " " + GetPassportNumber() +
+            " | Телефон: " + phoneNumber;
+    }
+
+    double Passenger::CalculateDiscount() {
+        return 0.0; // Базовая скидка
+    }
 }

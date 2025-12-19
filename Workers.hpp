@@ -1,24 +1,57 @@
 #pragma once
 #include "People.hpp"
 
-class Workers : public People {
-protected:
-    //Защищенны переменные, доступные для наследников
-    int Salary;
-    bool Availability;
-public:
-    // Конструктор
-    Workers(const std::string& surname = "",
-        const std::string& name = "",
-        const std::string& fatName = "",
-        int salary = 0,
-        bool available = true) : People(surname, name, fatName), Salary(salary), Availability(available) {
-    }
+namespace InfSystBusStation {
 
-    // методы для наследников
-protected:
-    void MakeSalary(int newSalary);
-public:
-    bool GetAvailability() const;
-    void change_work_avail(bool avail);
-};
+    public ref class Workers : public People {
+    protected:
+        int salary;
+        bool isAvailable;
+        String^ status;
+
+    public:
+        // Конструктор с email
+        Workers(String^ fullName, String^ gender,
+            String^ passportSeries, String^ passportNumber,
+            int salary, String^ email)
+            : People(fullName, gender, passportSeries,
+                passportNumber, email),
+            salary(salary), isAvailable(true), status("") {
+
+            if (salary < 0) {
+                throw gcnew ArgumentException("Зарплата не может быть отрицательной!");
+            }
+        }
+
+        // Конструктор без email (для обратной совместимости)
+        Workers(String^ fullName, String^ gender,
+            String^ passportSeries, String^ passportNumber,
+            int salary)
+            : Workers(fullName, gender, passportSeries,
+                passportNumber, salary, "") // Вызываем конструктор с email
+        {
+        }
+
+        virtual ~Workers() {}
+
+        // === ТРАДИЦИОННЫЕ ГЕТТЕРЫ И СЕТТЕРЫ ===
+        int GetSalary() { return salary; }
+        void SetSalary(int value);
+
+        bool GetAvailability() { return isAvailable; }
+        void SetAvailability(bool value) { isAvailable = value; }
+
+        String^ GetStatus() { return status; }
+        void SetStatus(String^ value) { status = value; }
+
+        // === ВИРТУАЛЬНЫЕ МЕТОДЫ ===
+        virtual void PrintInfo() override;
+        virtual String^ GetFullInfo() override;
+        virtual double CalculateDiscount() override;
+
+        // === ДОПОЛНИТЕЛЬНЫЕ МЕТОДЫ ===
+        void SetAvailable();
+        void SetUnavailable(String^ reason);
+        void ChangeWorkAvailability(bool available, String^ reason);
+    };
+}

@@ -1,43 +1,107 @@
 #include "DriversList.hpp"
-
-#pragma once
+#include <algorithm>
 #include <vector>
-#include <iostream>
-#include "Driver.hpp"
+#include <msclr/marshal_cppstd.h>
 
-    void DriverList::AddDriver(const Driver& driver) {
-        drivers.push_back(driver);
-        std::cout << "[DriverList] Водитель " << driver.GetFullName() << " добавлен в список\n";
+using namespace InfSystBusStation;
+using namespace System;
+using namespace System::Collections::Generic;
+using namespace msclr::interop;
+
+// Конструктор
+DriversList::DriversList() {
+    drivers = gcnew List<Driver^>();
+}
+
+// Деструктор
+DriversList::~DriversList() {
+    drivers->Clear();
+}
+
+// Добавление уже созданного водителя
+void DriversList::AddDriver(Driver^ driver) {
+    if (driver == nullptr) {
+        throw gcnew ArgumentNullException("Нельзя добавить пустую ссылку на водителя!");
     }
 
-    // Поиск водителя
-    Driver* DriverList::FindDriverByName(const std::string& fullName) {
-        for (auto& driver : drivers) {
-            if (driver.GetFullName() == fullName) {
-                return &driver;
-            }
+    // Проверка на дубликат по ФИО - используем foreach
+    for each (Driver ^ existingDriver in drivers) {
+        if (existingDriver->GetFullName() == driver->GetFullName()) {
+            throw gcnew InvalidOperationException("Водитель с таким ФИО уже существует!");
         }
-        return nullptr;
     }
 
-    // Удаление водителя
-    bool DriverList::RemoveDriver(const std::string& fullName) {
-        for (size_t i = 0; i < drivers.size(); i++) {
-            if (drivers[i].GetFullName() == fullName) {
-                std::cout << "[DriverList] Водитель " << fullName << " удален\n";
-                drivers.erase(drivers.begin() + i);
-                return true;
-            }
-        }
-        return false;
-    }
+    drivers->Add(driver);
+    Console::WriteLine("Водитель {0} добавлен.", driver->GetFullName());
+}
 
-    //Отображение списка водителей
-    void DriverList::DisplayAllDrivers() {
-        std::cout << "=== Список водителей ===\n";
-        for (const auto& driver : drivers) {
-            driver.PrintInfo();
-            std::cout << "Текущий рейс" << driver.GetDriverCurrentTrip() << "Статус: " << (driver.GetAvailability() ? "Доступен" : "Занят") << "\n";
+// Создание и добавление водителя из данных
+void DriversList::AddDriver(String^ fullName, int salary, String^ gender,
+    String^ license, String^ passportSeries,
+    String^ passportNumber) {
+    Driver^ driver = gcnew Driver(fullName, gender, passportSeries,
+        passportNumber, salary, license);
+    AddDriver(driver);
+}
+
+// Поиск водителя по ФИО
+Driver^ DriversList::FindDriverByName(String^ fullName) {
+    for each (Driver ^ driver in drivers) {
+        if (driver->GetFullName() == fullName) {
+            return driver;
         }
-        std::cout << "========================\n";
     }
+    return nullptr;
+}
+
+// Удаление водителя
+bool DriversList::RemoveDriver(String^ fullName) {
+    for (int i = 0; i < drivers->Count; i++) {
+        if (drivers[i]->GetFullName() == fullName) {
+            drivers->RemoveAt(i);
+            Console::WriteLine("Водитель {0} удален.", fullName);
+            return true;
+        }
+    }
+    return false;
+}
+
+// Вывод всех водителей
+void DriversList::DisplayAllDrivers() {
+    Console::WriteLine("=== Список водителей ({0}) ===", drivers->Count);
+    for each (Driver ^ driver in drivers) {
+        driver->PrintInfo();
+        Console::WriteLine("---");
+    }
+    Console::WriteLine("=================================");
+}
+
+// Получение всех водителей
+List<Driver^>^ DriversList::AllDrivers::get() {
+    return drivers;
+}
+
+// Количество водителей
+int DriversList::Count::get() {
+    return drivers->Count;
+}
+
+List<Driver^>^ DriversList::GetAvailableDrivers() {
+    List<Driver^>^ result = gcnew List<Driver^>();
+    for each (Driver ^ driver in drivers) {
+        if (driver->IsAvailable()) {
+            result->Add(driver);
+        }
+    }
+    return result;
+}
+
+List<String^>^ DriversList::GetAvailableDriverNames() {
+    List<String^>^ result = gcnew List<String^>();
+    for each (Driver ^ driver in drivers) {
+        if (driver->IsAvailable()) {
+            result->Add(driver->GetFullName());
+        }
+    }
+    return result;
+}

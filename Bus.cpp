@@ -1,43 +1,69 @@
 #include "Bus.hpp"
-#include <iostream>
 
-void Bus::PrintBusInfo() {
-	std::cout << "=== Данные автобуса ===\n";
-	std::cout << "Марка: " << Brand << "\n";
-	std::cout << "Модель: " << Model << "\n";
-	std::cout << "Количество мест: " << PlaceCount << "\n";
-	std::cout << "Код автобуса: " << CodeBus << "\n";
-	std::cout << "Техническое состояние: " << TechSost << "\n";
-	std::cout << "Последнее ТО: " << LastCheckTO << "\n";
-	std::cout << "Статус: " << (BusAvailability ? "Доступен" : "Не доступен") << "\n";
-	std::cout << "=======================\n";
+using namespace InfSystBusStation;
+using namespace System;
+
+bool Bus::CheckAvailability() {
+    return isAvailable &&
+        techCondition != "Аварийное" &&
+        techCondition != "На обслуживании";
 }
 
-bool Bus::CheckAvailBus(){
-	return BusAvailability;
+void Bus::ChangeAvailability(bool state) {
+    isAvailable = state;
+    if (state) {
+        Console::WriteLine("Автобус {0} теперь доступен", GetFormattedCode());
+    }
+    else {
+        Console::WriteLine("Автобус {0} теперь недоступен", GetFormattedCode());
+    }
 }
 
-void Bus::ChangeAvailBus(bool state) {
-	BusAvailability = state;
-	if (state) { std::cout << "Автобус теперь доступен\n"; }
-	else { std::cout << "Автобус теперь недоступен\n"; }
+void Bus::AssignToTrip() {
+    if (!CheckAvailability()) {
+        throw gcnew InvalidOperationException(
+            String::Format("Автобус {0} недоступен для рейса!", GetFormattedCode()));
+    }
+
+    Console::WriteLine("Автобус {0} назначен на рейс", GetFullName());
 }
 
-void Bus::SetTripBus() {
-	if (BusAvailability)
-		std::cout << "Bus " << CodeBus << " assigned to a trip.\n";
-	else
-		std::cout << "Bus " << CodeBus << " is not available for a trip.\n";
+void Bus::SendToMaintenance(String^ date) {
+    if (String::IsNullOrEmpty(date)) {
+        throw gcnew ArgumentException("Дата ТО не может быть пустой!");
+    }
+
+    lastMaintenance = date;
+    techCondition = "На обслуживании";
+    isAvailable = false;
+
+    Console::WriteLine("Автобус {0} отправлен на ТО: {1}", GetFormattedCode(), date);
 }
 
-void Bus::GoToTO(std::string& date) {
-	LastCheckTO = date;
-	TechSost = "In maintenance";
-	BusAvailability = false;
-	std::cout << "Bus " << CodeBus << " sent to maintenance on " << date << ".\n";
+void Bus::ChangeTechCondition(String^ newState) {
+    if (String::IsNullOrEmpty(newState)) {
+        throw gcnew ArgumentException("Техническое состояние не может быть пустым!");
+    }
+
+    techCondition = newState;
+
+    // Если состояние критическое - автобус недоступен
+    if (newState == "Аварийное" || newState == "На обслуживании") {
+        isAvailable = false;
+    }
+
+    Console::WriteLine("Автобус {0}: техническое состояние изменено на {1}",
+        GetFormattedCode(), newState);
 }
 
-void Bus::Change_sost(std::string& newState) {
-	TechSost = newState;
-	std::cout << "Bus " << CodeBus << " technical condition updated to: " << newState << "\n";
+void Bus::PrintInfo() {
+    Console::WriteLine("=== Данные автобуса ===");
+    Console::WriteLine("Марка: {0}", brand);
+    Console::WriteLine("Модель: {0}", model);
+    Console::WriteLine("Количество мест: {0}", placeCount);
+    Console::WriteLine("Код автобуса: {0}", GetFormattedCode());
+    Console::WriteLine("Техническое состояние: {0}", techCondition);
+    Console::WriteLine("Последнее ТО: {0}", lastMaintenance);
+    Console::WriteLine("Статус: {0}", isAvailable ? "Доступен" : "Не доступен");
+    Console::WriteLine("=======================");
 }

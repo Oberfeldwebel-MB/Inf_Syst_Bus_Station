@@ -1,57 +1,97 @@
 #pragma once
-#include "Trip.hpp"
-#include "Passenger.hpp"
-#include <iostream>
-#include <map>
-#include <string>
 
-class Ticket {
-   
-public:
-    enum class TicketType {
+#include "Trip.hpp"
+
+namespace InfSystBusStation {
+
+    // Предварительное объявление вместо включения
+    ref class User;
+
+    public enum class TicketType {
         ADULT,      // Взрослый
         CHILD,      // Детский  
         LUGGAGE     // Багажный
     };
 
-private:
-    int PlaceNumber;
-    Trip TripData;
-    Passenger PassengerData;
-    bool TicketAvail;
-    std::string TicketStatus;
-    double FinalPrice;
-    TicketType Type;
-    
-        
+    public ref class Ticket {
+    private:
+        int placeNumber;
+        Trip^ tripData;
+        User^ passengerData;
+        bool ticketAvail;
+        System::String^ ticketStatus;
+        double finalPrice;
+        TicketType type;
 
-public:
+    public:
+        // Конструктор
+        Ticket(int placeNumber, Trip^ trip, User^ passenger, TicketType type);
 
-    Ticket(int placeNumber, const Trip& trip, const Passenger& passenger, TicketType type)
-        : PlaceNumber(placeNumber), TripData(trip), PassengerData(passenger),
-        Type(type), TicketAvail(true), TicketStatus("Забронирован") {
-        CalculateFinalPrice();
-    }
+        // Деструктор
+        ~Ticket() {}
 
-    void PrintTicketInfo() const;
-    void CalculateFinalPrice();
-    void Ticked_paid() {
-        TicketStatus = "Оплачен";
-        std::cout << "Билет оплачен\n";
-    }
+        void PrintTicketInfo();
+        void CalculateFinalPrice();
 
-    // Геттеры
-    int GetPlaceNumber() const { return PlaceNumber; }
-    const Trip& GetTrip() const { return TripData; }
-    
-    const Passenger& GetPassenger() const { return PassengerData; }
-    
-    TicketType GetTicketType() const { return Type; }
-    std::string GetTicketTypeName() const;
+        void MarkAsPaid() {
+            ticketStatus = "Оплачен";
+            System::Console::WriteLine("Билет оплачен");
+        }
 
-    bool IsAvailable() const { return TicketAvail; }
-    std::string GetStatus() const { return TicketStatus; }
-    double GetFinalPrice() const { return FinalPrice; }
+        // Статический метод расчета цены
+        static double CalculatePrice(double basePrice, TicketType type) {
+            switch (type) {
+            case TicketType::ADULT:
+                return basePrice * 1.0;
+            case TicketType::CHILD:
+                return basePrice * 0.5;
+            case TicketType::LUGGAGE:
+                return basePrice * 0.3;
+            default:
+                return basePrice;
+            }
+        }
 
+        // Свойство для имени типа билета
+        property System::String^ TicketTypeName {
+            System::String^ get() {
+                switch (type) {
+                case TicketType::ADULT: return "Взрослый";
+                case TicketType::CHILD: return "Детский";
+                case TicketType::LUGGAGE: return "Багажный";
+                default: return "Неизвестный";
+                }
+            }
+        }
 
-};
+        // Геттеры (свойства)
+        property int PlaceNumber {
+            int get() { return placeNumber; }
+        }
+
+        property Trip^ TripData {
+            Trip^ get() { return tripData; }
+        }
+
+        property User^ PassengerData {
+            User^ get() { return passengerData; }
+        }
+
+        property TicketType Type {
+            TicketType get() { return type; }
+        }
+
+        property bool IsAvailable {
+            bool get() { return ticketAvail; }
+        }
+
+        property System::String^ Status {
+            System::String^ get() { return ticketStatus; }
+        }
+
+        property double FinalPrice {
+            double get() { return finalPrice; }
+            void set(double value) { finalPrice = value; }
+        }
+    };
+}

@@ -1,38 +1,60 @@
+// People.hpp (управляемый)
 #pragma once
-#include <string>
 
-class People {
-protected:
-    // Защищенные переменные доступные для наследников
-    std::string Surname;
-    std::string Name;
-    std::string FatName;
-    std::string PsprtSer;
-    std::string PsprtNum;
-    std::string Email;
+using namespace System;
 
-public:
-    // Конструктор
-    People(const std::string& surname = "",
-        const std::string& name = "",
-        const std::string& fatName = "",
-        const std::string& psprtser = "",
-        const std::string& psprtnum = "",
-        const std::string& email = "")
-        : Surname(surname), Name(name), FatName(fatName), PsprtSer(psprtser), PsprtNum(psprtnum),
-            Email(email){}
-    
-    //деконструктор
-    ~People() = default;
+namespace InfSystBusStation {
 
-    // Публичные Методы класса
-    void PrintInfo() const;
-    //геттеры
-    std::string GetSurname() const { return Surname; }
-    std::string GetName() const { return Name; }
-    std::string GetFatName() const { return FatName; }
-    std::string GetPassportSeries() const { return PsprtSer; }
-    std::string GetPassportNumber() const { return PsprtNum; }
-    std::string GetEmail() const { return Email; }
-    std::string GetFullName() const;
-};
+    public ref class People abstract {
+    protected:
+        String^ fullName;          // Полное ФИО (например: "Иванов И.И.")
+        String^ gender;            // Пол
+        String^ passportSeries;    // Серия паспорта
+        String^ passportNumber;    // Номер паспорта
+        String^ email;             // Email
+
+    public:
+        // Конструктор
+        People(String^ fullName, String^ gender,
+            String^ passportSeries, String^ passportNumber,
+            String^ email)
+            : fullName(fullName), gender(gender),
+            passportSeries(passportSeries),
+            passportNumber(passportNumber),
+            email(email) {
+        }
+
+        virtual ~People() {}
+
+        // === ТРАДИЦИОННЫЕ ГЕТТЕРЫ И СЕТТЕРЫ ===
+
+        // ФИО
+        String^ GetFullName() { return fullName; }
+        void SetFullName(String^ value) { fullName = value; }
+
+        // Паспортные данные
+        String^ GetPassportSeries() { return passportSeries; }
+        void SetPassportSeries(String^ value) { passportSeries = value; }
+
+        String^ GetPassportNumber() { return passportNumber; }
+        void SetPassportNumber(String^ value) { passportNumber = value; }
+
+        void SetPassport(String^ series, String^ number) {
+            passportSeries = series;
+            passportNumber = number;
+        }
+
+        // Пол
+        String^ GetGender() { return gender; }
+        void SetGender(String^ value) { gender = value; }
+
+        // Email
+        String^ GetEmail() { return email; }
+        void SetEmail(String^ value) { email = value; }
+
+        // === ВИРТУАЛЬНЫЕ МЕТОДЫ ===
+        virtual void PrintInfo();
+        virtual String^ GetFullInfo();
+        virtual double CalculateDiscount() abstract;
+    };
+}

@@ -1,48 +1,78 @@
 #pragma once
-#include <string>
 
-class Bus {
-private:
-    std::string Brand;
-    std::string Model;
-    int PlaceCount = 0;
-    bool BusAvailability = true;
-    std::string CodeBus;
-    std::string TechSost;
-    std::string LastCheckTO;
+using namespace System;
 
-public:
-    Bus(const std::string& brand = "",
-        const std::string& model = "",
-        int placeCount = 0,
-        const std::string& code = "",
-        const std::string& techSost = "",
-        const std::string& lastCheck = "")
-        : Brand(brand), Model(model), PlaceCount(placeCount),
-        CodeBus(code), TechSost(techSost), LastCheckTO(lastCheck) {
-    }
-    ~Bus() = default;
+namespace InfSystBusStation {
 
-    // методы класса
-    bool CheckAvailBus();
-    void ChangeAvailBus(bool state);
-    void SetTripBus();
-    void GoToTO(std::string& date);  
-    void Change_sost(std::string& newState);
-    void PrintBusInfo();
+    public ref class Bus {
+    private:
+        String^ brand;               // Марка
+        String^ model;               // Модель
+        int placeCount;              // Количество мест
+        bool isAvailable;            // Доступность
+        String^ code;                // Код автобуса (формат: А888АА)
+        String^ techCondition;       // Техническое состояние
+        String^ lastMaintenance;     // Последнее ТО
 
-    // методы для изменения полей (сеттеры)
-    void SetBrand(std::string& newBrand) 
-        { Brand = newBrand; }
-    void SetModel(std::string& newModel) 
-        { Model = newModel; }
-    void SetPlaceCount(int count) 
-        { PlaceCount = count; }
+    public:
+        // Конструктор
+        Bus(String^ brand, String^ model, int placeCount,
+            String^ code, String^ techCondition,
+            String^ lastMaintenance)
+            : brand(brand), model(model), placeCount(placeCount),
+            isAvailable(true), code(code), techCondition(techCondition),
+            lastMaintenance(lastMaintenance) {
 
-    // Методы для получения данных из переменных (геттеры)
-    std::string GetBrand() const { return Brand; }
-    std::string GetModel() const { return Model; }
-    int GetPlaces() const { return PlaceCount; }
-    bool GetAvailability() const { return BusAvailability; }
-    std::string GetCode() const { return CodeBus; }
-};
+            if (placeCount <= 0) {
+                throw gcnew ArgumentException("Количество мест должно быть больше 0!");
+            }
+        }
+
+        virtual ~Bus() {}
+
+        // === ГЕТТЕРЫ ===
+        String^ GetBrand() { return brand; }
+        String^ GetModel() { return model; }
+        int GetSeatCount() { return placeCount; }
+        bool GetAvailability() { return isAvailable; }
+        String^ GetCode() { return code; }
+        String^ GetTechCondition() { return techCondition; }
+        String^ GetLastMaintenance() { return lastMaintenance; }
+
+        // Форматированный код (А/888/АА)
+        String^ GetFormattedCode() {
+            if (code->Length == 6) {
+                return code->Insert(1, "/")->Insert(5, "/");
+            }
+            return code;
+        }
+
+        String^ GetFullName() {
+            return brand + " " + model + " [" + GetFormattedCode() + "]";
+        }
+
+        // === СЕТТЕРЫ ===
+        void SetBrand(String^ value) { brand = value; }
+        void SetModel(String^ value) { model = value; }
+
+        void SetPlaceCount(int value) {
+            if (value <= 0) {
+                throw gcnew ArgumentException("Количество мест должно быть больше 0!");
+            }
+            placeCount = value;
+        }
+
+        void SetCode(String^ value) { code = value; }
+        void SetTechCondition(String^ value) { techCondition = value; }
+        void SetLastMaintenance(String^ value) { lastMaintenance = value; }
+
+        // === ОСНОВНЫЕ МЕТОДЫ ===
+        bool CheckAvailability();
+        void ChangeAvailability(bool state);
+        void AssignToTrip();
+        void SendToMaintenance(String^ date);
+        void ChangeTechCondition(String^ newState);
+        void PrintInfo();
+
+    };
+}

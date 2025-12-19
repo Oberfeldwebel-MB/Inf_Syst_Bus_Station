@@ -1,28 +1,28 @@
+// Passenger.h
 #pragma once
-#include <string>
 #include "People.hpp"
 
-class Passenger : public People {
-private:
-    std::string PsprtSer;
-    std::string PsprtNum;
-    std::string Email;
+namespace InfSystBusStation {
 
-public:
-    Passenger(const std::string& surname = "",
-        const std::string& name = "",
-        const std::string& fatName = "",
-        const std::string& psprtser = "",
-        const std::string& psprtnum = "",
-        const std::string& email = "")
-        : People(surname, name, fatName),
-        PsprtSer(psprtser), PsprtNum(psprtnum), Email(email) {
-    }
+    public ref class Passenger : public People {
+    private:
+        System::String^ phoneNumber;
 
-    // Геттеры для данных пассажира
-    std::string GetPassportSeries() const { return PsprtSer; }
-    std::string GetPassportNumber() const { return PsprtNum; }
-    std::string GetEmail() const { return Email; }
+    public:
+        // Конструктор
+        Passenger(System::String^ fullName, System::String^ gender,
+            System::String^ passportSeries, System::String^ passportNumber,
+            System::String^ email, System::String^ phone);
 
-    void PrintPassengerInfo() const;
-};
+        // Свойства
+        property System::String^ PhoneNumber {
+            System::String^ get() { return phoneNumber; }
+            void set(System::String^ value) { phoneNumber = value; }
+        }
+
+        // Переопределение виртуальных методов
+        virtual void PrintInfo() override;
+        virtual System::String^ GetFullInfo() override;
+        virtual double CalculateDiscount() override;
+    };
+}

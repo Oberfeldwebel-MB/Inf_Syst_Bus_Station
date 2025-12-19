@@ -1,19 +1,30 @@
+// Driver.cpp
 #include "Driver.hpp"
-#include <iostream>
 
-bool Driver::CheckNeedMed(const std::string& current_date) {
-	if (LastMed != current_date) {
-		std::cout << "Медосмотр требуется. Последний: " << LastMed << ", дата: " << current_date << "\n";
-		return true;
-	}
-	std::cout << "Медосмотр не требуется.\n";
-	return false;
+using namespace InfSystBusStation;
+
+void Driver::PrintInfo() {
+    Workers::PrintInfo(); // Вызов метода базового класса
+    Console::WriteLine("Категория прав: {0}", driverLicense);
+    if (!String::IsNullOrEmpty(currentDriverTrip)) {
+        Console::WriteLine("Текущий рейс: {0}", currentDriverTrip);
+    }
 }
 
-void Driver::SetTrip(const std::string& trip) {
-	CurrentDriverTrip = trip;
-	std::cout << "Водителю установлен рейс: " << trip << "\n";
+String^ Driver::GetFullInfo() {
+    String^ info = "Водитель: " + GetFullName() +
+        " | Права: " + driverLicense;
+
+    if (!String::IsNullOrEmpty(currentDriverTrip)) {
+        info += " | Рейс: " + currentDriverTrip;
+    }
+    else {
+        info += " | Рейс: Нет";
+    }
+
+    return info;
 }
 
-
-
+double Driver::CalculateDiscount() {
+    return 0.15; // 15% скидка для водителей
+}

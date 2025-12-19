@@ -1,130 +1,68 @@
 #include "User.hpp"
-#include "Timing.hpp"
-#include "TicketChose.hpp"
-#include "Trip.hpp"
-#include "Passenger.hpp"
-#include <iostream>
+#include "Order.hpp"
 
-User::User(const std::string& surname,
-    const std::string& name,
-    const std::string& fatName,
-    const std::string& psprtSer,
-    const std::string& psprtNum,
-    const std::string& email,
-    Timing* timingPtr)
-    : People(surname, name, fatName, psprtSer, psprtNum, email),
-    userOrder(nullptr), timing(timingPtr) {
+using namespace InfSystBusStation;
+using namespace System;
+
+// Конструктор - вызывает конструктор People
+User::User(String^ fullName, String^ gender, String^ passportSeries,
+    String^ passportNumber, String^ email, String^ phone)
+    : People(fullName, gender, passportSeries, passportNumber, email),  // Вызов конструктора People
+    phoneNumber(phone),
+    registrationDate(DateTime::Now),
+    currentOrder(nullptr) {
+
+    Console::WriteLine("[User] Создан: {0}", GetFullName());
 }
 
-
-
-void User::InitializeOrder(TicketChose* ticketChose) {
-    if (userOrder) {
-        delete userOrder;  // Удаление старого заказа
-    }
-    userOrder = new Order(ticketChose);  //новый заказ
+User::~User() {
+    // Order удаляется в форме, которая его создала
 }
 
-void User::SearchAndBookTicket() {
-    if (!timing) {
-        std::cout << "Ошибка: расписание не доступно!\n";
-        return;
-    }
+// Создание из формы
+User^ User::CreateFromRegistrationForm(String^ fullName, String^ gender,
+    String^ passportSeries, String^ passportNumber, String^ email, String^ phone) {
 
-    std::cout << "=== ПОИСК И БРОНИРОВАНИЕ БИЛЕТА ===\n";
-
-    // 1. Поиск поездок
-    std::string start, finish;
-    std::cout << "Введите пункт отправления: ";
-    std::getline(std::cin, start);
-    std::cout << "Введите пункт назначения: ";
-    std::getline(std::cin, finish);
-
-    // Ищем поездки по маршруту
-    std::vector<Trip*> foundTrips = search.SearchTripsByRoute(*timing, start, finish);
-
-    if (foundTrips.empty()) {
-        std::cout << "Поездки по маршруту " << start << " - " << finish << " не найдены!\n";
-        return;
-    }
-
-    // 2. Показываем найденные поездки
-    std::cout << "\n=== НАЙДЕННЫЕ ПОЕЗДКИ ===\n";
-    for (size_t i = 0; i < foundTrips.size(); ++i) {
-        std::cout << i + 1 << ". ";
-        foundTrips[i]->Print_trip_info();
-    }
-
-    // 3. Выбор поездки
-    int tripChoice;
-    std::cout << "Выберите поездку (1-" << foundTrips.size() << "): ";
-    std::cin >> tripChoice;
-    std::cin.ignore();
-
-    if (tripChoice < 1 || tripChoice > foundTrips.size()) {
-        std::cout << "Неверный выбор!\n";
-        return;
-    }
-
-    Trip* selectedTrip = foundTrips[tripChoice - 1];
-
-    // 4.TicketChose для выбранной поездки
-    TicketChose ticketChooser(*selectedTrip);
-
-    // Инициализация заказа
-    if (!userOrder) {
-        InitializeOrder(&ticketChooser);
-    }
-
-    // 6. Показываем доступные места
-    ticketChooser.ShowAvailableSeats();
-
-    // 7. Выбор места
-    int seatNumber;
-    std::cout << "Выберите номер места: ";
-    std::cin >> seatNumber;
-    std::cin.ignore();
-
-    // Выбор типа билета
-    std::cout << "Выберите тип билета:\n";
-    std::cout << "0 - Взрослый\n1 - Детский\n2 - Багажный\n";
-    int ticketTypeChoice;
-    std::cout << "Ваш выбор: ";
-    std::cin >> ticketTypeChoice;
-    std::cin.ignore();
-
-    // Преобразуем ввод в Ticket::TicketType
-    Ticket::TicketType ticketType;
-    switch (ticketTypeChoice) {
-    case 0:
-        ticketType = Ticket::TicketType::ADULT;
-        break;
-    case 1:
-        ticketType = Ticket::TicketType::CHILD;
-        break;
-    case 2:
-        ticketType = Ticket::TicketType::LUGGAGE;
-        break;
-    default:
-        std::cout << "Неверный тип билета! Будет выбран взрослый билет.\n";
-        ticketType = Ticket::TicketType::ADULT;
-        break;
-    }
-
-    // 9. Создаем пассажира (самого пользователя)
-    Passenger passenger(GetSurname(), GetName(), GetFatName(),
-        GetPassportSeries(), GetPassportNumber(), GetEmail());
-
-    // 10. Бронируем билет (исправлено)
-    ticketChooser.TicketToOrder(*userOrder, seatNumber, passenger, ticketType);
+    return gcnew User(fullName, gender, passportSeries, passportNumber, email, phone);
 }
 
-void User::ViewMyOrder() const {
-    if (!userOrder || userOrder->IsEmpty()) {
-        std::cout << "У вас нет активных заказов.\n";
-        return;
+// === РЕАЛИЗАЦИЯ АБСТРАКТНОГО МЕТОДА ===
+double User::CalculateDiscount() {
+    // Простая реализация - например, 10% скидка для зарегистрированных пользователей
+    return 10.0;  // 10% скидка
+}
+
+// === ПЕРЕОПРЕДЕЛЕНИЕ ВИРТУАЛЬНЫХ МЕТОДОВ ===
+
+
+String^ User::GetFullInfo() {
+    // Расширяем базовую информацию
+    String^ baseInfo = People::GetFullInfo();  // Базовая информация из People
+    return baseInfo + String::Format(
+        "\nТелефон: {0}\nДата регистрации: {1:dd.MM.yyyy}",
+        phoneNumber, registrationDate
+    );
+}
+
+// === НОВЫЕ МЕТОДЫ ===
+bool User::ValidateUserData() {
+    // Проверяем данные People + телефон
+    if (String::IsNullOrEmpty(phoneNumber) || phoneNumber->Length < 10) {
+        return false;
     }
 
-    std::cout << "=== ВАШ ЗАКАЗ ===\n";
-    userOrder->PrintOrderInfo();
+    // Можно добавить базовую проверку
+    if (String::IsNullOrEmpty(GetFullName()) || GetFullName()->Length < 5) {
+        return false;
+    }
+
+    if (String::IsNullOrEmpty(GetEmail()) || !GetEmail()->Contains("@")) {
+        return false;
+    }
+
+    return true;
+}
+
+String^ User::GetShortInfo() {
+    return String::Format("{0} ({1})", GetFullName(), GetEmail());
 }

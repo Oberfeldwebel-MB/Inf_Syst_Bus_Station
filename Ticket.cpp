@@ -1,63 +1,91 @@
-#include "Ticket.hpp"
+﻿#include "Ticket.hpp"
+#include "Trip.hpp"
+#include "User.hpp"
 
+using namespace InfSystBusStation;
+
+// Конструктор
+Ticket::Ticket(int placeNumber, Trip^ trip, User^ passenger, TicketType type)
+    : placeNumber(placeNumber),
+    tripData(trip),
+    passengerData(passenger),
+    type(type),
+    ticketAvail(true),
+    ticketStatus("Забронирован"),
+    finalPrice(0.0)
+{
+    if (placeNumber <= 0) {
+        throw gcnew System::ArgumentException("Номер места должен быть положительным!");
+    }
+
+    if (passenger == nullptr) {
+        throw gcnew System::ArgumentNullException("Пассажир не может быть null!");
+    }
+
+    if (trip == nullptr) {
+        throw gcnew System::ArgumentNullException("Поездка не может быть null!");
+    }
+
+    CalculateFinalPrice();
+    System::Console::WriteLine("[Ticket] Создан билет на место №{0} для {1}",
+        placeNumber, passenger->GetFullName());
+}
+
+// Расчет конечной цены
 void Ticket::CalculateFinalPrice() {
-    double basePrice = TripData.GetPrice();
-    double discountMultiplier = 1.0;
-
-    switch (Type) {
-    case TicketType::ADULT:
-        discountMultiplier = 1.0;  // 100%
-        break;
-    case TicketType::CHILD:
-        discountMultiplier = 0.5;  // 50%
-        break;
-    case TicketType::LUGGAGE:
-        discountMultiplier = 0.3;  // 30%
-        break;
+    if (tripData == nullptr) {
+        finalPrice = 0.0;
+        return;
     }
 
-    FinalPrice = basePrice * discountMultiplier;
-}
+    double basePrice = tripData->GetPrice();
+    finalPrice = CalculatePrice(basePrice, type);
 
-std::string Ticket::GetTicketTypeName() const {
-    switch (Type) {
-    case TicketType::ADULT:
-        return "��������";
-    case TicketType::CHILD:
-        return "�������";
-    case TicketType::LUGGAGE:
-        return "��������";
-    default:
-        return "�����������";
+    // Если есть пользователь, применить его скидку
+    if (passengerData != nullptr) {
+        double discount = passengerData->CalculateDiscount();
+        if (discount > 0) {
+            double originalPrice = finalPrice;
+            finalPrice = finalPrice * (1.0 - discount / 100.0);
+            System::Console::WriteLine("[Ticket] Применена скидка {0}%: {1:F2} руб. → {2:F2} руб.",
+                discount, originalPrice, finalPrice);
+        }
     }
 }
 
-void Ticket::PrintTicketInfo() const {
-    std::cout << "=== ���������� � ������ ===\n";
-    std::cout << "�����: " << PlaceNumber << "\n";
-    std::cout << "���: " << GetTicketTypeName() << "\n";
-    std::cout << "�������: " << TripData.GetRoute() << "\n";
-    std::cout << "����: " << FinalPrice << " ���.\n";  
-    std::cout << "��������: " << PassengerData.GetFullName() << "\n";
-    std::cout << "������ ������: " << TicketStatus << "\n";
+// Вывод информации о билете
+void Ticket::PrintTicketInfo() {
+    System::Console::WriteLine("=== ИНФОРМАЦИЯ О БИЛЕТЕ ===");
+    System::Console::WriteLine("Номер места: {0}", placeNumber);
+    System::Console::WriteLine("Тип билета: {0}", TicketTypeName);
 
-    // ���������� �� �������� � ��������
-    if (TripData.GetBus()) {
-        std::cout << "�������: " << TripData.GetBus()->GetBrand()  
-            << " [" << TripData.GetBus()->GetCode() << "]\n";      
-    }
-    else {
-        std::cout << "�������: �� ��������\n";
+    if (tripData != nullptr) {
+        System::Console::WriteLine("Маршрут: {0}", tripData->GetRoute());
+
+        // Используем существующие методы Trip для получения даты и времени
+        System::Console::WriteLine("Дата: {0:dd.MM.yyyy}", tripData->GetTripDate());
+        System::Console::WriteLine("Время: {0}", tripData->GetTripTime());
+
+        System::Console::WriteLine("Цена поездки: {0:F2} руб.", tripData->GetPrice());
     }
 
-    if (TripData.GetDriver()) {
-        std::cout << "��������: " << TripData.GetDriver()->GetFullName() << "\n";  // -> ������ .
-    }
-    else {
-        std::cout << "��������: �� ��������\n";
+    if (passengerData != nullptr) {
+        System::Console::WriteLine("Пассажир: {0}", passengerData->GetFullName());
+        System::Console::WriteLine("Email: {0}", passengerData->GetEmail());
+        System::Console::WriteLine("Телефон: {0}", passengerData->PhoneNumber);
+
+        // Если есть паспортные данные
+        System::String^ passportSeries = passengerData->GetPassportSeries();
+        System::String^ passportNumber = passengerData->GetPassportNumber();
+        if (!System::String::IsNullOrEmpty(passportSeries) &&
+            !System::String::IsNullOrEmpty(passportNumber)) {
+            System::Console::WriteLine("Паспорт: {0} {1}", passportSeries, passportNumber);
+        }
     }
 
-    std::cout << "============================\n";
+    System::Console::WriteLine("Базовая цена: {0:F2} руб.",
+        tripData != nullptr ? tripData->GetPrice() : 0.0);
+    System::Console::WriteLine("Конечная цена: {0:F2} руб.", finalPrice);
+    System::Console::WriteLine("Статус: {0}", ticketStatus);
+    System::Console::WriteLine("==========================");
 }
-
-
